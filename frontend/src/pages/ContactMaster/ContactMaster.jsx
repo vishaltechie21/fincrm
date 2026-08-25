@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import * as XLSX from 'xlsx';
 import ContactForm from '../../components/ContactForm/ContactForm';
 import ContactTable from '../../components/ContactTable/ContactTable';
 import SearchBar from '../../components/SearchBar/SearchBar';
@@ -23,6 +24,13 @@ const ContactMaster = () => {
   const [activeTab, setActiveTab] = useState('entry'); // 'entry' or 'search'
   const [editState, setEditState] = useState('idle'); // 'idle', 'adding', 'modifying'
   const [revertData, setRevertData] = useState(null);
+
+  // Filter states
+  const [filterCompany, setFilterCompany] = useState('');
+  const [filterDesignation, setFilterDesignation] = useState('');
+  const [filterKeyPerson, setFilterKeyPerson] = useState('');
+  const [appliedFilters, setAppliedFilters] = useState({ company: '', designation: '', keyPerson: '' });
+  const [showFilters, setShowFilters] = useState(false);
 
   const {
     formData,
@@ -78,6 +86,58 @@ const ContactMaster = () => {
   const handleSearch = (query) => {
     setSearchQuery(query);
     setCurrentPage(1);
+  };
+
+  // Apply filters button handler
+  const handleApplyFilters = () => {
+    setAppliedFilters({ company: filterCompany, designation: filterDesignation, keyPerson: filterKeyPerson });
+    setCurrentPage(1);
+  };
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    setFilterCompany('');
+    setFilterDesignation('');
+    setFilterKeyPerson('');
+    setAppliedFilters({ company: '', designation: '', keyPerson: '' });
+    setCurrentPage(1);
+  };
+
+  // Derive unique options dynamically
+  const companyOptions = [...new Set(contacts.map((c) => c.company_name || c.mascom_id).filter(Boolean))].sort();
+  const designationOptions = [...new Set(contacts.map((c) => c.designation).filter(Boolean))].sort();
+
+  // Apply filters on top of search-fetched contacts
+  const filteredContacts = contacts.filter((c) => {
+    const matchCompany = !appliedFilters.company || (c.company_name || c.mascom_id || '').toLowerCase() === appliedFilters.company.toLowerCase();
+    const matchDesignation = !appliedFilters.designation || (c.designation || '').toLowerCase() === appliedFilters.designation.toLowerCase();
+    const matchKeyPerson = !appliedFilters.keyPerson || (c.key_person || '') === appliedFilters.keyPerson;
+    return matchCompany && matchDesignation && matchKeyPerson;
+  });
+
+  // Excel export
+  const handleExportExcel = () => {
+    const exportData = filteredContacts.map((c) => ({
+      'Contact ID': c.mascon_id,
+      'Company Name': c.company_name || c.mascom_id,
+      'Contact Name': c.contact_name,
+      'Designation': c.designation,
+      'Mobile': c.mobile,
+      'Email': c.email,
+      'Key Person': c.key_person,
+      'Sales User': c.user_name,
+      'Remarks': c.mascon_remarks,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Contacts');
+    ws['!cols'] = [
+      { wch: 14 }, { wch: 28 }, { wch: 22 }, { wch: 22 }, { wch: 16 },
+      { wch: 28 }, { wch: 12 }, { wch: 16 }, { wch: 30 }
+    ];
+    XLSX.writeFile(wb, `ContactMaster_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    showNotification(`Exported ${exportData.length} records to Excel`, 'success');
   };
 
   const predictNextId = () => {
@@ -223,41 +283,33 @@ const ContactMaster = () => {
     showNotification(`Loaded contact ${contact.mascon_id} into form`, 'info');
   };
 
-  // Prev / Next record navigation controls in sub-header
-  const handlePrevRecord = () => {
-    if (contacts.length === 0 || editState !== 'idle') return;
-    const currentIndex = contacts.findIndex((c) => c.mascon_id === formData.mascon_id);
-    if (currentIndex > 0) {
-      handleRowClick(contacts[currentIndex - 1]);
-    }
+  // Sub-header < > now controls PAGE navigation
+  const handlePrevPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
 
-  const handleNextRecord = () => {
-    if (contacts.length === 0 || editState !== 'idle') return;
-    const currentIndex = contacts.findIndex((c) => c.mascon_id === formData.mascon_id);
-    if (currentIndex >= 0 && currentIndex < contacts.length - 1) {
-      handleRowClick(contacts[currentIndex + 1]);
-    }
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
-  const getRecordIndexText = () => {
-    if (!formData.mascon_id || contacts.length === 0) return '0 / 0';
-    const index = contacts.findIndex((c) => c.mascon_id === formData.mascon_id);
-    return index >= 0 ? `${index + 1} / ${contacts.length}` : `0 / ${contacts.length}`;
-  };
+  const getPageText = () => `${currentPage} / ${totalPages}`;
+
+  // Check if any filter is active
+  const hasActiveFilters = appliedFilters.company || appliedFilters.designation || appliedFilters.keyPerson;
 
   // Pagination bounds
-  const itemsPerPage = 5;
-  const totalPages = Math.max(1, Math.ceil(contacts.length / itemsPerPage));
+  const itemsPerPage = 8;
+  const displayContacts = activeTab === 'search' ? filteredContacts : contacts;
+  const totalPages = Math.max(1, Math.ceil(displayContacts.length / itemsPerPage));
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentContacts = contacts.slice(indexOfFirstItem, indexOfLastItem);
+  const currentContacts = displayContacts.slice(indexOfFirstItem, indexOfLastItem);
 
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages);
     }
-  }, [contacts.length, totalPages, currentPage]);
+  }, [displayContacts.length, totalPages, currentPage]);
 
   return (
     <div className="contact-master-page">
@@ -302,17 +354,17 @@ const ContactMaster = () => {
           <button
             type="button"
             className="nav-arrow-btn"
-            onClick={handlePrevRecord}
-            disabled={contacts.length === 0 || editState !== 'idle'}
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
           >
             &lt;
           </button>
-          <span className="index-counter-text">{getRecordIndexText()}</span>
+          <span className="index-counter-text">{getPageText()}</span>
           <button
             type="button"
             className="nav-arrow-btn"
-            onClick={handleNextRecord}
-            disabled={contacts.length === 0 || editState !== 'idle'}
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
           >
             &gt;
           </button>
@@ -358,40 +410,8 @@ const ContactMaster = () => {
                     activeId={formData.mascon_id}
                     onRowDoubleClick={handleRowDoubleClick}
                   />
-                  {contacts.length > 0 && (
-                    <div className="pagination-container">
-                      <div className="pagination-info">
-                        Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, contacts.length)} of {contacts.length} entries
-                      </div>
-                      <div className="pagination-buttons">
-                        <button
-                          type="button"
-                          className="pagination-btn"
-                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                          disabled={currentPage === 1}
-                        >
-                          ◀ Prev
-                        </button>
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                          <button
-                            key={page}
-                            type="button"
-                            className={`pagination-btn page-num-btn ${currentPage === page ? 'active' : ''}`}
-                            onClick={() => setCurrentPage(page)}
-                          >
-                            {page}
-                          </button>
-                        ))}
-                        <button
-                          type="button"
-                          className="pagination-btn"
-                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                          disabled={currentPage === totalPages}
-                        >
-                          Next ▶
-                        </button>
-                      </div>
-                    </div>
+                  {hasActiveFilters && displayContacts.length > 0 && (
+                    <div className="filter-count-info">Showing {displayContacts.length} of {contacts.length} records</div>
                   )}
                 </>
               )}
@@ -399,10 +419,66 @@ const ContactMaster = () => {
           </div>
         ) : (
           <div className="search-layout-panel">
-            <div className="search-header-row">
-              <h3>Search and Double-Click to Edit</h3>
+            {/* Single inline toolbar: search + export + filter toggle */}
+            <div className="search-toolbar-row">
               <SearchBar onSearch={handleSearch} value={searchQuery} />
+              <div className="search-toolbar-actions">
+                <button
+                  type="button"
+                  className="export-excel-btn"
+                  onClick={handleExportExcel}
+                  title="Export to Excel"
+                >
+                  ⬇ Export Excel
+                  {filteredContacts.length > 0 && (
+                    <span className="export-count-badge">{filteredContacts.length}</span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className={`filter-toggle-btn ${showFilters ? 'active' : ''} ${hasActiveFilters ? 'has-active' : ''}`}
+                  onClick={() => setShowFilters((prev) => !prev)}
+                  title="Toggle Filters"
+                >
+                  {hasActiveFilters && <span className="filter-dot-indicator" />}
+                  ▼ Filter
+                </button>
+              </div>
             </div>
+
+            {/* Collapsible filter bar — shown only when showFilters is true */}
+            {showFilters && (
+              <div className="filter-bar-row">
+                <div className="filter-fields-group">
+                  <div className="filter-field">
+                    <label className="filter-label">COMPANY NAME</label>
+                    <select className="filter-select" value={filterCompany} onChange={(e) => setFilterCompany(e.target.value)}>
+                      <option value="">All Companies</option>
+                      {companyOptions.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
+                    </select>
+                  </div>
+                  <div className="filter-field">
+                    <label className="filter-label">DESIGNATION</label>
+                    <select className="filter-select" value={filterDesignation} onChange={(e) => setFilterDesignation(e.target.value)}>
+                      <option value="">All Designations</option>
+                      {designationOptions.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
+                    </select>
+                  </div>
+                  <div className="filter-field">
+                    <label className="filter-label">KEY PERSON</label>
+                    <select className="filter-select" value={filterKeyPerson} onChange={(e) => setFilterKeyPerson(e.target.value)}>
+                      <option value="">All</option>
+                      <option value="Y">Yes (Y)</option>
+                      <option value="N">No (N)</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="filter-action-btns">
+                  <button type="button" className="filter-apply-btn" onClick={handleApplyFilters}>▼ Apply</button>
+                  <button type="button" className="filter-clear-btn" onClick={handleClearFilters} disabled={!filterCompany && !filterDesignation && !filterKeyPerson && !hasActiveFilters}>✕ Clear</button>
+                </div>
+              </div>
+            )}
 
             {isLoading ? (
               <Loading type="skeleton" />
@@ -415,40 +491,8 @@ const ContactMaster = () => {
                   activeId={formData.mascon_id}
                   onRowDoubleClick={handleRowDoubleClick}
                 />
-                {contacts.length > 0 && (
-                  <div className="pagination-container">
-                    <div className="pagination-info">
-                      Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, contacts.length)} of {contacts.length} entries
-                    </div>
-                    <div className="pagination-buttons">
-                      <button
-                        type="button"
-                        className="pagination-btn"
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                      >
-                        ◀ Prev
-                      </button>
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <button
-                          key={page}
-                          type="button"
-                          className={`pagination-btn page-num-btn ${currentPage === page ? 'active' : ''}`}
-                          onClick={() => setCurrentPage(page)}
-                        >
-                          {page}
-                        </button>
-                      ))}
-                      <button
-                        type="button"
-                        className="pagination-btn"
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                      >
-                        Next ▶
-                      </button>
-                    </div>
-                  </div>
+                {hasActiveFilters && filteredContacts.length > 0 && (
+                  <div className="filter-count-info">Showing {filteredContacts.length} of {contacts.length} records (filtered)</div>
                 )}
               </>
             )}
