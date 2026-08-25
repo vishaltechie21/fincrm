@@ -142,14 +142,12 @@ const ContactMaster = () => {
 
   const predictNextId = () => {
     const timestampPrefix = String(Math.floor(Date.now() / 1000)).slice(-3);
-    const prefixPattern = `${timestampPrefix}-`;
-    const samePrefixContacts = contacts.filter((c) => c.mascon_id && c.mascon_id.startsWith(prefixPattern));
     
     let nextSeq = 1;
-    if (samePrefixContacts.length > 0) {
-      const sequences = samePrefixContacts
+    if (contacts.length > 0) {
+      const sequences = contacts
         .map((c) => {
-          const parts = c.mascon_id.split('-');
+          const parts = c.mascon_id ? c.mascon_id.split('-') : [];
           return parts.length === 2 ? parseInt(parts[1], 10) : 0;
         })
         .filter((seq) => !isNaN(seq));

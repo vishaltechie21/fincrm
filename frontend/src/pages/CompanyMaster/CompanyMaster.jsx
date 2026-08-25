@@ -137,14 +137,12 @@ const CompanyMaster = () => {
 
   const predictNextId = () => {
     const timestampPrefix = String(Math.floor(Date.now() / 1000)).slice(-3);
-    const prefixPattern = `${timestampPrefix}-`;
-    const samePrefixCompanies = companies.filter((c) => c.mascom_id && c.mascom_id.startsWith(prefixPattern));
     
     let nextSeq = 1;
-    if (samePrefixCompanies.length > 0) {
-      const sequences = samePrefixCompanies
+    if (companies.length > 0) {
+      const sequences = companies
         .map((c) => {
-          const parts = c.mascom_id.split('-');
+          const parts = c.mascom_id ? c.mascom_id.split('-') : [];
           return parts.length === 2 ? parseInt(parts[1], 10) : 0;
         })
         .filter((seq) => !isNaN(seq));

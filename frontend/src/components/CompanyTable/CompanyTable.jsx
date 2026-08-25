@@ -24,7 +24,6 @@ const CompanyTable = ({ companies, onEdit, onDelete, activeId, onRowDoubleClick 
             <th>ERP Used</th>
             <th>User</th>
             <th>Remarks</th>
-            <th style={{ width: '120px' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -53,24 +52,6 @@ const CompanyTable = ({ companies, onEdit, onDelete, activeId, onRowDoubleClick 
               <td>{company.user_name}</td>
               <td className="company-remarks" title={company.mascom_remarks}>
                 {company.mascom_remarks || '—'}
-              </td>
-              <td className="actions-cell">
-                <div className="actions-wrapper">
-                  <button
-                    type="button"
-                    className="small-btn edit-btn"
-                    onClick={() => onEdit(company)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="small-btn delete-btn"
-                    onClick={() => onDelete(company.mascom_id)}
-                  >
-                    Del
-                  </button>
-                </div>
               </td>
             </tr>
           ))}

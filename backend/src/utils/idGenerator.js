@@ -7,23 +7,17 @@
 async function generateId(connection, tableName, idColumnName) {
   // Take the last 3 digits of the Unix timestamp (seconds) so the prefix changes every second
   const timestampPrefix = String(Math.floor(Date.now() / 1000)).slice(-3);
-  const prefixPattern = `${timestampPrefix}-%`;
 
-  // Fetch the latest generated ID with this prefix, locking the selected row for write operations
+  // Fetch the maximum sequence suffix in the entire table
   const [rows] = await connection.query(
-    `SELECT ${idColumnName} FROM ${tableName} WHERE ${idColumnName} LIKE ? ORDER BY ${idColumnName} DESC LIMIT 1 FOR UPDATE`,
-    [prefixPattern]
+    `SELECT MAX(CAST(SUBSTRING_INDEX(${idColumnName}, '-', -1) AS UNSIGNED)) AS maxSeq FROM ${tableName} FOR UPDATE`
   );
 
   let nextSeq = 1;
-  if (rows.length > 0) {
-    const lastId = rows[0][idColumnName];
-    const parts = lastId.split('-');
-    if (parts.length === 2) {
-      const lastSeq = parseInt(parts[1], 10);
-      if (!isNaN(lastSeq)) {
-        nextSeq = lastSeq + 1;
-      }
+  if (rows.length > 0 && rows[0].maxSeq !== null) {
+    const lastSeq = parseInt(rows[0].maxSeq, 10);
+    if (!isNaN(lastSeq)) {
+      nextSeq = lastSeq + 1;
     }
   }
 

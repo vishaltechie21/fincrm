@@ -24,7 +24,6 @@ const ContactTable = ({ contacts, onEdit, onDelete, activeId, onRowDoubleClick }
             <th className="key-header">Key</th>
             <th>Sales User</th>
             <th>Remarks</th>
-            <th className="actions-header">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -55,24 +54,6 @@ const ContactTable = ({ contacts, onEdit, onDelete, activeId, onRowDoubleClick }
               <td>{contact.user_name}</td>
               <td className="contact-remarks" title={contact.mascon_remarks}>
                 {contact.mascon_remarks || '—'}
-              </td>
-              <td className="actions-cell">
-                <div className="actions-wrapper">
-                  <button
-                    type="button"
-                    className="small-btn edit-btn"
-                    onClick={() => onEdit(contact)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="small-btn delete-btn"
-                    onClick={() => onDelete(contact.mascon_id)}
-                  >
-                    Del
-                  </button>
-                </div>
               </td>
             </tr>
           ))}
