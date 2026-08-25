@@ -1,0 +1,147 @@
+.company-table-container {
+  border: 1px solid var(--border);
+  border-radius: 8px; /* Rounded table corners */
+  overflow: auto;
+  max-height: calc(100vh - 230px); /* Larger height since form is now in a modal */
+  min-height: 250px;
+  background-color: var(--panel);
+}
+
+.company-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.company-table th {
+  position: sticky;
+  top: 0;
+  background-color: var(--panel2);
+  color: var(--text-h);
+  padding: 10px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-transform: none; /* Changed from uppercase to title capitalization */
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--border);
+  z-index: 3;
+}
+
+.company-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+}
+
+.company-table tr:hover td {
+  background-color: rgba(30, 64, 175, 0.05);
+}
+
+.company-table tr.active-row td {
+  background-color: rgba(30, 64, 175, 0.1);
+  color: var(--text-h);
+}
+
+.company-table tr.active-row .company-id {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.company-id {
+  font-family: var(--mono);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.company-name {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.company-remarks {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-source {
+  background-color: var(--accent-bg);
+  color: var(--accent);
+  border: 1px solid var(--accent-border);
+}
+
+/* Small Buttons in Table Actions */
+.actions-header {
+  text-align: center;
+}
+
+.actions-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.actions-wrapper {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+}
+
+.small-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.edit-btn {
+  background-color: var(--btn-primary);
+  color: #fff;
+  box-shadow: 0 1px 3px var(--btn-shadow-primary);
+}
+
+.edit-btn:hover {
+  background-color: var(--btn-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px var(--btn-shadow-primary);
+}
+
+.delete-btn {
+  background-color: var(--btn-danger);
+  color: #fff;
+  box-shadow: 0 1px 3px var(--btn-shadow-danger);
+}
+
+.delete-btn:hover {
+  background-color: var(--btn-danger-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px var(--btn-shadow-danger);
+}
+
+/* Empty State */
+.table-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  background-color: var(--panel);
+}

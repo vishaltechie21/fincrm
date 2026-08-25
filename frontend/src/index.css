@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+
+:root {
+  /* HSL Color Palette - High Contrast Elderly-Friendly Light Theme */
+  --bg: #f4f6fa;     /* Grayish-blue background for layout content */
+  --panel: #ffffff;
+  --panel2: #f1f5f9;
+  --border: #cbd5e1; /* Clear visible border color */
+  --text: #334155;   /* Darker text for high contrast readability */
+  --text-h: #0f172a; /* Extremely dark text for headings */
+  --accent: #2b76e8; /* Classic Deep Navy Blue for primary focus */
+  --accent-bg: rgba(43, 118, 232, 0.08);
+  --accent-border: rgba(43, 118, 232, 0.4);
+  --green: #166534;  /* High contrast deep green */
+  --red: #991b1b;    /* High contrast deep red */
+  --yellow: #9a3412; /* High contrast deep amber */
+  --muted: #475569;  /* Legible slate gray for labels and secondary text */
+  
+  /* Custom Navbar & Sidebar Color Scheme */
+  --header-bg: #0c1938;      /* Deep navy background for header */
+  --sidebar-bg: #081026;     /* Dark navy background for sidebar */
+  --nav-active-bg: #2b76e8;  /* Solid bright blue active item badge */
+  --nav-active-text: #ffffff;
+  
+  /* Vibrant Button Theme Colors (Elderly-Friendly Bright Shades) */
+  --btn-success: #10b981;        /* Vibrant Emerald Green */
+  --btn-success-hover: #059669;
+  --btn-primary: #3b82f6;        /* Vibrant Royal Blue */
+  --btn-primary-hover: #2563eb;
+  --btn-danger: #ef4444;         /* Vibrant Red */
+  --btn-danger-hover: #dc2626;
+  --btn-shadow-success: rgba(16, 185, 129, 0.25);
+  --btn-shadow-primary: rgba(59, 130, 246, 0.25);
+  --btn-shadow-danger: rgba(239, 68, 68, 0.25);
+
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+:root.theme-bw {
+  /* High Contrast Black & White Theme */
+  --bg: #000000;          /* Jet Black background */
+  --panel: #0d0d0d;       /* Very dark panel */
+  --panel2: #1e1e1e;      /* Contrast panel */
+  --border: #444444;      /* Strong visible border */
+  --text: #e2e8f0;        /* Highly readable light text */
+  --text-h: #ffffff;      /* Pure white for headings */
+  --accent: #3b82f6;      /* Bright blue primary accent */
+  --accent-bg: rgba(59, 130, 246, 0.15);
+  --accent-border: rgba(59, 130, 246, 0.6);
+  --green: #22c55e;       /* Vibrant green */
+  --red: #ef4444;         /* Vibrant red */
+  --yellow: #f59e0b;      /* Vibrant yellow */
+  --muted: #a1a1aa;       /* Readable zinc gray */
+  
+
+
+  --btn-success: #10b981;        /* Vibrant Emerald Green */
+  --btn-success-hover: #059669;
+  --btn-primary: #3b82f6;        /* Vibrant Royal Blue */
+  --btn-primary-hover: #2563eb;
+  --btn-danger: #ef4444;         /* Vibrant Red */
+  --btn-danger-hover: #dc2626;
+  --btn-shadow-success: rgba(16, 185, 129, 0.4);
+  --btn-shadow-primary: rgba(59, 130, 246, 0.4);
+  --btn-shadow-danger: rgba(239, 68, 68, 0.4);
+
+  --shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.02), 0 2px 4px -2px rgba(255, 255, 255, 0.02);
+}
+
+:root {
+  /* Fonts */
+  --sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --heading: 'Inter', var(--sans);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  font-family: var(--sans);
+  font-size: 13.5px; /* Compact base font size matching screenshot layout */
+  line-height: 1.55;
+  color: var(--text);
+  background-color: var(--bg);
+  min-height: 100vh;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Scrollbars styling for a polished look */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
