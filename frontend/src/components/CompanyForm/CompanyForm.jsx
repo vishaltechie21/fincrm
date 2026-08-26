@@ -169,19 +169,19 @@ const CompanyForm = ({
       </div>
 
       <div className="form-actions">
-       <button
-    type="button"
-    className="btn btn-secondary"
-    onClick={onRefresh}
-    disabled={!isIdle}
-    style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }} // Keeps icon and text aligned
-  >
-    <RefreshCw 
-      size={16} 
-      className={!isIdle ? 'spin-animation' : ''} // Optional: spins icon when not idle
-    />
-    Refresh
-  </button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={onRefresh}
+          disabled={!isIdle}
+        >
+          <RefreshCw
+            size={14} 
+            className={!isIdle ? 'spin-animation' : ''}
+            style={{ marginRight: '6px' }}
+          />
+          Refresh
+        </button>
         <button
           type="button"
           className="btn btn-success"
@@ -190,29 +190,12 @@ const CompanyForm = ({
         >
           <Plus size={14} style={{ marginRight: '6px' }} /> Add
         </button>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={onModify}
-          disabled={!isIdle}
-        >
-          <Edit size={14} style={{ marginRight: '6px' }} /> Modify
-        </button>
-        <button
-          type="button"
-          className="btn btn-danger"
-          onClick={onDelete}
-          disabled={!isIdle || !formData.mascom_id}
-        >
-          <Trash2 size={14} style={{ marginRight: '6px' }} /> Delete
-        </button>
         {!isIdle && (
           <>
             <button
               type="button"
               className="btn btn-success"
               onClick={onSave}
-              style={{ marginLeft: 'auto' }}
             >
               <Save size={14} style={{ marginRight: '6px' }} /> Save
             </button>
@@ -225,6 +208,22 @@ const CompanyForm = ({
             </button>
           </>
         )}
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={onModify}
+          disabled={!isIdle || !formData.mascom_id}
+        >
+          <Edit size={14} style={{ marginRight: '6px' }} /> Modify
+        </button>
+        <button
+          type="button"
+          className="btn btn-danger"
+          onClick={onDelete}
+          disabled={!isIdle || !formData.mascom_id}
+        >
+          <Trash2 size={14} style={{ marginRight: '6px' }} /> Delete
+        </button>
       </div>
     </form>
   );

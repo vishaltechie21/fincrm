@@ -1,5 +1,6 @@
 .contact-table-container {
-  border: none;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
   border-radius: 0;
   overflow: auto;
   flex: 1;

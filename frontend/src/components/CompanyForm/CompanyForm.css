@@ -196,7 +196,7 @@
   color: var(--text-h);
   -webkit-text-fill-color: var(--text-h);
   cursor: not-allowed;
-  border-style: dashed;
+  border-style: solid;
   opacity: 1;
 }
 
