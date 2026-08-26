@@ -31,7 +31,8 @@ const CompanyTable = ({ companies, onEdit, activeId, onRowDoubleClick, onLoadMor
             <th>State</th>
             <th>Source</th>
             <th>ERP Used</th>
-            <th>User</th>
+            <th>Key Person</th>
+            <th>Stage</th>
             <th>Remarks</th>
           </tr>
         </thead>
@@ -58,7 +59,8 @@ const CompanyTable = ({ companies, onEdit, activeId, onRowDoubleClick, onLoadMor
                 <span className="badge badge-source">{company.data_source}</span>
               </td>
               <td>{company.erp_using || '—'}</td>
-              <td>{company.user_name}</td>
+              <td>{company.user_name || '—'}</td>
+              <td>{company.stage || '—'}</td>
               <td className="company-remarks" title={company.mascom_remarks}>
                 {company.mascom_remarks || '—'}
               </td>

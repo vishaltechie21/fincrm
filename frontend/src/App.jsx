@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { LayoutDashboard, Bell, Building2, User, Inbox, Monitor, Calendar, Search, RotateCw, Volume2, CheckCheck, Trash2, Sun, Moon, Info } from 'lucide-react';
 import CompanyMaster from './pages/CompanyMaster/CompanyMaster';
 import ContactMaster from './pages/ContactMaster/ContactMaster';
+import CompanySearch from './pages/CompanySearch/CompanySearch';
+import ContactSearch from './pages/ContactSearch/ContactSearch';
 import './App.css';
 
 const menuGroups = [
@@ -16,8 +18,10 @@ const menuGroups = [
   {
     title: 'CRM Master',
     items: [
-      { id: 'company', icon: <Building2 size={14} />, label: 'Company Master' },
-      { id: 'contact', icon: <User size={14} />, label: 'Contact Master' }
+      { id: 'company', icon: <Building2 size={14} />, label: 'Company Master Entry' },
+      { id: 'contact', icon: <User size={14} />, label: 'Contact Master Entry' },
+      { id: 'company-search', icon: <Search size={14} />, label: 'Company Search' },
+      { id: 'contact-search', icon: <Search size={14} />, label: 'Contact Search' }
     ]
   },
   {
@@ -47,17 +51,23 @@ function App() {
   const getInitialTabs = () => {
     const path = window.location.pathname;
     if (path === '/contact' || path === '/contact-master') {
-      return [{ id: 'contact', label: 'Contact Master', icon: <User size={12} /> }];
+      return [{ id: 'contact', label: 'Contact Master Entry', icon: <User size={12} /> }];
     }
     if (path === '/' || path === '/company' || path === '/company-master') {
-      return [{ id: 'company', label: 'Company Master', icon: <Building2 size={12} /> }];
+      return [{ id: 'company', label: 'Company Master Entry', icon: <Building2 size={12} /> }];
+    }
+    if (path === '/company-search') {
+      return [{ id: 'company-search', label: 'Company Search', icon: <Search size={12} /> }];
+    }
+    if (path === '/contact-search') {
+      return [{ id: 'contact-search', label: 'Contact Search', icon: <Search size={12} /> }];
     }
     const cleanId = path.replace(/^\//, '');
     const found = allModules.find(m => m.id === cleanId);
     if (found) {
       return [{ id: found.id, label: found.label, icon: found.icon }];
     }
-    return [{ id: 'company', label: 'Company Master', icon: <Building2 size={12} /> }];
+    return [{ id: 'company', label: 'Company Master Entry', icon: <Building2 size={12} /> }];
   };
 
   const [openTabs, setOpenTabs] = useState(getInitialTabs);
@@ -100,6 +110,8 @@ function App() {
   const getActiveMenu = () => {
     if (pathname === '/contact' || pathname === '/contact-master') return 'contact';
     if (pathname === '/company' || pathname === '/company-master' || pathname === '/') return 'company';
+    if (pathname === '/company-search') return 'company-search';
+    if (pathname === '/contact-search') return 'contact-search';
     return pathname.replace(/^\//, '') || 'company';
   };
 
@@ -160,6 +172,10 @@ function App() {
       navigateTo('/company');
     } else if (menuId === 'contact') {
       navigateTo('/contact');
+    } else if (menuId === 'company-search') {
+      navigateTo('/company-search');
+    } else if (menuId === 'contact-search') {
+      navigateTo('/contact-search');
     } else {
       navigateTo(`/${menuId}`);
     }
@@ -418,6 +434,10 @@ function App() {
               <CompanyMaster />
             ) : activeMenu === 'contact' ? (
               <ContactMaster />
+            ) : activeMenu === 'company-search' ? (
+              <CompanySearch />
+            ) : activeMenu === 'contact-search' ? (
+              <ContactSearch />
             ) : (
               <div className="dummy-page">
                 <div className="dummy-card">

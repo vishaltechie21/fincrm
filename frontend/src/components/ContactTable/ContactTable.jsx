@@ -31,7 +31,8 @@ const ContactTable = ({ contacts, onEdit, activeId, onRowDoubleClick, onLoadMore
             <th>Mobile</th>
             <th>Email</th>
             <th className="key-header">Key</th>
-            <th>Sales User</th>
+            <th>Key Person</th>
+            <th>Stage</th>
             <th>Remarks</th>
           </tr>
         </thead>
@@ -60,7 +61,8 @@ const ContactTable = ({ contacts, onEdit, activeId, onRowDoubleClick, onLoadMore
                   {contact.key_person}
                 </span>
               </td>
-              <td>{contact.user_name}</td>
+              <td>{contact.user_name || '—'}</td>
+              <td>{contact.stage || '—'}</td>
               <td className="contact-remarks" title={contact.mascon_remarks}>
                 {contact.mascon_remarks || '—'}
               </td>

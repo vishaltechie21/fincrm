@@ -1,10 +1,8 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useCallback } from 'react';
-import { FileText, Search, User, FileSpreadsheet, Download } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import { User } from 'lucide-react';
 import ContactForm from '../../components/ContactForm/ContactForm';
 import ContactTable from '../../components/ContactTable/ContactTable';
-import SearchBar from '../../components/SearchBar/SearchBar';
 import Notification from '../../components/Notification/Notification';
 import Loading from '../../components/Loading/Loading';
 import { useContactForm } from '../../hooks/useContactForm';
@@ -17,7 +15,6 @@ import './ContactMaster.css';
 const ContactMaster = () => {
   const [contacts, setContacts] = useState([]);
   const [companies, setCompanies] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: 'success' });
   
@@ -31,15 +28,9 @@ const ContactMaster = () => {
   };
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, id: null });
 
-  // Tab and Edit states
-  const [activeTab, setActiveTab] = useState('entry'); // 'entry' or 'search'
+  // Edit states
   const [editState, setEditState] = useState('idle'); // 'idle', 'adding', 'modifying'
   const [revertData, setRevertData] = useState(null);
-
-  // Filter states
-  const [filterCompany, setFilterCompany] = useState('');
-  const [filterDesignation, setFilterDesignation] = useState('');
-  const [filterKeyPerson, setFilterKeyPerson] = useState('');
 
   const {
     formData,
@@ -54,10 +45,10 @@ const ContactMaster = () => {
   } = useContactForm();
 
   // Fetch contacts from backend
-  const fetchContacts = useCallback(async (search = '') => {
+  const fetchContacts = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await contactService.getContacts(search);
+      const res = await contactService.getContacts('');
       if (res.success) {
         setContacts(res.data);
       } else {
@@ -84,59 +75,9 @@ const ContactMaster = () => {
   }, []);
 
   useEffect(() => {
-    fetchContacts(searchQuery);
+    fetchContacts();
     fetchCompaniesList();
-  }, [searchQuery, fetchContacts, fetchCompaniesList]);
-
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
-  };
-
-  // Clear all filters
-  const handleClearFilters = () => {
-    setFilterCompany('');
-    setFilterDesignation('');
-    setFilterKeyPerson('');
-    setCurrentPage(1);
-  };
-
-  // Derive unique options dynamically
-  const companyOptions = [...new Set(contacts.map((c) => c.company_name || c.mascom_id).filter(Boolean))].sort();
-  const designationOptions = [...new Set(contacts.map((c) => c.designation).filter(Boolean))].sort();
-
-  // Apply filters on top of search-fetched contacts
-  const filteredContacts = contacts.filter((c) => {
-    const matchCompany = !filterCompany || (c.company_name || c.mascom_id || '').toLowerCase() === filterCompany.toLowerCase();
-    const matchDesignation = !filterDesignation || (c.designation || '').toLowerCase() === filterDesignation.toLowerCase();
-    const matchKeyPerson = !filterKeyPerson || (c.key_person || '') === filterKeyPerson;
-    return matchCompany && matchDesignation && matchKeyPerson;
-  });
-
-  // Excel export
-  const handleExportExcel = () => {
-    const exportData = filteredContacts.map((c) => ({
-      'Contact ID': c.mascon_id,
-      'Company Name': c.company_name || c.mascom_id,
-      'Contact Name': c.contact_name,
-      'Designation': c.designation,
-      'Mobile': c.mobile,
-      'Email': c.email,
-      'Key Person': c.key_person,
-      'Sales User': c.user_name,
-      'Remarks': c.mascon_remarks,
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Contacts');
-    ws['!cols'] = [
-      { wch: 14 }, { wch: 28 }, { wch: 22 }, { wch: 22 }, { wch: 16 },
-      { wch: 28 }, { wch: 12 }, { wch: 16 }, { wch: 30 }
-    ];
-    XLSX.writeFile(wb, `ContactMaster_${new Date().toISOString().slice(0, 10)}.xlsx`);
-    showNotification(`Exported ${exportData.length} records to Excel`, 'success');
-  };
+  }, [fetchContacts, fetchCompaniesList]);
 
   const predictNextId = () => {
     const timestampPrefix = String(Math.floor(Date.now() / 1000)).slice(-3);
@@ -164,7 +105,7 @@ const ContactMaster = () => {
     resetForm();
     setErrors({});
     setEditState('idle');
-    fetchContacts(searchQuery);
+    fetchContacts();
     fetchCompaniesList();
     showNotification('Form refreshed', 'info');
   };
@@ -220,7 +161,7 @@ const ContactMaster = () => {
         if (editState === 'adding') {
           setCurrentPage(1);
         }
-        fetchContacts(searchQuery);
+        fetchContacts();
       } else {
         showNotification(res.message || 'Failed to save contact', 'error');
         if (res.errors) setErrors(res.errors);
@@ -253,7 +194,7 @@ const ContactMaster = () => {
           resetForm();
         }
         setEditState('idle');
-        fetchContacts(searchQuery);
+        fetchContacts();
       } else {
         showNotification(res.message || 'Failed to delete contact', 'error');
       }
@@ -280,7 +221,6 @@ const ContactMaster = () => {
   const handleRowDoubleClick = (contact) => {
     loadContact(contact);
     setErrors({});
-    setActiveTab('entry');
     showNotification(`Loaded contact ${contact.mascon_id} into form`, 'info');
   };
 
@@ -314,11 +254,11 @@ const ContactMaster = () => {
 
   const handleImportComplete = (count) => {
     showNotification(`Successfully imported ${count} contacts!`, 'success');
-    fetchContacts(searchQuery);
+    fetchContacts();
     setIsImportOpen(false);
   };
 
-  const displayContacts = activeTab === 'search' ? filteredContacts : contacts;
+  const displayContacts = contacts;
   const totalPages = Math.max(1, Math.ceil(displayContacts.length / itemsPerPage));
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -334,39 +274,9 @@ const ContactMaster = () => {
     <div className="contact-master-page">
       {/* Sub-header navigation row */}
       <div className="master-sub-header">
-        <div className="sub-header-left">
-          <button
-            type="button"
-            className={`sub-tab-btn ${activeTab === 'entry' ? 'active' : ''}`}
-            onClick={() => {
-              if (editState !== 'idle') {
-                showNotification('Please save or cancel your current edit first.', 'warning');
-                return;
-              }
-              setActiveTab('entry');
-            }}
-          >
-            <FileText size={14} /> Entry
-          </button>
-          <span className="sub-tab-separator">|</span>
-          <button
-            type="button"
-            className={`sub-tab-btn ${activeTab === 'search' ? 'active' : ''}`}
-            onClick={() => {
-              if (editState !== 'idle') {
-                showNotification('Please save or cancel your current edit first.', 'warning');
-                return;
-              }
-              setActiveTab('search');
-            }}
-          >
-            <Search size={14} /> Search
-          </button>
-        </div>
-
         <div className="sub-header-center">
           <span className="sub-title-icon"><User size={16} /></span>
-          <span className="sub-title-text">Contact Master</span>
+          <span className="sub-title-text">Contact Master Entry</span>
         </div>
 
         <div className="sub-header-right">
@@ -375,154 +285,32 @@ const ContactMaster = () => {
       </div>
 
       <div className="master-body-container">
-        {activeTab === 'entry' ? (
-          <div className="entry-layout-split">
-            {/* Top Form Panel */}
-            <div className="form-panel">
-              <ContactForm
-                formData={formData}
-                errors={errors}
-                companies={companies}
-                handleChange={handleChange}
-                handleSelectChange={handleSelectChange}
-                onNew={handleNew}
-                onSave={handleSave}
-                onUpdate={handleSave}
-                onDelete={() => handleDelete()}
-                onClear={handleRefresh}
-                editState={editState}
-                onModify={handleModifyMode}
-                onCancel={handleCancelEdit}
-                onRefresh={handleRefresh}
-              />
-            </div>
-
-            {/* Bottom Lower Table view */}
-            <div className="lower-table-panel">
-              <div className="panel-title">
-                <h3>Registered Contacts List</h3>
-              </div>
-              {isLoading ? (
-                <Loading type="skeleton" />
-              ) : (
-                <>
-                  <ContactTable
-                    contacts={currentContacts}
-                    onEdit={handleRowClick}
-                    onDelete={handleDelete}
-                    activeId={formData.mascon_id}
-                    onRowDoubleClick={handleRowDoubleClick}
-                  />
-                  <div className="table-pagination-bar">
-                    <div className="pagination-left">
-                      <span className="pagination-rows-label">Rows</span>
-                      <select
-                        className="pagination-rows-select"
-                        value={itemsPerPage}
-                        onChange={(e) => {
-                          setItemsPerPage(Number(e.target.value));
-                          setCurrentPage(1);
-                        }}
-                      >
-                        <option value={15}>15</option>
-                        <option value={50}>50</option>
-                        <option value={100}>100</option>
-                      </select>
-                      <span className="pagination-info-text" style={{ marginLeft: '8px' }}>
-                        {displayContacts.length > 0
-                          ? `${indexOfFirstItem + 1}-${Math.min(indexOfLastItem, displayContacts.length)} of ${displayContacts.length}`
-                          : '0-0 of 0'}
-                      </span>
-                    </div>
-                    
-                    <div className="pagination-center">
-                      [↑↓] navigate  [Space] select  [Alt+D] delete  [Esc] clear
-                    </div>
-                    
-                    <div className="pagination-right">
-                      <button
-                        type="button"
-                        className="pagination-arrow-btn"
-                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                      >
-                        &lt;
-                      </button>
-                      <span className="pagination-info-text">{currentPage} / {totalPages}</span>
-                      <button
-                        type="button"
-                        className="pagination-arrow-btn"
-                        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                      >
-                        &gt;
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
+        <div className="entry-layout-split">
+          {/* Top Form Panel */}
+          <div className="form-panel">
+            <ContactForm
+              formData={formData}
+              errors={errors}
+              companies={companies}
+              handleChange={handleChange}
+              handleSelectChange={handleSelectChange}
+              onNew={handleNew}
+              onSave={handleSave}
+              onUpdate={handleSave}
+              onDelete={() => handleDelete()}
+              onClear={handleRefresh}
+              editState={editState}
+              onModify={handleModifyMode}
+              onCancel={handleCancelEdit}
+              onRefresh={handleRefresh}
+            />
           </div>
-        ) : (
-          <div className="search-layout-panel">
-            {/* Single inline toolbar: search + filters inline + export + import */}
-            <div className="search-toolbar-row">
-              <SearchBar onSearch={handleSearch} value={searchQuery} />
-              
-              {/* Inline Filters */}
-              <div className="search-inline-filters">
-                <div className="search-inline-filter-field">
-                  <select value={filterCompany} onChange={(e) => { setFilterCompany(e.target.value); setCurrentPage(1); }}>
-                    <option value="">Company Name</option>
-                    {companyOptions.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
-                  </select>
-                </div>
-                <div className="search-inline-filter-field">
-                  <select value={filterDesignation} onChange={(e) => { setFilterDesignation(e.target.value); setCurrentPage(1); }}>
-                    <option value="">Designation</option>
-                    {designationOptions.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
-                  </select>
-                </div>
-                <div className="search-inline-filter-field">
-                  <select value={filterKeyPerson} onChange={(e) => { setFilterKeyPerson(e.target.value); setCurrentPage(1); }}>
-                    <option value="">Key Person</option>
-                    <option value="Y">Yes (Y)</option>
-                    <option value="N">No (N)</option>
-                  </select>
-                </div>
-              </div>
 
-              <div className="search-toolbar-actions">
-                <button
-                  type="button"
-                  className="total-records-btn"
-                  onClick={handleClearFilters}
-                  title="Click to reset filters and view all records"
-                >
-                  Total Records: {filteredContacts.length}
-                </button>
-                <button
-                  type="button"
-                  className="export-excel-btn"
-                  onClick={handleExportExcel}
-                  title="Export to Excel"
-                >
-                  <FileSpreadsheet size={14} style={{ marginRight: '6px' }} /> Export Excel
-                  {filteredContacts.length > 0 && (
-                    <span className="export-count-badge">{filteredContacts.length}</span>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  className="import-excel-btn"
-                  onClick={() => setIsImportOpen(true)}
-                  title="Import from Excel"
-                >
-                  <Download size={14} style={{ marginRight: '6px' }} /> Import Excel
-                </button>
-              </div>
+          {/* Bottom Lower Table view */}
+          <div className="lower-table-panel">
+            <div className="panel-title">
+              <h3>Registered Contacts List</h3>
             </div>
-
             {isLoading ? (
               <Loading type="skeleton" />
             ) : (
@@ -583,7 +371,7 @@ const ContactMaster = () => {
               </>
             )}
           </div>
-        )}
+        </div>
       </div>
 
       <Notification

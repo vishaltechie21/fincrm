@@ -1,10 +1,8 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useCallback } from 'react';
-import { FileText, Search, Building2, FileSpreadsheet, Download } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import { Building2 } from 'lucide-react';
 import CompanyForm from '../../components/CompanyForm/CompanyForm';
 import CompanyTable from '../../components/CompanyTable/CompanyTable';
-import SearchBar from '../../components/SearchBar/SearchBar';
 import Notification from '../../components/Notification/Notification';
 import Loading from '../../components/Loading/Loading';
 import { useCompanyForm } from '../../hooks/useCompanyForm';
@@ -13,20 +11,8 @@ import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import ImportModal from '../../components/ImportModal/ImportModal';
 import './CompanyMaster.css';
 
-const INDUSTRY_OPTIONS = [
-  'Nutraceuticals', 'Chemical Manufacturing', 'Pharma Marketing', 'Medical Devices',
-  'IT Services', 'Retail', 'FMCG', 'Automobile', 'Textile', 'Education',
-  'Finance', 'Real Estate', 'Healthcare', 'Logistics', 'Other',
-];
-
-const ENQUIRY_SOURCE_OPTIONS = [
-  'Existing Client', 'Cold Call', 'WhatsApp', 'Bulk Mail', 'Reference',
-  'Website', 'Social Media', 'Exhibition', 'Advertisement', 'Other',
-];
-
 const CompanyMaster = () => {
   const [companies, setCompanies] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: 'success' });
   
@@ -40,15 +26,9 @@ const CompanyMaster = () => {
   };
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, id: null });
 
-  // Tab and Edit mode states
-  const [activeTab, setActiveTab] = useState('entry'); // 'entry' or 'search'
+  // Edit mode states
   const [editState, setEditState] = useState('idle'); // 'idle', 'adding', 'modifying'
   const [revertData, setRevertData] = useState(null);
-
-  // Filter state
-  const [filterIndustry, setFilterIndustry] = useState('');
-  const [filterState, setFilterState] = useState('');
-  const [filterSource, setFilterSource] = useState('');
 
   const {
     formData,
@@ -63,10 +43,10 @@ const CompanyMaster = () => {
   } = useCompanyForm();
 
   // Fetch companies list from backend
-  const fetchCompanies = useCallback(async (search = '') => {
+  const fetchCompanies = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await companyService.getCompanies(search);
+      const res = await companyService.getCompanies('');
       if (res.success) {
         setCompanies(res.data);
       } else {
@@ -81,57 +61,8 @@ const CompanyMaster = () => {
   }, []);
 
   useEffect(() => {
-    fetchCompanies(searchQuery);
-  }, [searchQuery, fetchCompanies]);
-
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
-  };
-
-  // Clear all filters
-  const handleClearFilters = () => {
-    setFilterIndustry('');
-    setFilterState('');
-    setFilterSource('');
-    setCurrentPage(1);
-  };
-
-  // Derive unique state list from loaded companies
-  const stateOptions = [...new Set(companies.map((c) => c.state).filter(Boolean))].sort();
-
-  // Apply client-side filter on top of search-fetched companies
-  const filteredCompanies = companies.filter((c) => {
-    const matchIndustry = !filterIndustry || (c.industry_type || '').toLowerCase() === filterIndustry.toLowerCase();
-    const matchState = !filterState || (c.state || '').toLowerCase() === filterState.toLowerCase();
-    const matchSource = !filterSource || (c.data_source || '').toLowerCase() === filterSource.toLowerCase();
-    return matchIndustry && matchState && matchSource;
-  });
-
-  // Excel export
-  const handleExportExcel = () => {
-    const exportData = filteredCompanies.map((c) => ({
-      'Company ID': c.mascom_id,
-      'Company Name': c.company_name,
-      'Industry Type': c.industry_type,
-      'City': c.city,
-      'State': c.state,
-      'Enquiry/Data Source': c.data_source,
-      'ERP Used': c.erp_used,
-      'User Name': c.user_name,
-      'Remarks': c.mascom_remarks,
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Companies');
-    ws['!cols'] = [
-      { wch: 14 }, { wch: 28 }, { wch: 22 }, { wch: 14 }, { wch: 14 },
-      { wch: 22 }, { wch: 14 }, { wch: 16 }, { wch: 30 },
-    ];
-    XLSX.writeFile(wb, `CompanyMaster_${new Date().toISOString().slice(0, 10)}.xlsx`);
-    showNotification(`Exported ${exportData.length} records to Excel`, 'success');
-  };
+    fetchCompanies();
+  }, [fetchCompanies]);
 
   const predictNextId = () => {
     const timestampPrefix = String(Math.floor(Date.now() / 1000)).slice(-3);
@@ -159,7 +90,7 @@ const CompanyMaster = () => {
     resetForm();
     setErrors({});
     setEditState('idle');
-    fetchCompanies(searchQuery);
+    fetchCompanies();
     showNotification('Form refreshed', 'info');
   };
 
@@ -214,7 +145,7 @@ const CompanyMaster = () => {
         if (editState === 'adding') {
           setCurrentPage(1);
         }
-        fetchCompanies(searchQuery);
+        fetchCompanies();
       } else {
         showNotification(res.message || 'Failed to save company', 'error');
         if (res.errors) setErrors(res.errors);
@@ -247,7 +178,7 @@ const CompanyMaster = () => {
           resetForm();
         }
         setEditState('idle');
-        fetchCompanies(searchQuery);
+        fetchCompanies();
       } else {
         showNotification(res.message || 'Failed to delete company', 'error');
       }
@@ -275,7 +206,6 @@ const CompanyMaster = () => {
   const handleRowDoubleClick = (company) => {
     loadCompany(company);
     setErrors({});
-    setActiveTab('entry');
     showNotification(`Loaded company ${company.mascom_id} into form`, 'info');
   };
 
@@ -309,11 +239,11 @@ const CompanyMaster = () => {
 
   const handleImportComplete = (count) => {
     showNotification(`Successfully imported ${count} companies!`, 'success');
-    fetchCompanies(searchQuery);
+    fetchCompanies();
     setIsImportOpen(false);
   };
 
-  const displayCompanies = activeTab === 'search' ? filteredCompanies : companies;
+  const displayCompanies = companies;
   const totalPages = Math.max(1, Math.ceil(displayCompanies.length / itemsPerPage));
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -330,7 +260,7 @@ const CompanyMaster = () => {
     <div className="company-master-page">
       {/* Sub-header navigation row */}
       <div className="master-sub-header">
-        <div className="sub-header-left">
+        {/* <div className="sub-header-left">
           <button
             type="button"
             className={`sub-tab-btn ${activeTab === 'entry' ? 'active' : ''}`}
@@ -358,11 +288,11 @@ const CompanyMaster = () => {
           >
             <Search size={14} /> Search
           </button>
-        </div>
+        </div> */}
 
         <div className="sub-header-center">
           <span className="sub-title-icon"><Building2 size={16} /></span>
-          <span className="sub-title-text">Company Master</span>
+          <span className="sub-title-text">Company Master Entry</span>
         </div>
 
         <div className="sub-header-right">
@@ -371,152 +301,31 @@ const CompanyMaster = () => {
       </div>
 
       <div className="master-body-container">
-        {activeTab === 'entry' ? (
-          <div className="entry-layout-split">
-            {/* Top Form Panel */}
-            <div className="form-panel">
-              <CompanyForm
-                formData={formData}
-                errors={errors}
-                handleChange={handleChange}
-                handleSelectChange={handleSelectChange}
-                onNew={handleNew}
-                onSave={handleSave}
-                onUpdate={handleSave}
-                onDelete={() => handleDelete()}
-                onClear={handleRefresh}
-                editState={editState}
-                onModify={handleModifyMode}
-                onCancel={handleCancelEdit}
-                onRefresh={handleRefresh}
-              />
-            </div>
-
-            {/* Bottom Lower Table view */}
-            <div className="lower-table-panel">
-              <div className="panel-title">
-                <h3>Registered Companies List</h3>
-              </div>
-              {isLoading ? (
-                <Loading type="skeleton" />
-              ) : (
-                <>
-                  <CompanyTable
-                    companies={currentCompanies}
-                    onEdit={handleRowClick}
-                    onDelete={handleDelete}
-                    activeId={formData.mascom_id}
-                    onRowDoubleClick={handleRowDoubleClick}
-                  />
-                  <div className="table-pagination-bar">
-                    <div className="pagination-left">
-                      <span className="pagination-rows-label">Rows</span>
-                      <select
-                        className="pagination-rows-select"
-                        value={itemsPerPage}
-                        onChange={(e) => {
-                          setItemsPerPage(Number(e.target.value));
-                          setCurrentPage(1);
-                        }}
-                      >
-                        <option value={15}>15</option>
-                        <option value={50}>50</option>
-                        <option value={100}>100</option>
-                      </select>
-                      <span className="pagination-info-text" style={{ marginLeft: '8px' }}>
-                        {displayCompanies.length > 0
-                          ? `${indexOfFirstItem + 1}-${Math.min(indexOfLastItem, displayCompanies.length)} of ${displayCompanies.length}`
-                          : '0-0 of 0'}
-                      </span>
-                    </div>
-                    
-                    <div className="pagination-center">
-                      [↑↓] navigate  [Space] select  [Alt+D] delete  [Esc] clear
-                    </div>
-                    
-                    <div className="pagination-right">
-                      <button
-                        type="button"
-                        className="pagination-arrow-btn"
-                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                      >
-                        &lt;
-                      </button>
-                      <span className="pagination-info-text">{currentPage} / {totalPages}</span>
-                      <button
-                        type="button"
-                        className="pagination-arrow-btn"
-                        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                      >
-                        &gt;
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
+        <div className="entry-layout-split">
+          {/* Top Form Panel */}
+          <div className="form-panel">
+            <CompanyForm
+              formData={formData}
+              errors={errors}
+              handleChange={handleChange}
+              handleSelectChange={handleSelectChange}
+              onNew={handleNew}
+              onSave={handleSave}
+              onUpdate={handleSave}
+              onDelete={() => handleDelete()}
+              onClear={handleRefresh}
+              editState={editState}
+              onModify={handleModifyMode}
+              onCancel={handleCancelEdit}
+              onRefresh={handleRefresh}
+            />
           </div>
-        ) : (
-          <div className="search-layout-panel">
-            {/* Single inline toolbar: search + filters inline + export + import */}
-            <div className="search-toolbar-row">
-              <SearchBar onSearch={handleSearch} value={searchQuery} />
-              
-              {/* Inline Filters */}
-              <div className="search-inline-filters">
-                <div className="search-inline-filter-field">
-                  <select value={filterIndustry} onChange={(e) => { setFilterIndustry(e.target.value); setCurrentPage(1); }}>
-                    <option value="">Industry Type</option>
-                    {INDUSTRY_OPTIONS.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
-                  </select>
-                </div>
-                <div className="search-inline-filter-field">
-                  <select value={filterState} onChange={(e) => { setFilterState(e.target.value); setCurrentPage(1); }}>
-                    <option value="">State</option>
-                    {stateOptions.map((s) => (<option key={s} value={s}>{s}</option>))}
-                  </select>
-                </div>
-                <div className="search-inline-filter-field">
-                  <select value={filterSource} onChange={(e) => { setFilterSource(e.target.value); setCurrentPage(1); }}>
-                    <option value="">Data Source</option>
-                    {ENQUIRY_SOURCE_OPTIONS.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
-                  </select>
-                </div>
-              </div>
 
-              <div className="search-toolbar-actions">
-                <button
-                  type="button"
-                  className="total-records-btn"
-                  onClick={handleClearFilters}
-                  title="Click to reset filters and view all records"
-                >
-                  Total Records: {filteredCompanies.length}
-                </button>
-                <button
-                  type="button"
-                  className="export-excel-btn"
-                  onClick={handleExportExcel}
-                  title="Export to Excel"
-                >
-                  <FileSpreadsheet size={14} style={{ marginRight: '6px' }} /> Export Excel
-                  {filteredCompanies.length > 0 && (
-                    <span className="export-count-badge">{filteredCompanies.length}</span>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  className="import-excel-btn"
-                  onClick={() => setIsImportOpen(true)}
-                  title="Import from Excel"
-                >
-                  <Download size={14} style={{ marginRight: '6px' }} /> Import Excel
-                </button>
-              </div>
+          {/* Bottom Lower Table view */}
+          <div className="lower-table-panel">
+            <div className="panel-title">
+              <h3>Registered Companies List</h3>
             </div>
-
             {isLoading ? (
               <Loading type="skeleton" />
             ) : (
@@ -577,7 +386,7 @@ const CompanyMaster = () => {
               </>
             )}
           </div>
-        )}
+        </div>
       </div>
 
       <Notification
