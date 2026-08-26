@@ -1,7 +1,6 @@
-import React from 'react';
 import './ContactTable.css';
 
-const ContactTable = ({ contacts, onEdit, onDelete, activeId, onRowDoubleClick }) => {
+const ContactTable = ({ contacts, onEdit, activeId, onRowDoubleClick }) => {
   if (!contacts || contacts.length === 0) {
     return (
       <div className="table-empty-state">

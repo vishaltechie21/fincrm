@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect, useCallback } from 'react';
+import { FileText, Search, User, FileSpreadsheet, Filter, Check, X } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import ContactForm from '../../components/ContactForm/ContactForm';
 import ContactTable from '../../components/ContactTable/ContactTable';
@@ -18,6 +20,10 @@ const ContactMaster = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: 'success' });
   const [currentPage, setCurrentPage] = useState(1);
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+  };
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, id: null });
 
   // Tab and Edit states
@@ -78,10 +84,6 @@ const ContactMaster = () => {
     fetchContacts(searchQuery);
     fetchCompaniesList();
   }, [searchQuery, fetchContacts, fetchCompaniesList]);
-
-  const showNotification = (message, type = 'success') => {
-    setNotification({ message, type });
-  };
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -330,7 +332,7 @@ const ContactMaster = () => {
               setActiveTab('entry');
             }}
           >
-            📄 Entry
+            <FileText size={14} /> Entry
           </button>
           <span className="sub-tab-separator">|</span>
           <button
@@ -344,12 +346,12 @@ const ContactMaster = () => {
               setActiveTab('search');
             }}
           >
-            🔍 Search
+            <Search size={14} /> Search
           </button>
         </div>
 
         <div className="sub-header-center">
-          <span className="sub-title-icon">👤</span>
+          <span className="sub-title-icon"><User size={16} /></span>
           <span className="sub-title-text">Contact Master</span>
         </div>
 
@@ -433,7 +435,7 @@ const ContactMaster = () => {
                   onClick={handleExportExcel}
                   title="Export to Excel"
                 >
-                  ⬇ Export Excel
+                  <FileSpreadsheet size={14} style={{ marginRight: '6px' }} /> Export Excel
                   {filteredContacts.length > 0 && (
                     <span className="export-count-badge">{filteredContacts.length}</span>
                   )}
@@ -445,7 +447,7 @@ const ContactMaster = () => {
                   title="Toggle Filters"
                 >
                   {hasActiveFilters && <span className="filter-dot-indicator" />}
-                  ▼ Filter
+                  <Filter size={14} style={{ marginRight: '6px' }} /> Filter
                 </button>
               </div>
             </div>
@@ -478,8 +480,8 @@ const ContactMaster = () => {
                   </div>
                 </div>
                 <div className="filter-action-btns">
-                  <button type="button" className="filter-apply-btn" onClick={handleApplyFilters}>▼ Apply</button>
-                  <button type="button" className="filter-clear-btn" onClick={handleClearFilters} disabled={!filterCompany && !filterDesignation && !filterKeyPerson && !hasActiveFilters}>✕ Clear</button>
+                  <button type="button" className="filter-apply-btn" onClick={handleApplyFilters}><Check size={14} style={{ marginRight: '4px' }} /> Apply</button>
+                  <button type="button" className="filter-clear-btn" onClick={handleClearFilters} disabled={!filterCompany && !filterDesignation && !filterKeyPerson && !hasActiveFilters}><X size={14} style={{ marginRight: '4px' }} /> Clear</button>
                 </div>
               </div>
             )}

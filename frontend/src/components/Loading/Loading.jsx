@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Loading = ({ type = 'spinner', message = 'Loading...' }) => {
   if (type === 'skeleton') {
     return (

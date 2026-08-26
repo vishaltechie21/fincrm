@@ -1,4 +1,4 @@
-import React from 'react';
+import { AlertTriangle } from 'lucide-react';
 import './ConfirmModal.css';
 
 const ConfirmModal = ({ isOpen, title = "Confirm Action", message, onConfirm, onCancel }) => {
@@ -8,7 +8,7 @@ const ConfirmModal = ({ isOpen, title = "Confirm Action", message, onConfirm, on
     <div className="confirm-backdrop" onClick={onCancel}>
       <div className="confirm-container" onClick={(e) => e.stopPropagation()}>
         <div className="confirm-header">
-          <span className="confirm-warn-icon">⚠️</span>
+          <span className="confirm-warn-icon"><AlertTriangle size={20} /></span>
           <h4>{title}</h4>
         </div>
         <div className="confirm-body">

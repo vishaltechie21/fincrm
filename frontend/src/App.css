@@ -155,7 +155,7 @@
   font-size: 8.5px;
   font-weight: 700;
   padding: 1px 4px;
-  border-radius: 8px;
+  border-radius: px;
   border: 1.5px solid var(--header-bg);
 }
 
@@ -268,6 +268,17 @@
 
 .nav-icon {
   font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.65);
+  display: flex;
+  align-items: center;
+}
+
+.nav-item:hover .nav-icon {
+  color: #ffffff;
+}
+
+.nav-item.active .nav-icon {
+  color: var(--nav-active-text);
 }
 
 .nav-item:hover {
@@ -762,46 +773,49 @@
 .sub-header-left {
   display: flex;
   align-items: center;
-  background-color: var(--panel);
+  background-color: var(--panel2);
   border: 1px solid var(--border);
-  border-radius: 0px;
-  padding: 0;
+  border-radius: 10px;
+  padding: 3px;
+  gap: 6px;
 }
 
 .sub-tab-btn {
   background: none;
   border: none;
   color: var(--muted);
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 4px 12px;
-  border-radius: 0px;
+  padding: 6px 14px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.18s ease;
-  height: 26px;
+  height: 28px;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   letter-spacing: 0.2px;
 }
 
 .sub-tab-btn:hover {
-  background-color: rgba(43, 118, 232, 0.1);
+  background-color: rgba(43, 118, 232, 0.05);
   color: var(--accent);
 }
 
 .sub-tab-btn.active {
-  background: linear-gradient(135deg, #2b76e8 0%, #1a56b8 100%);
-  color: #ffffff;
+  background: #ffffff;
+  color: var(--accent);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .sub-tab-separator {
-  color: var(--border);
-  font-size: 11px;
-  user-select: none;
-  pointer-events: none;
-  margin: 0;
-  padding: 0;
+  display: inline-block;
+  width: 1px;
+  height: 14px;
+  background-color: var(--border);
+  margin: 0 2px;
+  text-indent: -9999px;
+  overflow: hidden;
 }
 
 .sub-header-center {
@@ -838,7 +852,7 @@
   background-color: var(--panel);
   border: 1px solid var(--border);
   padding: 3px 10px;
-  border-radius: 20px;
+  border-radius: 8px;
 }
 
 .view-pill-badge::before {

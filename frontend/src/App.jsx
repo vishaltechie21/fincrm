@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect } from 'react';
+import { LayoutDashboard, Bell, Building2, User, Inbox, Monitor, Calendar, Search, RotateCw, Volume2, CheckCheck, Trash2, Sun, Moon, Info } from 'lucide-react';
 import CompanyMaster from './pages/CompanyMaster/CompanyMaster';
 import ContactMaster from './pages/ContactMaster/ContactMaster';
 import './App.css';
@@ -7,23 +9,23 @@ const menuGroups = [
   {
     title: 'Overview',
     items: [
-      { id: 'dashboard', icon: '📊', label: 'Dashboard' },
-      { id: 'notifications', icon: '🔔', label: 'Notifications' }
+      { id: 'dashboard', icon: <LayoutDashboard size={14} />, label: 'Dashboard' },
+      { id: 'notifications', icon: <Bell size={14} />, label: 'Notifications' }
     ]
   },
   {
     title: 'CRM Master',
     items: [
-      { id: 'company', icon: '🏢', label: 'Company Master' },
-      { id: 'contact', icon: '👤', label: 'Contact Master' }
+      { id: 'company', icon: <Building2 size={14} />, label: 'Company Master' },
+      { id: 'contact', icon: <User size={14} />, label: 'Contact Master' }
     ]
   },
   {
     title: 'Sales & Leads',
     items: [
-      { id: 'enquiry', icon: '📥', label: 'Enquiry Register' },
-      { id: 'demo', icon: '🖥️', label: 'Demo Management' },
-      { id: 'followup', icon: '📅', label: 'Follow-up' }
+      { id: 'enquiry', icon: <Inbox size={14} />, label: 'Enquiry Register' },
+      { id: 'demo', icon: <Monitor size={14} />, label: 'Demo Management' },
+      { id: 'followup', icon: <Calendar size={14} />, label: 'Follow-up' }
     ]
   }
 ];
@@ -45,17 +47,17 @@ function App() {
   const getInitialTabs = () => {
     const path = window.location.pathname;
     if (path === '/contact' || path === '/contact-master') {
-      return [{ id: 'contact', label: 'Contact Master', icon: '👤' }];
+      return [{ id: 'contact', label: 'Contact Master', icon: <User size={12} /> }];
     }
     if (path === '/' || path === '/company' || path === '/company-master') {
-      return [{ id: 'company', label: 'Company Master', icon: '💼' }];
+      return [{ id: 'company', label: 'Company Master', icon: <Building2 size={12} /> }];
     }
     const cleanId = path.replace(/^\//, '');
     const found = allModules.find(m => m.id === cleanId);
     if (found) {
       return [{ id: found.id, label: found.label, icon: found.icon }];
     }
-    return [{ id: 'company', label: 'Company Master', icon: '💼' }];
+    return [{ id: 'company', label: 'Company Master', icon: <Building2 size={12} /> }];
   };
 
   const [openTabs, setOpenTabs] = useState(getInitialTabs);
@@ -107,10 +109,13 @@ function App() {
   useEffect(() => {
     const selectedItem = allModules.find(item => item.id === activeMenu);
     if (selectedItem) {
-      const exists = openTabs.some(t => t.id === selectedItem.id);
-      if (!exists) {
-        setOpenTabs(prev => [...prev, { id: selectedItem.id, label: selectedItem.label, icon: selectedItem.icon }]);
-      }
+      setOpenTabs(prev => {
+        const exists = prev.some(t => t.id === selectedItem.id);
+        if (!exists) {
+          return [...prev, { id: selectedItem.id, label: selectedItem.label, icon: selectedItem.icon }];
+        }
+        return prev;
+      });
     }
   }, [activeMenu]);
 
@@ -213,7 +218,7 @@ function App() {
 
         <div className="top-nav-right">
           <div className="top-search-wrapper">
-            <span className="search-icon">🔍</span>
+            <span className="search-icon"><Search size={14} /></span>
             <input
               type="text"
               className="top-search-input"
@@ -252,7 +257,7 @@ function App() {
               onClick={() => setShowNotifications(!showNotifications)}
               title="Notifications"
             >
-              <span className="bell-icon">🔔</span>
+              <span className="bell-icon"><Bell size={16} /></span>
               {notifications.length > 0 && <span className="bell-badge">{notifications.length}</span>}
             </div>
 
@@ -260,19 +265,19 @@ function App() {
               <div className="notifications-dropdown">
                 <div className="notif-header">
                   <div className="notif-header-left">
-                    <span className="notif-header-bell">🔔</span>
+                    <span className="notif-header-bell"><Bell size={14} /></span>
                     <h4>NOTIFICATIONS</h4>
                   </div>
                   <div className="notif-header-actions">
-                    <button type="button" className="notif-action-btn" title="Refresh">🔄</button>
-                    <button type="button" className="notif-action-btn" title="Toggle Sound">🔊</button>
-                    <button type="button" className="notif-action-btn" onClick={handleMarkAllAsDone} title="Mark All as Done">✓✓</button>
-                    <button type="button" className="notif-action-btn" onClick={handleMarkAllAsDone} title="Clear All">🗑️</button>
+                    <button type="button" className="notif-action-btn" title="Refresh"><RotateCw size={13} /></button>
+                    <button type="button" className="notif-action-btn" title="Toggle Sound"><Volume2 size={13} /></button>
+                    <button type="button" className="notif-action-btn" onClick={handleMarkAllAsDone} title="Mark All as Done"><CheckCheck size={13} /></button>
+                    <button type="button" className="notif-action-btn" onClick={handleMarkAllAsDone} title="Clear All"><Trash2 size={13} /></button>
                   </div>
                 </div>
 
                 <div className="notif-search-container">
-                  <span className="notif-search-icon">🔍</span>
+                  <span className="notif-search-icon"><Search size={13} /></span>
                   <input
                     type="text"
                     className="notif-search-input"
@@ -281,7 +286,7 @@ function App() {
                     onChange={(e) => setNotifSearch(e.target.value)}
                   />
                 </div>
-
+ 
                 <div className="notif-filters">
                   {['All', 'Unread', 'System'].map((tag) => (
                     <button
@@ -294,7 +299,7 @@ function App() {
                     </button>
                   ))}
                 </div>
-
+ 
                 <div className="notif-scroll-area">
                   {filteredNotifications.length === 0 ? (
                     <div className="notif-empty-state">
@@ -304,7 +309,7 @@ function App() {
                     filteredNotifications.map((n) => (
                       <div key={n.id} className="notif-item">
                         <div className="notif-item-left">
-                          <span className="notif-info-icon">ⓘ</span>
+                          <span className="notif-info-icon"><Info size={14} /></span>
                         </div>
                         <div className="notif-item-body">
                           <div className="notif-item-title-row">
@@ -333,21 +338,21 @@ function App() {
                     ))
                   )}
                 </div>
-
+ 
                 <div className="notif-footer" onClick={handleMarkAllAsDone}>
                   <span>View all notifications &rarr;</span>
                 </div>
               </div>
             )}
           </div>
-
+ 
           <button
             type="button"
             className="theme-toggle-btn"
             onClick={() => setIsBwTheme((prev) => !prev)}
             title={isBwTheme ? 'Switch to Default Theme' : 'Switch to Contrast B&W Theme'}
           >
-            {isBwTheme ? '☀️' : '🌓'}
+            {isBwTheme ? <Sun size={14} /> : <Moon size={14} />}
           </button>
 
           <div className="top-profile-pill">

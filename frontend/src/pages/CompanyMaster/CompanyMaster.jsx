@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect, useCallback } from 'react';
+import { FileText, Search, Building2, FileSpreadsheet, Filter, Check, X } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import CompanyForm from '../../components/CompanyForm/CompanyForm';
 import CompanyTable from '../../components/CompanyTable/CompanyTable';
@@ -27,6 +29,10 @@ const CompanyMaster = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: 'success' });
   const [currentPage, setCurrentPage] = useState(1);
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+  };
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, id: null });
 
   // Tab and Edit mode states
@@ -74,10 +80,6 @@ const CompanyMaster = () => {
   useEffect(() => {
     fetchCompanies(searchQuery);
   }, [searchQuery, fetchCompanies]);
-
-  const showNotification = (message, type = 'success') => {
-    setNotification({ message, type });
-  };
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -326,7 +328,7 @@ const CompanyMaster = () => {
               setActiveTab('entry');
             }}
           >
-            📄 Entry
+            <FileText size={14} /> Entry
           </button>
           <span className="sub-tab-separator">|</span>
           <button
@@ -340,12 +342,12 @@ const CompanyMaster = () => {
               setActiveTab('search');
             }}
           >
-            🔍 Search
+            <Search size={14} /> Search
           </button>
         </div>
 
         <div className="sub-header-center">
-          <span className="sub-title-icon">🏢</span>
+          <span className="sub-title-icon"><Building2 size={16} /></span>
           <span className="sub-title-text">Company Master</span>
         </div>
 
@@ -428,7 +430,7 @@ const CompanyMaster = () => {
                   onClick={handleExportExcel}
                   title="Export to Excel"
                 >
-                  ⬇ Export Excel
+                  <FileSpreadsheet size={14} style={{ marginRight: '6px' }} /> Export Excel
                   {filteredCompanies.length > 0 && (
                     <span className="export-count-badge">{filteredCompanies.length}</span>
                   )}
@@ -440,7 +442,7 @@ const CompanyMaster = () => {
                   title="Toggle Filters"
                 >
                   {hasActiveFilters && <span className="filter-dot-indicator" />}
-                  ▼ Filter
+                  <Filter size={14} style={{ marginRight: '6px' }} /> Filter
                 </button>
               </div>
             </div>
@@ -472,8 +474,8 @@ const CompanyMaster = () => {
                   </div>
                 </div>
                 <div className="filter-action-btns">
-                  <button type="button" className="filter-apply-btn" onClick={handleApplyFilters}>▼ Apply</button>
-                  <button type="button" className="filter-clear-btn" onClick={handleClearFilters} disabled={!filterIndustry && !filterState && !filterSource && !hasActiveFilters}>✕ Clear</button>
+                  <button type="button" className="filter-apply-btn" onClick={handleApplyFilters}><Check size={14} style={{ marginRight: '4px' }} /> Apply</button>
+                  <button type="button" className="filter-clear-btn" onClick={handleClearFilters} disabled={!filterIndustry && !filterState && !filterSource && !hasActiveFilters}><X size={14} style={{ marginRight: '4px' }} /> Clear</button>
                 </div>
               </div>
             )}

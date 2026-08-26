@@ -1,7 +1,6 @@
-import React from 'react';
 import './CompanyTable.css';
 
-const CompanyTable = ({ companies, onEdit, onDelete, activeId, onRowDoubleClick }) => {
+const CompanyTable = ({ companies, onEdit, activeId, onRowDoubleClick }) => {
   if (!companies || companies.length === 0) {
     return (
       <div className="table-empty-state">

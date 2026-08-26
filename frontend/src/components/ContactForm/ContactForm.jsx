@@ -1,4 +1,4 @@
-import React from 'react';
+import { Plus, Edit, Trash2, Save } from 'lucide-react';
 import FormField from '../FormField';
 import SelectField from '../SelectField';
 import TextareaField from '../TextareaField';
@@ -17,9 +17,7 @@ const ContactForm = ({
   handleSelectChange,
   onNew,
   onSave,
-  onUpdate,
   onDelete,
-  onClear,
   editState = 'idle',
   onModify,
   onCancel,
@@ -184,7 +182,7 @@ const ContactForm = ({
           onClick={onNew}
           disabled={!isIdle}
         >
-          ✚ Add
+          <Plus size={14} style={{ marginRight: '6px' }} /> Add
         </button>
         <button
           type="button"
@@ -192,7 +190,7 @@ const ContactForm = ({
           onClick={onModify}
           disabled={!isIdle}
         >
-          ✎ Modify
+          <Edit size={14} style={{ marginRight: '6px' }} /> Modify
         </button>
         <button
           type="button"
@@ -200,7 +198,7 @@ const ContactForm = ({
           onClick={onDelete}
           disabled={!isIdle || !formData.mascon_id}
         >
-          🗑 Delete
+          <Trash2 size={14} style={{ marginRight: '6px' }} /> Delete
         </button>
         {!isIdle && (
           <>
@@ -210,7 +208,7 @@ const ContactForm = ({
               onClick={onSave}
               style={{ marginLeft: 'auto' }}
             >
-              💾 Save
+              <Save size={14} style={{ marginRight: '6px' }} /> Save
             </button>
             <button
               type="button"
