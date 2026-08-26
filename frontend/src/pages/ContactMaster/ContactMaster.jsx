@@ -18,9 +18,10 @@ const ContactMaster = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: 'success' });
   
-  // Client-side Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(15);
+  // Infinite Scroll & Sorting state
+  const [visibleCount, setVisibleCount] = useState(50);
+  const [sortField, setSortField] = useState('mascon_id');
+  const [sortAsc, setSortAsc] = useState(true);
   const [isImportOpen, setIsImportOpen] = useState(false);
 
   const showNotification = (message, type = 'success') => {
@@ -51,6 +52,7 @@ const ContactMaster = () => {
       const res = await contactService.getContacts('');
       if (res.success) {
         setContacts(res.data);
+        setVisibleCount(50);
       } else {
         showNotification(res.message || 'Failed to fetch contacts', 'error');
       }
@@ -78,6 +80,15 @@ const ContactMaster = () => {
     fetchContacts();
     fetchCompaniesList();
   }, [fetchContacts, fetchCompaniesList]);
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortAsc((prev) => !prev);
+    } else {
+      setSortField(field);
+      setSortAsc(true);
+    }
+  };
 
   const predictNextId = () => {
     const timestampPrefix = String(Math.floor(Date.now() / 1000)).slice(-3);
@@ -107,6 +118,7 @@ const ContactMaster = () => {
     setEditState('idle');
     fetchContacts();
     fetchCompaniesList();
+    setVisibleCount(50);
     showNotification('Form refreshed', 'info');
   };
 
@@ -158,9 +170,6 @@ const ContactMaster = () => {
         );
         loadContact(savedContact);
         setEditState('idle');
-        if (editState === 'adding') {
-          setCurrentPage(1);
-        }
         fetchContacts();
       } else {
         showNotification(res.message || 'Failed to save contact', 'error');
@@ -258,17 +267,24 @@ const ContactMaster = () => {
     setIsImportOpen(false);
   };
 
-  const displayContacts = contacts;
-  const totalPages = Math.max(1, Math.ceil(displayContacts.length / itemsPerPage));
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentContacts = displayContacts.slice(indexOfFirstItem, indexOfLastItem);
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
+  const sortedContacts = [...contacts].sort((a, b) => {
+    let valA = a[sortField] || '';
+    let valB = b[sortField] || '';
+    
+    if (sortField === 'company_name') {
+      valA = a.company_name || a.mascom_id || '';
+      valB = b.company_name || b.mascom_id || '';
     }
-  }, [displayContacts.length, totalPages, currentPage]);
+
+    if (typeof valA === 'string') valA = valA.toLowerCase();
+    if (typeof valB === 'string') valB = valB.toLowerCase();
+    
+    if (valA < valB) return sortAsc ? -1 : 1;
+    if (valA > valB) return sortAsc ? 1 : -1;
+    return 0;
+  });
+
+  const visibleContacts = sortedContacts.slice(0, visibleCount);
 
   return (
     <div className="contact-master-page">
@@ -316,58 +332,16 @@ const ContactMaster = () => {
             ) : (
               <>
                 <ContactTable
-                  contacts={currentContacts}
+                  contacts={visibleContacts}
                   onEdit={handleRowClick}
                   onDelete={handleDelete}
                   activeId={formData.mascon_id}
                   onRowDoubleClick={handleRowDoubleClick}
+                  onLoadMore={() => setVisibleCount((prev) => prev + 50)}
+                  sortField={sortField}
+                  sortAsc={sortAsc}
+                  onSort={handleSort}
                 />
-                <div className="table-pagination-bar">
-                  <div className="pagination-left">
-                    <span className="pagination-rows-label">Rows</span>
-                    <select
-                      className="pagination-rows-select"
-                      value={itemsPerPage}
-                      onChange={(e) => {
-                        setItemsPerPage(Number(e.target.value));
-                        setCurrentPage(1);
-                      }}
-                    >
-                      <option value={15}>15</option>
-                      <option value={50}>50</option>
-                      <option value={100}>100</option>
-                    </select>
-                    <span className="pagination-info-text" style={{ marginLeft: '8px' }}>
-                      {displayContacts.length > 0
-                        ? `${indexOfFirstItem + 1}-${Math.min(indexOfLastItem, displayContacts.length)} of ${displayContacts.length}`
-                        : '0-0 of 0'}
-                    </span>
-                  </div>
-                  
-                  <div className="pagination-center">
-                    [↑↓] navigate  [Space] select  [Alt+D] delete  [Esc] clear
-                  </div>
-                  
-                  <div className="pagination-right">
-                    <button
-                      type="button"
-                      className="pagination-arrow-btn"
-                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
-                    >
-                      &lt;
-                    </button>
-                    <span className="pagination-info-text">{currentPage} / {totalPages}</span>
-                    <button
-                      type="button"
-                      className="pagination-arrow-btn"
-                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                      disabled={currentPage === totalPages}
-                    >
-                      &gt;
-                    </button>
-                  </div>
-                </div>
               </>
             )}
           </div>

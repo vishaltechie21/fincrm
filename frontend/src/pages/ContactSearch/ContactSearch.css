@@ -66,7 +66,7 @@
 .cs-search-input {
   padding: 4px 8px 4px 24px;
   font-size: 10.5px;
-  width: 110px;
+  width: 180px;
   border: 1px solid var(--border);
   border-radius: 4px;
   background-color: var(--panel);
@@ -157,6 +157,10 @@ tr.master-row.open-row .twisty-icon {
 tr.master-row.open-row td {
   background-color: var(--panel2) !important;
   border-bottom: 1px solid #c9973c;
+}
+
+tr.master-row.even-row td {
+  background-color: var(--panel2);
 }
 
 /* Details Panel Inside Sub-Row */
@@ -551,6 +555,8 @@ table.sub td:last-child, table.sub th:last-child {
   outline: none !important;
   color: var(--text) !important;
   cursor: pointer;
+  max-width: 95px !important;
+  text-overflow: ellipsis;
 }
 
 /* Dynamic column select has a premium gold-ish text indicator */
@@ -559,6 +565,8 @@ select.dynamic-col-select {
   color: #c9973c !important; /* Gold header key indicator */
   border-right: 1px solid var(--border) !important;
   border-radius: 0 !important;
+  width: 70px !important;
+  max-width: 70px !important;
 }
 
 .theme-bw select.dynamic-col-select {

@@ -41,12 +41,13 @@ const CompanySearch = () => {
   const [filter2Val, setFilter2Val] = useState('');
   const [filter3Val, setFilter3Val] = useState('');
 
+  // Infinite Scroll & Sorting
+  const [visibleCount, setVisibleCount] = useState(50);
+  const [sortField, setSortField] = useState('mascom_id');
+  const [sortAsc, setSortAsc] = useState(true);
+
   // Accordion open state (Only one row open at a time)
   const [openRowId, setOpenRowId] = useState(null);
-
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(15);
 
   const fetchAllData = useCallback(async () => {
     setIsLoading(true);
@@ -84,6 +85,7 @@ const CompanySearch = () => {
 
       setCompanies(mergedCompanies);
       setContacts(mergedContacts);
+      setVisibleCount(50);
     } catch (err) {
       console.error('CompanySearch loading error:', err);
     } finally {
@@ -105,6 +107,15 @@ const CompanySearch = () => {
     return '';
   };
 
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortAsc((prev) => !prev);
+    } else {
+      setSortField(field);
+      setSortAsc(true);
+    }
+  };
+
   // Header click handler toggles search mode and binds Filter Slot 1
   const handleHeaderClick = (field) => {
     if (searchModeColumn === field) {
@@ -118,7 +129,6 @@ const CompanySearch = () => {
         if (input) input.focus();
       }, 50);
     }
-    setCurrentPage(1);
   };
 
   // Pre-calculate full company rows
@@ -203,12 +213,54 @@ const CompanySearch = () => {
     return match1 && match2 && match3 && matchesSearch;
   });
 
-  // Pagination
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
-  const safePage = Math.min(currentPage, totalPages);
-  const startIdx = (safePage - 1) * itemsPerPage;
-  const endIdx = startIdx + itemsPerPage;
-  const paginatedRows = filteredRows.slice(startIdx, endIdx);
+  const handleRowClick = (co) => {
+    if (openRowId === co.mascom_id) {
+      setOpenRowId(null);
+      setSearchQuery('');
+    } else {
+      setOpenRowId(co.mascom_id);
+      setSearchQuery(co.company_name);
+    }
+  };
+
+  // Sorting & Infinite Scroll Slice
+  const sortedRows = [...filteredRows].sort((a, b) => {
+    let valA = getPropValue(a, sortField);
+    let valB = getPropValue(b, sortField);
+    
+    if (typeof valA === 'string') valA = valA.toLowerCase();
+    if (typeof valB === 'string') valB = valB.toLowerCase();
+    
+    if (valA < valB) return sortAsc ? -1 : 1;
+    if (valA > valB) return sortAsc ? 1 : -1;
+    return 0;
+  });
+
+  const paginatedRows = sortedRows.slice(0, visibleCount);
+
+  const renderSortableHeader = (field, label) => {
+    const isSearchActive = searchModeColumn === field;
+    const isSorted = sortField === field;
+    return (
+      <th 
+        className={`clickable-header ${isSearchActive ? 'active-search-header' : ''}`}
+        onClick={() => handleHeaderClick(field)}
+        title="Click for generic search"
+      >
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', width: '100%', justifyContent: 'space-between' }}>
+          <span>{label}</span>
+          <span 
+            className="sort-trigger-icon"
+            onClick={(e) => { e.stopPropagation(); handleSort(field); }}
+            style={{ cursor: 'pointer', padding: '0 2px', opacity: isSorted ? 1 : 0.4 }}
+            title="Click to sort by this column"
+          >
+            {isSorted ? (sortAsc ? '▲' : '▼') : '⇅'}
+          </span>
+        </div>
+      </th>
+    );
+  };
 
   const handleClearFilters = () => {
     setSearchQuery('');
@@ -219,7 +271,6 @@ const CompanySearch = () => {
     setFilter1Val('');
     setFilter2Val('');
     setFilter3Val('');
-    setCurrentPage(1);
   };
 
   const handleExportExcel = () => {
@@ -285,7 +336,7 @@ const CompanySearch = () => {
                 <option key={field} value={field}>{label}</option>
               ))}
             </select>
-            <select value={filter1Val} onChange={(e) => { setFilter1Val(e.target.value); setCurrentPage(1); }}>
+            <select value={filter1Val} onChange={(e) => setFilter1Val(e.target.value)}>
               <option value="">All {getPluralLabel(COLUMN_LABEL_MAP[filter1Col])}</option>
               {filter1Options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
             </select>
@@ -298,7 +349,7 @@ const CompanySearch = () => {
                 <option key={field} value={field}>{label}</option>
               ))}
             </select>
-            <select value={filter2Val} onChange={(e) => { setFilter2Val(e.target.value); setCurrentPage(1); }}>
+            <select value={filter2Val} onChange={(e) => setFilter2Val(e.target.value)}>
               <option value="">All {getPluralLabel(COLUMN_LABEL_MAP[filter2Col])}</option>
               {filter2Options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
             </select>
@@ -311,7 +362,7 @@ const CompanySearch = () => {
                 <option key={field} value={field}>{label}</option>
               ))}
             </select>
-            <select value={filter3Val} onChange={(e) => { setFilter3Val(e.target.value); setCurrentPage(1); }}>
+            <select value={filter3Val} onChange={(e) => setFilter3Val(e.target.value)}>
               <option value="">All {getPluralLabel(COLUMN_LABEL_MAP[filter3Col])}</option>
               {filter3Options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
             </select>
@@ -327,7 +378,7 @@ const CompanySearch = () => {
             className={`cs-search-input ${searchModeColumn ? 'active-col-search' : ''}`}
             placeholder={searchModeColumn ? `Search by ${COLUMN_LABEL_MAP[searchModeColumn]}...` : "General Search..."}
             value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
           {searchModeColumn && (
             <button 
@@ -342,10 +393,10 @@ const CompanySearch = () => {
         </div>
 
         {/* Reusable Styled Green and Red buttons */}
-        <button className="btn btn-success" type="button" onClick={() => { if (filteredRows.length > 0) setOpenRowId(filteredRows[0].co.mascom_id); }}>
+        <button className="btn btn-success" type="button" onClick={() => { if (filteredRows.length > 0) { setOpenRowId(filteredRows[0].co.mascom_id); setSearchQuery(filteredRows[0].co.company_name); } }}>
           Expand row
         </button>
-        <button className="btn btn-danger" type="button" onClick={() => setOpenRowId(null)}>
+        <button className="btn btn-danger" type="button" onClick={() => { setOpenRowId(null); setSearchQuery(''); }}>
           Collapse all
         </button>
 
@@ -368,72 +419,40 @@ const CompanySearch = () => {
           <Loading type="skeleton" />
         ) : (
           <>
-            <div className="company-table-container">
+            <div 
+              className="company-table-container"
+              onScroll={(e) => {
+                const { scrollTop, scrollHeight, clientHeight } = e.target;
+                if (scrollHeight - scrollTop - clientHeight < 20) {
+                  setVisibleCount((prev) => prev + 50);
+                }
+              }}
+            >
               <table className="company-table">
                 <thead>
                   <tr>
                     <th style={{ width: '30px' }}></th>
-                    <th 
-                      className={`clickable-header ${searchModeColumn === 'mascom_id' ? 'active-search-header' : ''}`}
-                      onClick={() => handleHeaderClick('mascom_id')}
-                      title="Click to toggle column filter"
-                    >Code</th>
-                    <th 
-                      className={`clickable-header ${searchModeColumn === 'company_name' ? 'active-search-header' : ''}`}
-                      onClick={() => handleHeaderClick('company_name')}
-                      title="Click to toggle column filter"
-                    >Company Name</th>
-                    <th 
-                      className={`clickable-header ${searchModeColumn === 'industry_type' ? 'active-search-header' : ''}`}
-                      onClick={() => handleHeaderClick('industry_type')}
-                      title="Click to toggle column filter"
-                    >Industry</th>
-                    <th 
-                      className={`clickable-header ${searchModeColumn === 'city' ? 'active-search-header' : ''}`}
-                      onClick={() => handleHeaderClick('city')}
-                      title="Click to toggle column filter"
-                    >City</th>
-                    <th 
-                      className={`clickable-header ${searchModeColumn === 'state' ? 'active-search-header' : ''}`}
-                      onClick={() => handleHeaderClick('state')}
-                      title="Click to toggle column filter"
-                    >State</th>
-                    <th 
-                      className={`clickable-header ${searchModeColumn === 'data_source' ? 'active-search-header' : ''}`}
-                      onClick={() => handleHeaderClick('data_source')}
-                      title="Click to toggle column filter"
-                    >Source</th>
-                    <th 
-                      className={`clickable-header ${searchModeColumn === 'erp_using' ? 'active-search-header' : ''}`}
-                      onClick={() => handleHeaderClick('erp_using')}
-                      title="Click to toggle column filter"
-                    >ERP Used</th>
-                    <th 
-                      className={`clickable-header ${searchModeColumn === 'key_person' ? 'active-search-header' : ''}`}
-                      onClick={() => handleHeaderClick('key_person')}
-                      title="Click to toggle column filter"
-                    >Key Person</th>
-                    <th 
-                      className={`clickable-header ${searchModeColumn === 'stage' ? 'active-search-header' : ''}`}
-                      onClick={() => handleHeaderClick('stage')}
-                      title="Click to toggle column filter"
-                    >Stage</th>
-                    <th 
-                      className={`clickable-header ${searchModeColumn === 'mascom_remarks' ? 'active-search-header' : ''}`}
-                      onClick={() => handleHeaderClick('mascom_remarks')}
-                      title="Click to toggle column filter"
-                    >Remarks</th>
+                    {renderSortableHeader('mascom_id', 'Code')}
+                    {renderSortableHeader('company_name', 'Company Name')}
+                    {renderSortableHeader('industry_type', 'Industry')}
+                    {renderSortableHeader('city', 'City')}
+                    {renderSortableHeader('state', 'State')}
+                    {renderSortableHeader('data_source', 'Source')}
+                    {renderSortableHeader('erp_using', 'ERP Used')}
+                    {renderSortableHeader('key_person', 'Key Person')}
+                    {renderSortableHeader('stage', 'Stage')}
+                    {renderSortableHeader('mascom_remarks', 'Remarks')}
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedRows.map((r) => {
+                  {paginatedRows.map((r, idx) => {
                     const isExpanded = openRowId === r.co.mascom_id;
 
                     return (
                       <React.Fragment key={r.co.mascom_id}>
                         <tr 
-                          className={`master-row ${isExpanded ? 'open-row' : ''} clickable-row`}
-                          onClick={() => setOpenRowId(isExpanded ? null : r.co.mascom_id)}
+                          className={`master-row ${isExpanded ? 'open-row' : ''} ${idx % 2 === 1 ? 'even-row' : 'odd-row'} clickable-row`}
+                          onClick={() => handleRowClick(r.co)}
                         >
                           <td style={{ textAlign: 'center' }}>
                             <span className="twisty-icon">▶</span>
@@ -619,43 +638,6 @@ const CompanySearch = () => {
                   )}
                 </tbody>
               </table>
-            </div>
-
-            {/* Bottom Status Pagination */}
-            <div className="table-pagination-bar">
-              <div className="pagination-left">
-                <span className="pagination-rows-label">Rows</span>
-                <select 
-                  className="pagination-rows-select" 
-                  value={itemsPerPage} 
-                  onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                >
-                  <option value={15}>15</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                </select>
-                <span className="pagination-info-text" style={{ marginLeft: '8px' }}>
-                  {filteredRows.length > 0
-                    ? `${startIdx + 1}-${Math.min(endIdx, filteredRows.length)} of ${filteredRows.length}`
-                    : '0-0 of 0'}
-                </span>
-              </div>
-              <div className="pagination-center">[↑↓] navigate&nbsp; [Space] select&nbsp; [Esc] clear</div>
-              <div className="pagination-right">
-                <button 
-                  type="button" 
-                  className="pagination-arrow-btn" 
-                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} 
-                  disabled={safePage === 1}
-                >&lt;</button>
-                <span className="pagination-info-text">{safePage} / {totalPages}</span>
-                <button 
-                  type="button" 
-                  className="pagination-arrow-btn" 
-                  onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))} 
-                  disabled={safePage === totalPages}
-                >&gt;</button>
-              </div>
             </div>
           </>
         )}

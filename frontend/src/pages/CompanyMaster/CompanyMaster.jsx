@@ -16,9 +16,10 @@ const CompanyMaster = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: 'success' });
   
-  // Client-side Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(15);
+  // Infinite Scroll & Sorting state
+  const [visibleCount, setVisibleCount] = useState(50);
+  const [sortField, setSortField] = useState('mascom_id');
+  const [sortAsc, setSortAsc] = useState(true);
   const [isImportOpen, setIsImportOpen] = useState(false);
 
   const showNotification = (message, type = 'success') => {
@@ -49,6 +50,7 @@ const CompanyMaster = () => {
       const res = await companyService.getCompanies('');
       if (res.success) {
         setCompanies(res.data);
+        setVisibleCount(50);
       } else {
         showNotification(res.message || 'Failed to fetch companies', 'error');
       }
@@ -63,6 +65,15 @@ const CompanyMaster = () => {
   useEffect(() => {
     fetchCompanies();
   }, [fetchCompanies]);
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortAsc((prev) => !prev);
+    } else {
+      setSortField(field);
+      setSortAsc(true);
+    }
+  };
 
   const predictNextId = () => {
     const timestampPrefix = String(Math.floor(Date.now() / 1000)).slice(-3);
@@ -91,6 +102,7 @@ const CompanyMaster = () => {
     setErrors({});
     setEditState('idle');
     fetchCompanies();
+    setVisibleCount(50);
     showNotification('Form refreshed', 'info');
   };
 
@@ -142,9 +154,6 @@ const CompanyMaster = () => {
         );
         loadCompany(savedCompany);
         setEditState('idle');
-        if (editState === 'adding') {
-          setCurrentPage(1);
-        }
         fetchCompanies();
       } else {
         showNotification(res.message || 'Failed to save company', 'error');
@@ -243,17 +252,19 @@ const CompanyMaster = () => {
     setIsImportOpen(false);
   };
 
-  const displayCompanies = companies;
-  const totalPages = Math.max(1, Math.ceil(displayCompanies.length / itemsPerPage));
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentCompanies = displayCompanies.slice(indexOfFirstItem, indexOfLastItem);
+  const sortedCompanies = [...companies].sort((a, b) => {
+    let valA = a[sortField] || '';
+    let valB = b[sortField] || '';
+    
+    if (typeof valA === 'string') valA = valA.toLowerCase();
+    if (typeof valB === 'string') valB = valB.toLowerCase();
+    
+    if (valA < valB) return sortAsc ? -1 : 1;
+    if (valA > valB) return sortAsc ? 1 : -1;
+    return 0;
+  });
 
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [displayCompanies.length, totalPages, currentPage]);
+  const visibleCompanies = sortedCompanies.slice(0, visibleCount);
 
 
   return (
@@ -331,58 +342,16 @@ const CompanyMaster = () => {
             ) : (
               <>
                 <CompanyTable
-                  companies={currentCompanies}
+                  companies={visibleCompanies}
                   onEdit={handleRowClick}
                   onDelete={handleDelete}
                   activeId={formData.mascom_id}
                   onRowDoubleClick={handleRowDoubleClick}
+                  onLoadMore={() => setVisibleCount((prev) => prev + 50)}
+                  sortField={sortField}
+                  sortAsc={sortAsc}
+                  onSort={handleSort}
                 />
-                <div className="table-pagination-bar">
-                  <div className="pagination-left">
-                    <span className="pagination-rows-label">Rows</span>
-                    <select
-                      className="pagination-rows-select"
-                      value={itemsPerPage}
-                      onChange={(e) => {
-                        setItemsPerPage(Number(e.target.value));
-                        setCurrentPage(1);
-                      }}
-                    >
-                      <option value={15}>15</option>
-                      <option value={50}>50</option>
-                      <option value={100}>100</option>
-                    </select>
-                    <span className="pagination-info-text" style={{ marginLeft: '8px' }}>
-                      {displayCompanies.length > 0
-                        ? `${indexOfFirstItem + 1}-${Math.min(indexOfLastItem, displayCompanies.length)} of ${displayCompanies.length}`
-                        : '0-0 of 0'}
-                    </span>
-                  </div>
-                  
-                  <div className="pagination-center">
-                    [↑↓] navigate  [Space] select  [Alt+D] delete  [Esc] clear
-                  </div>
-                  
-                  <div className="pagination-right">
-                    <button
-                      type="button"
-                      className="pagination-arrow-btn"
-                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
-                    >
-                      &lt;
-                    </button>
-                    <span className="pagination-info-text">{currentPage} / {totalPages}</span>
-                    <button
-                      type="button"
-                      className="pagination-arrow-btn"
-                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                      disabled={currentPage === totalPages}
-                    >
-                      &gt;
-                    </button>
-                  </div>
-                </div>
               </>
             )}
           </div>

@@ -52,6 +52,10 @@
   background-color: rgba(30, 64, 175, 0.04);
 }
 
+.contact-table tr:nth-child(even) td {
+  background-color: var(--panel2);
+}
+
 .contact-table tr.active-row td {
   background-color: #fef08a !important;
   color: #0f172a !important;

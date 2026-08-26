@@ -123,9 +123,9 @@
 /* Standard fields stylesheet bindings */
 .form-field {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
   text-align: left;
   width: 100%;
 }
@@ -136,14 +136,14 @@
   color: var(--muted);
   text-transform: none;
   letter-spacing: 0.2px;
-  width: auto;
+  width: 90px;
   flex-shrink: 0;
   text-align: left;
 }
 
 .form-field input,
 .form-field select {
-  width: 100%;
+  flex: 1;
   min-width: 0;
   background-color: var(--panel);
   border: 1px solid var(--border);
@@ -159,7 +159,7 @@
 }
 
 .form-field textarea {
-  width: 100%;
+  flex: 1;
   min-width: 0;
   background-color: var(--panel);
   border: 1px solid var(--border);
@@ -168,7 +168,7 @@
   border-radius: 4px;
   font-size: 9px;
   height: auto;
-  min-height: 36px;
+  min-height: 24px;
   resize: vertical;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;

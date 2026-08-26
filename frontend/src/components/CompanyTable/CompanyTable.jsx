@@ -1,6 +1,6 @@
 import './CompanyTable.css';
 
-const CompanyTable = ({ companies, onEdit, activeId, onRowDoubleClick, onLoadMore }) => {
+const CompanyTable = ({ companies, onEdit, activeId, onRowDoubleClick, onLoadMore, sortField, sortAsc, onSort }) => {
   if (!companies || companies.length === 0) {
     return (
       <div className="table-empty-state">
@@ -19,21 +19,36 @@ const CompanyTable = ({ companies, onEdit, activeId, onRowDoubleClick, onLoadMor
     }
   };
 
+  const renderHeader = (field, label) => {
+    if (!onSort) return <th>{label}</th>;
+    const isSorted = sortField === field;
+    return (
+      <th onClick={() => onSort(field)} style={{ cursor: 'pointer', userSelect: 'none' }} className="sortable-header">
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          {label}
+          <span style={{ fontSize: '8px', color: isSorted ? '#c9973c' : 'var(--muted)' }}>
+            {isSorted ? (sortAsc ? '▲' : '▼') : '⇅'}
+          </span>
+        </span>
+      </th>
+    );
+  };
+
   return (
     <div className="company-table-container" onScroll={handleScroll}>
       <table className="company-table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Company Name</th>
-            <th>Industry</th>
-            <th>City</th>
-            <th>State</th>
-            <th>Source</th>
-            <th>ERP Used</th>
-            <th>Key Person</th>
-            <th>Stage</th>
-            <th>Remarks</th>
+            {renderHeader('mascom_id', 'ID')}
+            {renderHeader('company_name', 'Company Name')}
+            {renderHeader('industry_type', 'Industry')}
+            {renderHeader('city', 'City')}
+            {renderHeader('state', 'State')}
+            {renderHeader('data_source', 'Source')}
+            {renderHeader('erp_using', 'ERP Used')}
+            {renderHeader('user_name', 'Key Person')}
+            {renderHeader('stage', 'Stage')}
+            {renderHeader('mascom_remarks', 'Remarks')}
           </tr>
         </thead>
         <tbody>

@@ -1,6 +1,6 @@
 import './ContactTable.css';
 
-const ContactTable = ({ contacts, onEdit, activeId, onRowDoubleClick, onLoadMore }) => {
+const ContactTable = ({ contacts, onEdit, activeId, onRowDoubleClick, onLoadMore, sortField, sortAsc, onSort }) => {
   if (!contacts || contacts.length === 0) {
     return (
       <div className="table-empty-state">
@@ -19,21 +19,36 @@ const ContactTable = ({ contacts, onEdit, activeId, onRowDoubleClick, onLoadMore
     }
   };
 
+  const renderHeader = (field, label) => {
+    if (!onSort) return <th>{label}</th>;
+    const isSorted = sortField === field;
+    return (
+      <th onClick={() => onSort(field)} style={{ cursor: 'pointer', userSelect: 'none' }} className="sortable-header">
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          {label}
+          <span style={{ fontSize: '8px', color: isSorted ? '#c9973c' : 'var(--muted)' }}>
+            {isSorted ? (sortAsc ? '▲' : '▼') : '⇅'}
+          </span>
+        </span>
+      </th>
+    );
+  };
+
   return (
     <div className="contact-table-container" onScroll={handleScroll}>
       <table className="contact-table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Company</th>
-            <th>Contact Name</th>
-            <th>Designation</th>
-            <th>Mobile</th>
-            <th>Email</th>
-            <th className="key-header">Key</th>
-            <th>Key Person</th>
-            <th>Stage</th>
-            <th>Remarks</th>
+            {renderHeader('mascon_id', 'ID')}
+            {renderHeader('company_name', 'Company')}
+            {renderHeader('contact_name', 'Contact Name')}
+            {renderHeader('designation', 'Designation')}
+            {renderHeader('mobile', 'Mobile')}
+            {renderHeader('email', 'Email')}
+            {renderHeader('key_person', 'Key')}
+            {renderHeader('user_name', 'Key Person')}
+            {renderHeader('stage', 'Stage')}
+            {renderHeader('mascon_remarks', 'Remarks')}
           </tr>
         </thead>
         <tbody>
