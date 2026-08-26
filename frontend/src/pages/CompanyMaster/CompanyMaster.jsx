@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useCallback } from 'react';
-import { FileText, Search, Building2, FileSpreadsheet, Filter, Check, X } from 'lucide-react';
+import { FileText, Search, Building2, FileSpreadsheet, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import CompanyForm from '../../components/CompanyForm/CompanyForm';
 import CompanyTable from '../../components/CompanyTable/CompanyTable';
@@ -10,6 +10,7 @@ import Loading from '../../components/Loading/Loading';
 import { useCompanyForm } from '../../hooks/useCompanyForm';
 import * as companyService from '../../services/companyService';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import ImportModal from '../../components/ImportModal/ImportModal';
 import './CompanyMaster.css';
 
 const INDUSTRY_OPTIONS = [
@@ -28,7 +29,11 @@ const CompanyMaster = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: 'success' });
+  
+  // Client-side Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(15);
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
@@ -44,8 +49,6 @@ const CompanyMaster = () => {
   const [filterIndustry, setFilterIndustry] = useState('');
   const [filterState, setFilterState] = useState('');
   const [filterSource, setFilterSource] = useState('');
-  const [appliedFilters, setAppliedFilters] = useState({ industry: '', state: '', source: '' });
-  const [showFilters, setShowFilters] = useState(false);
 
   const {
     formData,
@@ -86,18 +89,11 @@ const CompanyMaster = () => {
     setCurrentPage(1);
   };
 
-  // Apply filters button handler
-  const handleApplyFilters = () => {
-    setAppliedFilters({ industry: filterIndustry, state: filterState, source: filterSource });
-    setCurrentPage(1);
-  };
-
   // Clear all filters
   const handleClearFilters = () => {
     setFilterIndustry('');
     setFilterState('');
     setFilterSource('');
-    setAppliedFilters({ industry: '', state: '', source: '' });
     setCurrentPage(1);
   };
 
@@ -106,9 +102,9 @@ const CompanyMaster = () => {
 
   // Apply client-side filter on top of search-fetched companies
   const filteredCompanies = companies.filter((c) => {
-    const matchIndustry = !appliedFilters.industry || (c.industry_type || '').toLowerCase() === appliedFilters.industry.toLowerCase();
-    const matchState = !appliedFilters.state || (c.state || '').toLowerCase() === appliedFilters.state.toLowerCase();
-    const matchSource = !appliedFilters.source || (c.data_source || '').toLowerCase() === appliedFilters.source.toLowerCase();
+    const matchIndustry = !filterIndustry || (c.industry_type || '').toLowerCase() === filterIndustry.toLowerCase();
+    const matchState = !filterState || (c.state || '').toLowerCase() === filterState.toLowerCase();
+    const matchSource = !filterSource || (c.data_source || '').toLowerCase() === filterSource.toLowerCase();
     return matchIndustry && matchState && matchSource;
   });
 
@@ -283,22 +279,40 @@ const CompanyMaster = () => {
     showNotification(`Loaded company ${company.mascom_id} into form`, 'info');
   };
 
-  // Sub-header < > now controls PAGE navigation
-  const handlePrevPage = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  // Excel template data and import row handler
+  const IMPORT_TEMPLATE_HEADERS = ['Company Name', 'Industry Type', 'City', 'State', 'Enquiry/Data Source', 'ERP Used', 'User Name', 'Remarks'];
+  
+  const IMPORT_SAMPLE_DATA = [{
+    'Company Name': 'Sample Company Ltd',
+    'Industry Type': 'Pharma Marketing',
+    'City': 'Noida',
+    'State': 'Uttar Pradesh',
+    'Enquiry/Data Source': 'WhatsApp',
+    'ERP Used': 'Tally',
+    'User Name': 'admin_fincrm',
+    'Remarks': 'Interested in CRM modules'
+  }];
+
+  const handleSaveImportedRow = async (row) => {
+    const payload = {
+      company_name: row['Company Name'] || '',
+      industry_type: row['Industry Type'] || '',
+      city: row['City'] || '',
+      state: row['State'] || '',
+      data_source: row['Enquiry/Data Source'] || '',
+      erp_using: row['ERP Used'] || '',
+      user_name: row['User Name'] || '',
+      mascom_remarks: row['Remarks'] || ''
+    };
+    return await companyService.createCompany(payload);
   };
 
-  const handleNextPage = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  const handleImportComplete = (count) => {
+    showNotification(`Successfully imported ${count} companies!`, 'success');
+    fetchCompanies(searchQuery);
+    setIsImportOpen(false);
   };
 
-  const getPageText = () => `${currentPage} / ${totalPages}`;
-
-  // Check if any filter is active
-  const hasActiveFilters = appliedFilters.industry || appliedFilters.state || appliedFilters.source;
-
-  // Pagination — uses filteredCompanies for search tab, companies for entry tab
-  const itemsPerPage = 8;
   const displayCompanies = activeTab === 'search' ? filteredCompanies : companies;
   const totalPages = Math.max(1, Math.ceil(displayCompanies.length / itemsPerPage));
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -353,23 +367,6 @@ const CompanyMaster = () => {
 
         <div className="sub-header-right">
           <span className="view-pill-badge">VIEW</span>
-          <button
-            type="button"
-            className="nav-arrow-btn"
-            onClick={handlePrevPage}
-            disabled={currentPage === 1}
-          >
-            &lt;
-          </button>
-          <span className="index-counter-text">{getPageText()}</span>
-          <button
-            type="button"
-            className="nav-arrow-btn"
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-          >
-            &gt;
-          </button>
         </div>
       </div>
 
@@ -411,19 +408,93 @@ const CompanyMaster = () => {
                     activeId={formData.mascom_id}
                     onRowDoubleClick={handleRowDoubleClick}
                   />
-                  {hasActiveFilters && displayCompanies.length > 0 && (
-                    <div className="filter-count-info">Showing {displayCompanies.length} of {companies.length} records</div>
-                  )}
+                  <div className="table-pagination-bar">
+                    <div className="pagination-left">
+                      <span className="pagination-rows-label">Rows</span>
+                      <select
+                        className="pagination-rows-select"
+                        value={itemsPerPage}
+                        onChange={(e) => {
+                          setItemsPerPage(Number(e.target.value));
+                          setCurrentPage(1);
+                        }}
+                      >
+                        <option value={15}>15</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                      <span className="pagination-info-text" style={{ marginLeft: '8px' }}>
+                        {displayCompanies.length > 0
+                          ? `${indexOfFirstItem + 1}-${Math.min(indexOfLastItem, displayCompanies.length)} of ${displayCompanies.length}`
+                          : '0-0 of 0'}
+                      </span>
+                    </div>
+                    
+                    <div className="pagination-center">
+                      [↑↓] navigate  [Space] select  [Alt+D] delete  [Esc] clear
+                    </div>
+                    
+                    <div className="pagination-right">
+                      <button
+                        type="button"
+                        className="pagination-arrow-btn"
+                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                      >
+                        &lt;
+                      </button>
+                      <span className="pagination-info-text">{currentPage} / {totalPages}</span>
+                      <button
+                        type="button"
+                        className="pagination-arrow-btn"
+                        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                      >
+                        &gt;
+                      </button>
+                    </div>
+                  </div>
                 </>
               )}
             </div>
           </div>
         ) : (
           <div className="search-layout-panel">
-            {/* Single inline toolbar: search + export + filter toggle */}
+            {/* Single inline toolbar: search + filters inline + export + import */}
             <div className="search-toolbar-row">
               <SearchBar onSearch={handleSearch} value={searchQuery} />
+              
+              {/* Inline Filters */}
+              <div className="search-inline-filters">
+                <div className="search-inline-filter-field">
+                  <select value={filterIndustry} onChange={(e) => { setFilterIndustry(e.target.value); setCurrentPage(1); }}>
+                    <option value="">Industry Type</option>
+                    {INDUSTRY_OPTIONS.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
+                  </select>
+                </div>
+                <div className="search-inline-filter-field">
+                  <select value={filterState} onChange={(e) => { setFilterState(e.target.value); setCurrentPage(1); }}>
+                    <option value="">State</option>
+                    {stateOptions.map((s) => (<option key={s} value={s}>{s}</option>))}
+                  </select>
+                </div>
+                <div className="search-inline-filter-field">
+                  <select value={filterSource} onChange={(e) => { setFilterSource(e.target.value); setCurrentPage(1); }}>
+                    <option value="">Data Source</option>
+                    {ENQUIRY_SOURCE_OPTIONS.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
+                  </select>
+                </div>
+              </div>
+
               <div className="search-toolbar-actions">
+                <button
+                  type="button"
+                  className="total-records-btn"
+                  onClick={handleClearFilters}
+                  title="Click to reset filters and view all records"
+                >
+                  Total Records: {filteredCompanies.length}
+                </button>
                 <button
                   type="button"
                   className="export-excel-btn"
@@ -437,48 +508,14 @@ const CompanyMaster = () => {
                 </button>
                 <button
                   type="button"
-                  className={`filter-toggle-btn ${showFilters ? 'active' : ''} ${hasActiveFilters ? 'has-active' : ''}`}
-                  onClick={() => setShowFilters((prev) => !prev)}
-                  title="Toggle Filters"
+                  className="import-excel-btn"
+                  onClick={() => setIsImportOpen(true)}
+                  title="Import from Excel"
                 >
-                  {hasActiveFilters && <span className="filter-dot-indicator" />}
-                  <Filter size={14} style={{ marginRight: '6px' }} /> Filter
+                  <Download size={14} style={{ marginRight: '6px' }} /> Import Excel
                 </button>
               </div>
             </div>
-
-            {/* Collapsible filter bar — shown only when showFilters is true */}
-            {showFilters && (
-              <div className="filter-bar-row">
-                <div className="filter-fields-group">
-                  <div className="filter-field">
-                    <label className="filter-label">INDUSTRY TYPE</label>
-                    <select className="filter-select" value={filterIndustry} onChange={(e) => setFilterIndustry(e.target.value)}>
-                      <option value="">All Industries</option>
-                      {INDUSTRY_OPTIONS.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
-                    </select>
-                  </div>
-                  <div className="filter-field">
-                    <label className="filter-label">STATE</label>
-                    <select className="filter-select" value={filterState} onChange={(e) => setFilterState(e.target.value)}>
-                      <option value="">All States</option>
-                      {stateOptions.map((s) => (<option key={s} value={s}>{s}</option>))}
-                    </select>
-                  </div>
-                  <div className="filter-field">
-                    <label className="filter-label">DATA SOURCE</label>
-                    <select className="filter-select" value={filterSource} onChange={(e) => setFilterSource(e.target.value)}>
-                      <option value="">All Sources</option>
-                      {ENQUIRY_SOURCE_OPTIONS.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
-                    </select>
-                  </div>
-                </div>
-                <div className="filter-action-btns">
-                  <button type="button" className="filter-apply-btn" onClick={handleApplyFilters}><Check size={14} style={{ marginRight: '4px' }} /> Apply</button>
-                  <button type="button" className="filter-clear-btn" onClick={handleClearFilters} disabled={!filterIndustry && !filterState && !filterSource && !hasActiveFilters}><X size={14} style={{ marginRight: '4px' }} /> Clear</button>
-                </div>
-              </div>
-            )}
 
             {isLoading ? (
               <Loading type="skeleton" />
@@ -491,9 +528,52 @@ const CompanyMaster = () => {
                   activeId={formData.mascom_id}
                   onRowDoubleClick={handleRowDoubleClick}
                 />
-                {hasActiveFilters && filteredCompanies.length > 0 && (
-                  <div className="filter-count-info">Showing {filteredCompanies.length} of {companies.length} records (filtered)</div>
-                )}
+                <div className="table-pagination-bar">
+                  <div className="pagination-left">
+                    <span className="pagination-rows-label">Rows</span>
+                    <select
+                      className="pagination-rows-select"
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                    >
+                      <option value={15}>15</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                    <span className="pagination-info-text" style={{ marginLeft: '8px' }}>
+                      {displayCompanies.length > 0
+                        ? `${indexOfFirstItem + 1}-${Math.min(indexOfLastItem, displayCompanies.length)} of ${displayCompanies.length}`
+                        : '0-0 of 0'}
+                    </span>
+                  </div>
+                  
+                  <div className="pagination-center">
+                    [↑↓] navigate  [Space] select  [Alt+D] delete  [Esc] clear
+                  </div>
+                  
+                  <div className="pagination-right">
+                    <button
+                      type="button"
+                      className="pagination-arrow-btn"
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                    >
+                      &lt;
+                    </button>
+                    <span className="pagination-info-text">{currentPage} / {totalPages}</span>
+                    <button
+                      type="button"
+                      className="pagination-arrow-btn"
+                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                    >
+                      &gt;
+                    </button>
+                  </div>
+                </div>
               </>
             )}
           </div>
@@ -512,6 +592,16 @@ const CompanyMaster = () => {
         message={`Are you sure you want to delete company ${deleteConfirm.id}?`}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
+      />
+
+      <ImportModal
+        isOpen={isImportOpen}
+        onClose={() => setIsImportOpen(false)}
+        title="Import Companies"
+        templateHeaders={IMPORT_TEMPLATE_HEADERS}
+        sampleData={IMPORT_SAMPLE_DATA}
+        onSaveRow={handleSaveImportedRow}
+        onImportComplete={handleImportComplete}
       />
     </div>
   );

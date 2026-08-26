@@ -1,6 +1,6 @@
 import './ContactTable.css';
 
-const ContactTable = ({ contacts, onEdit, activeId, onRowDoubleClick }) => {
+const ContactTable = ({ contacts, onEdit, activeId, onRowDoubleClick, onLoadMore }) => {
   if (!contacts || contacts.length === 0) {
     return (
       <div className="table-empty-state">
@@ -9,8 +9,18 @@ const ContactTable = ({ contacts, onEdit, activeId, onRowDoubleClick }) => {
     );
   }
 
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    // Check if scrolled near the bottom (within 15px)
+    if (scrollHeight - scrollTop - clientHeight < 15) {
+      if (onLoadMore) {
+        onLoadMore();
+      }
+    }
+  };
+
   return (
-    <div className="contact-table-container">
+    <div className="contact-table-container" onScroll={handleScroll}>
       <table className="contact-table">
         <thead>
           <tr>

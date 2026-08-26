@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useCallback } from 'react';
-import { FileText, Search, User, FileSpreadsheet, Filter, Check, X } from 'lucide-react';
+import { FileText, Search, User, FileSpreadsheet, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import ContactForm from '../../components/ContactForm/ContactForm';
 import ContactTable from '../../components/ContactTable/ContactTable';
@@ -11,6 +11,7 @@ import { useContactForm } from '../../hooks/useContactForm';
 import * as contactService from '../../services/contactService';
 import * as companyService from '../../services/companyService';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import ImportModal from '../../components/ImportModal/ImportModal';
 import './ContactMaster.css';
 
 const ContactMaster = () => {
@@ -19,7 +20,11 @@ const ContactMaster = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: 'success' });
+  
+  // Client-side Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(15);
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
@@ -35,8 +40,6 @@ const ContactMaster = () => {
   const [filterCompany, setFilterCompany] = useState('');
   const [filterDesignation, setFilterDesignation] = useState('');
   const [filterKeyPerson, setFilterKeyPerson] = useState('');
-  const [appliedFilters, setAppliedFilters] = useState({ company: '', designation: '', keyPerson: '' });
-  const [showFilters, setShowFilters] = useState(false);
 
   const {
     formData,
@@ -90,18 +93,11 @@ const ContactMaster = () => {
     setCurrentPage(1);
   };
 
-  // Apply filters button handler
-  const handleApplyFilters = () => {
-    setAppliedFilters({ company: filterCompany, designation: filterDesignation, keyPerson: filterKeyPerson });
-    setCurrentPage(1);
-  };
-
   // Clear all filters
   const handleClearFilters = () => {
     setFilterCompany('');
     setFilterDesignation('');
     setFilterKeyPerson('');
-    setAppliedFilters({ company: '', designation: '', keyPerson: '' });
     setCurrentPage(1);
   };
 
@@ -111,9 +107,9 @@ const ContactMaster = () => {
 
   // Apply filters on top of search-fetched contacts
   const filteredContacts = contacts.filter((c) => {
-    const matchCompany = !appliedFilters.company || (c.company_name || c.mascom_id || '').toLowerCase() === appliedFilters.company.toLowerCase();
-    const matchDesignation = !appliedFilters.designation || (c.designation || '').toLowerCase() === appliedFilters.designation.toLowerCase();
-    const matchKeyPerson = !appliedFilters.keyPerson || (c.key_person || '') === appliedFilters.keyPerson;
+    const matchCompany = !filterCompany || (c.company_name || c.mascom_id || '').toLowerCase() === filterCompany.toLowerCase();
+    const matchDesignation = !filterDesignation || (c.designation || '').toLowerCase() === filterDesignation.toLowerCase();
+    const matchKeyPerson = !filterKeyPerson || (c.key_person || '') === filterKeyPerson;
     return matchCompany && matchDesignation && matchKeyPerson;
   });
 
@@ -288,22 +284,40 @@ const ContactMaster = () => {
     showNotification(`Loaded contact ${contact.mascon_id} into form`, 'info');
   };
 
-  // Sub-header < > now controls PAGE navigation
-  const handlePrevPage = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  // Excel template data and import row handler
+  const IMPORT_TEMPLATE_HEADERS = ['Company ID', 'Contact Name', 'Designation', 'Mobile', 'Email', 'Key Person', 'Sales User', 'Remarks'];
+  
+  const IMPORT_SAMPLE_DATA = [{
+    'Company ID': '123-00001',
+    'Contact Name': 'John Doe',
+    'Designation': 'Manager',
+    'Mobile': '9876543210',
+    'Email': 'john.doe@example.com',
+    'Key Person': 'Y',
+    'Sales User': 'sales_agent',
+    'Remarks': 'Follow up next week'
+  }];
+
+  const handleSaveImportedRow = async (row) => {
+    const payload = {
+      mascom_id: row['Company ID'] || '',
+      contact_name: row['Contact Name'] || '',
+      designation: row['Designation'] || '',
+      mobile: row['Mobile'] || '',
+      email: row['Email'] || '',
+      key_person: row['Key Person'] || 'N',
+      user_name: row['Sales User'] || '',
+      mascon_remarks: row['Remarks'] || ''
+    };
+    return await contactService.createContact(payload);
   };
 
-  const handleNextPage = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  const handleImportComplete = (count) => {
+    showNotification(`Successfully imported ${count} contacts!`, 'success');
+    fetchContacts(searchQuery);
+    setIsImportOpen(false);
   };
 
-  const getPageText = () => `${currentPage} / ${totalPages}`;
-
-  // Check if any filter is active
-  const hasActiveFilters = appliedFilters.company || appliedFilters.designation || appliedFilters.keyPerson;
-
-  // Pagination bounds
-  const itemsPerPage = 8;
   const displayContacts = activeTab === 'search' ? filteredContacts : contacts;
   const totalPages = Math.max(1, Math.ceil(displayContacts.length / itemsPerPage));
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -357,23 +371,6 @@ const ContactMaster = () => {
 
         <div className="sub-header-right">
           <span className="view-pill-badge">VIEW</span>
-          <button
-            type="button"
-            className="nav-arrow-btn"
-            onClick={handlePrevPage}
-            disabled={currentPage === 1}
-          >
-            &lt;
-          </button>
-          <span className="index-counter-text">{getPageText()}</span>
-          <button
-            type="button"
-            className="nav-arrow-btn"
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-          >
-            &gt;
-          </button>
         </div>
       </div>
 
@@ -416,19 +413,94 @@ const ContactMaster = () => {
                     activeId={formData.mascon_id}
                     onRowDoubleClick={handleRowDoubleClick}
                   />
-                  {hasActiveFilters && displayContacts.length > 0 && (
-                    <div className="filter-count-info">Showing {displayContacts.length} of {contacts.length} records</div>
-                  )}
+                  <div className="table-pagination-bar">
+                    <div className="pagination-left">
+                      <span className="pagination-rows-label">Rows</span>
+                      <select
+                        className="pagination-rows-select"
+                        value={itemsPerPage}
+                        onChange={(e) => {
+                          setItemsPerPage(Number(e.target.value));
+                          setCurrentPage(1);
+                        }}
+                      >
+                        <option value={15}>15</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                      <span className="pagination-info-text" style={{ marginLeft: '8px' }}>
+                        {displayContacts.length > 0
+                          ? `${indexOfFirstItem + 1}-${Math.min(indexOfLastItem, displayContacts.length)} of ${displayContacts.length}`
+                          : '0-0 of 0'}
+                      </span>
+                    </div>
+                    
+                    <div className="pagination-center">
+                      [↑↓] navigate  [Space] select  [Alt+D] delete  [Esc] clear
+                    </div>
+                    
+                    <div className="pagination-right">
+                      <button
+                        type="button"
+                        className="pagination-arrow-btn"
+                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                      >
+                        &lt;
+                      </button>
+                      <span className="pagination-info-text">{currentPage} / {totalPages}</span>
+                      <button
+                        type="button"
+                        className="pagination-arrow-btn"
+                        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                      >
+                        &gt;
+                      </button>
+                    </div>
+                  </div>
                 </>
               )}
             </div>
           </div>
         ) : (
           <div className="search-layout-panel">
-            {/* Single inline toolbar: search + export + filter toggle */}
+            {/* Single inline toolbar: search + filters inline + export + import */}
             <div className="search-toolbar-row">
               <SearchBar onSearch={handleSearch} value={searchQuery} />
+              
+              {/* Inline Filters */}
+              <div className="search-inline-filters">
+                <div className="search-inline-filter-field">
+                  <select value={filterCompany} onChange={(e) => { setFilterCompany(e.target.value); setCurrentPage(1); }}>
+                    <option value="">Company Name</option>
+                    {companyOptions.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
+                  </select>
+                </div>
+                <div className="search-inline-filter-field">
+                  <select value={filterDesignation} onChange={(e) => { setFilterDesignation(e.target.value); setCurrentPage(1); }}>
+                    <option value="">Designation</option>
+                    {designationOptions.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
+                  </select>
+                </div>
+                <div className="search-inline-filter-field">
+                  <select value={filterKeyPerson} onChange={(e) => { setFilterKeyPerson(e.target.value); setCurrentPage(1); }}>
+                    <option value="">Key Person</option>
+                    <option value="Y">Yes (Y)</option>
+                    <option value="N">No (N)</option>
+                  </select>
+                </div>
+              </div>
+
               <div className="search-toolbar-actions">
+                <button
+                  type="button"
+                  className="total-records-btn"
+                  onClick={handleClearFilters}
+                  title="Click to reset filters and view all records"
+                >
+                  Total Records: {filteredContacts.length}
+                </button>
                 <button
                   type="button"
                   className="export-excel-btn"
@@ -442,49 +514,14 @@ const ContactMaster = () => {
                 </button>
                 <button
                   type="button"
-                  className={`filter-toggle-btn ${showFilters ? 'active' : ''} ${hasActiveFilters ? 'has-active' : ''}`}
-                  onClick={() => setShowFilters((prev) => !prev)}
-                  title="Toggle Filters"
+                  className="import-excel-btn"
+                  onClick={() => setIsImportOpen(true)}
+                  title="Import from Excel"
                 >
-                  {hasActiveFilters && <span className="filter-dot-indicator" />}
-                  <Filter size={14} style={{ marginRight: '6px' }} /> Filter
+                  <Download size={14} style={{ marginRight: '6px' }} /> Import Excel
                 </button>
               </div>
             </div>
-
-            {/* Collapsible filter bar — shown only when showFilters is true */}
-            {showFilters && (
-              <div className="filter-bar-row">
-                <div className="filter-fields-group">
-                  <div className="filter-field">
-                    <label className="filter-label">COMPANY NAME</label>
-                    <select className="filter-select" value={filterCompany} onChange={(e) => setFilterCompany(e.target.value)}>
-                      <option value="">All Companies</option>
-                      {companyOptions.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
-                    </select>
-                  </div>
-                  <div className="filter-field">
-                    <label className="filter-label">DESIGNATION</label>
-                    <select className="filter-select" value={filterDesignation} onChange={(e) => setFilterDesignation(e.target.value)}>
-                      <option value="">All Designations</option>
-                      {designationOptions.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
-                    </select>
-                  </div>
-                  <div className="filter-field">
-                    <label className="filter-label">KEY PERSON</label>
-                    <select className="filter-select" value={filterKeyPerson} onChange={(e) => setFilterKeyPerson(e.target.value)}>
-                      <option value="">All</option>
-                      <option value="Y">Yes (Y)</option>
-                      <option value="N">No (N)</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="filter-action-btns">
-                  <button type="button" className="filter-apply-btn" onClick={handleApplyFilters}><Check size={14} style={{ marginRight: '4px' }} /> Apply</button>
-                  <button type="button" className="filter-clear-btn" onClick={handleClearFilters} disabled={!filterCompany && !filterDesignation && !filterKeyPerson && !hasActiveFilters}><X size={14} style={{ marginRight: '4px' }} /> Clear</button>
-                </div>
-              </div>
-            )}
 
             {isLoading ? (
               <Loading type="skeleton" />
@@ -497,9 +534,52 @@ const ContactMaster = () => {
                   activeId={formData.mascon_id}
                   onRowDoubleClick={handleRowDoubleClick}
                 />
-                {hasActiveFilters && filteredContacts.length > 0 && (
-                  <div className="filter-count-info">Showing {filteredContacts.length} of {contacts.length} records (filtered)</div>
-                )}
+                <div className="table-pagination-bar">
+                  <div className="pagination-left">
+                    <span className="pagination-rows-label">Rows</span>
+                    <select
+                      className="pagination-rows-select"
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                    >
+                      <option value={15}>15</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                    <span className="pagination-info-text" style={{ marginLeft: '8px' }}>
+                      {displayContacts.length > 0
+                        ? `${indexOfFirstItem + 1}-${Math.min(indexOfLastItem, displayContacts.length)} of ${displayContacts.length}`
+                        : '0-0 of 0'}
+                    </span>
+                  </div>
+                  
+                  <div className="pagination-center">
+                    [↑↓] navigate  [Space] select  [Alt+D] delete  [Esc] clear
+                  </div>
+                  
+                  <div className="pagination-right">
+                    <button
+                      type="button"
+                      className="pagination-arrow-btn"
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                    >
+                      &lt;
+                    </button>
+                    <span className="pagination-info-text">{currentPage} / {totalPages}</span>
+                    <button
+                      type="button"
+                      className="pagination-arrow-btn"
+                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                    >
+                      &gt;
+                    </button>
+                  </div>
+                </div>
               </>
             )}
           </div>
@@ -518,6 +598,16 @@ const ContactMaster = () => {
         message={`Are you sure you want to delete contact ${deleteConfirm.id}?`}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
+      />
+
+      <ImportModal
+        isOpen={isImportOpen}
+        onClose={() => setIsImportOpen(false)}
+        title="Import Contacts"
+        templateHeaders={IMPORT_TEMPLATE_HEADERS}
+        sampleData={IMPORT_SAMPLE_DATA}
+        onSaveRow={handleSaveImportedRow}
+        onImportComplete={handleImportComplete}
       />
     </div>
   );

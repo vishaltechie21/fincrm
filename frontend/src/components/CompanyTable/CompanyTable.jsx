@@ -1,6 +1,6 @@
 import './CompanyTable.css';
 
-const CompanyTable = ({ companies, onEdit, activeId, onRowDoubleClick }) => {
+const CompanyTable = ({ companies, onEdit, activeId, onRowDoubleClick, onLoadMore }) => {
   if (!companies || companies.length === 0) {
     return (
       <div className="table-empty-state">
@@ -9,8 +9,18 @@ const CompanyTable = ({ companies, onEdit, activeId, onRowDoubleClick }) => {
     );
   }
 
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    // Check if scrolled near the bottom (within 15px)
+    if (scrollHeight - scrollTop - clientHeight < 15) {
+      if (onLoadMore) {
+        onLoadMore();
+      }
+    }
+  };
+
   return (
-    <div className="company-table-container">
+    <div className="company-table-container" onScroll={handleScroll}>
       <table className="company-table">
         <thead>
           <tr>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Search } from 'lucide-react';
 
-const SearchBar = ({ onSearch, value }) => {
+const SearchBar = ({ onSearch, value, placeholder = "Search..." }) => {
   const [searchTerm, setSearchTerm] = useState(value || '');
 
   // Debounce search parameter
@@ -13,33 +14,54 @@ const SearchBar = ({ onSearch, value }) => {
   }, [searchTerm, onSearch]);
 
   return (
-    <div className="search-bar" style={{ display: 'flex', gap: '8px', alignItems: 'center', flex: 1, minWidth: 0 }}>
+    <div className="search-bar-wrapper" style={{ position: 'relative', width: '200px', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
       <input
         type="text"
-        placeholder="Search by ID, Company Name, City, State..."
+        placeholder={placeholder}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         style={{
           backgroundColor: 'var(--panel2)',
           border: '1px solid var(--border)',
           color: 'var(--text-h)',
-          padding: '6px 10px',
-          borderRadius: '6px',
-          fontSize: '12px',
+          padding: '4px 28px 4px 8px',
+          borderRadius: '5px',
+          fontSize: '10px',
           width: '100%',
-          flex: 1,
-          minWidth: 0,
-          outline: 'none'
+          outline: 'none',
+          boxSizing: 'border-box',
+          height: '24px'
+        }}
+      />
+      <Search
+        size={13}
+        style={{
+          position: 'absolute',
+          right: '8px',
+          color: 'var(--muted)',
+          pointerEvents: 'none'
         }}
       />
       {searchTerm && (
         <button
           type="button"
           onClick={() => setSearchTerm('')}
-          className="btn btn-ghost"
-          style={{ padding: '4px 10px', fontSize: '11px', whiteSpace: 'nowrap' }}
+          style={{
+            position: 'absolute',
+            right: '24px',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            color: 'var(--muted)',
+            fontSize: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            padding: 0,
+            outline: 'none'
+          }}
+          title="Clear search"
         >
-          ✕ Clear
+          ✕
         </button>
       )}
     </div>
