@@ -2,6 +2,7 @@ import { Plus, Edit, Trash2, Save } from 'lucide-react';
 import FormField from '../FormField';
 import SelectField from '../SelectField';
 import TextareaField from '../TextareaField';
+import { RefreshCw } from 'lucide-react';
 import './CompanyForm.css';
 
 const INDUSTRY_OPTIONS = [
@@ -168,14 +169,19 @@ const CompanyForm = ({
       </div>
 
       <div className="form-actions">
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={onRefresh}
-          disabled={!isIdle}
-        >
-          🔄 Refresh
-        </button>
+       <button
+    type="button"
+    className="btn btn-secondary"
+    onClick={onRefresh}
+    disabled={!isIdle}
+    style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }} // Keeps icon and text aligned
+  >
+    <RefreshCw 
+      size={16} 
+      className={!isIdle ? 'spin-animation' : ''} // Optional: spins icon when not idle
+    />
+    Refresh
+  </button>
         <button
           type="button"
           className="btn btn-success"
