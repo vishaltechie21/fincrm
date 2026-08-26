@@ -206,11 +206,16 @@ const CompanyMaster = () => {
       }
 
       if (res.success) {
+        const savedCompany = res.data;
         showNotification(
-          `Company ${formData.mascom_id} ${editState === 'adding' ? 'saved' : 'updated'} successfully!`,
+          `Company ${savedCompany.mascom_id} ${editState === 'adding' ? 'saved' : 'updated'} successfully!`,
           'success'
         );
+        loadCompany(savedCompany);
         setEditState('idle');
+        if (editState === 'adding') {
+          setCurrentPage(1);
+        }
         fetchCompanies(searchQuery);
       } else {
         showNotification(res.message || 'Failed to save company', 'error');
@@ -323,6 +328,7 @@ const CompanyMaster = () => {
           >
             📄 Entry
           </button>
+          <span className="sub-tab-separator">|</span>
           <button
             type="button"
             className={`sub-tab-btn ${activeTab === 'search' ? 'active' : ''}`}

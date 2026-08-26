@@ -174,11 +174,11 @@
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   box-sizing: border-box;
-  text-align: center;
+  text-align: left;
 }
 
 .form-field select {
-  text-align-last: center;
+  text-align-last: left;
 }
 
 .form-field select option {

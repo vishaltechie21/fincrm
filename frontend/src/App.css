@@ -762,11 +762,10 @@
 .sub-header-left {
   display: flex;
   align-items: center;
-  gap: 4px;
   background-color: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 24px;
-  padding: 3px;
+  border-radius: 0px;
+  padding: 0;
 }
 
 .sub-tab-btn {
@@ -776,7 +775,7 @@
   font-size: 10.5px;
   font-weight: 600;
   padding: 4px 12px;
-  border-radius: 20px; /* Pill shape */
+  border-radius: 0px;
   cursor: pointer;
   transition: all 0.18s ease;
   height: 26px;
@@ -794,7 +793,15 @@
 .sub-tab-btn.active {
   background: linear-gradient(135deg, #2b76e8 0%, #1a56b8 100%);
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(43, 118, 232, 0.4);
+}
+
+.sub-tab-separator {
+  color: var(--border);
+  font-size: 11px;
+  user-select: none;
+  pointer-events: none;
+  margin: 0;
+  padding: 0;
 }
 
 .sub-header-center {

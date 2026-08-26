@@ -212,11 +212,16 @@ const ContactMaster = () => {
       }
 
       if (res.success) {
+        const savedContact = res.data;
         showNotification(
-          `Contact ${formData.mascon_id} ${editState === 'adding' ? 'saved' : 'updated'} successfully!`,
+          `Contact ${savedContact.mascon_id} ${editState === 'adding' ? 'saved' : 'updated'} successfully!`,
           'success'
         );
+        loadContact(savedContact);
         setEditState('idle');
+        if (editState === 'adding') {
+          setCurrentPage(1);
+        }
         fetchContacts(searchQuery);
       } else {
         showNotification(res.message || 'Failed to save contact', 'error');
@@ -327,6 +332,7 @@ const ContactMaster = () => {
           >
             📄 Entry
           </button>
+          <span className="sub-tab-separator">|</span>
           <button
             type="button"
             className={`sub-tab-btn ${activeTab === 'search' ? 'active' : ''}`}

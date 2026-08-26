@@ -202,23 +202,25 @@ const CompanyForm = ({
         >
           🗑 Delete
         </button>
-        <button
-          type="button"
-          className="btn btn-success"
-          onClick={onSave}
-          disabled={isIdle}
-          style={{ marginLeft: 'auto' }}
-        >
-          💾 Save
-        </button>
-        <button
-          type="button"
-          className="btn btn-ghost"
-          onClick={onCancel}
-          disabled={isIdle}
-        >
-          Cancel
-        </button>
+        {!isIdle && (
+          <>
+            <button
+              type="button"
+              className="btn btn-success"
+              onClick={onSave}
+              style={{ marginLeft: 'auto' }}
+            >
+              💾 Save
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={onCancel}
+            >
+              Cancel
+            </button>
+          </>
+        )}
       </div>
     </form>
   );
