@@ -19,15 +19,15 @@
 .company-table th {
   position: sticky;
   top: 0;
-  background-color: #525252;
-  color: #ffffff;
+  background-color: var(--panel2);
+  color: var(--text-h);
   padding: 5px 8px;
   font-size: 9.5px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  border-bottom: 1.5px solid #404040;
-  border-right: 1px solid #6b7280;
+  border-bottom: 1.5px solid var(--border);
+  border-right: 1px solid var(--border);
   text-align: center;
   z-index: 3;
 }
@@ -38,9 +38,9 @@
 
 .company-table td {
   padding: 3px 8px;
-  border-bottom: 1px solid #f1f5f9;
-  border-right: 1px solid #f1f5f9;
-  color: #334155;
+  border-bottom: 1px solid var(--panel2);
+  border-right: 1px solid var(--panel2);
+  color: var(--text);
   vertical-align: middle;
 }
 

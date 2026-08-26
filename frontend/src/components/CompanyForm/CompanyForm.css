@@ -31,9 +31,12 @@
   display: flex;
   gap: 4px;
   align-items: center;
-  border-top: 1px solid var(--border);
-  padding-top: 6px;
-  margin-top: 2px;
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin-top: 6px;
+  box-sizing: border-box;
 }
 
 /* Button Stylings */
