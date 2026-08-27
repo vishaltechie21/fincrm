@@ -17,19 +17,21 @@ const FormField = ({
       <label htmlFor={name}>
         {label} {required && <span className="req">*</span>}
       </label>
-      <input
-        type={type}
-        id={name}
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        readOnly={readOnly}
-        disabled={disabled}
-        className={`${readOnly ? 'readonly' : ''} ${disabled ? 'disabled-input' : ''}`}
-        maxLength={maxLength}
-      />
-      {error && <span className="error-message">{error}</span>}
+      <div className="field-control-container">
+        <input
+          type={type}
+          id={name}
+          name={name}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          readOnly={readOnly}
+          disabled={disabled}
+          className={`${readOnly ? 'readonly' : ''} ${disabled ? 'disabled-input' : ''}`}
+          maxLength={maxLength}
+        />
+
+      </div>
     </div>
   );
 };

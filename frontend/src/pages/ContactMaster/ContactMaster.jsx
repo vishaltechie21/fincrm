@@ -10,6 +10,8 @@ import * as contactService from '../../services/contactService';
 import * as companyService from '../../services/companyService';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import ImportModal from '../../components/ImportModal/ImportModal';
+import Swal from 'sweetalert2';
+import { validateContact } from '../../utils/validation';
 import './ContactMaster.css';
 
 const ContactMaster = () => {
@@ -153,10 +155,25 @@ const ContactMaster = () => {
   };
 
   const handleSave = async () => {
-    if (!validate()) return;
+    if (!validate()) {
+      const validationErrors = validateContact(formData);
+      const errorMessages = Object.values(validationErrors);
+      Swal.fire({
+        icon: 'warning',
+        title: 'Validation Warning',
+        html: `<ul style="text-align: left; font-size: 11px; margin: 0; padding-left: 20px;">
+          ${errorMessages.map(msg => `<li style="margin-bottom: 4px; color: var(--text-h);">${msg}</li>`).join('')}
+        </ul>`,
+        confirmButtonColor: 'var(--accent)',
+        background: 'var(--panel)',
+        color: 'var(--text-h)'
+      });
+      return;
+    }
     try {
       let res;
-      if (editState === 'adding') {
+      const isAdding = editState === 'adding';
+      if (isAdding) {
         res = await contactService.createContact(formData);
       } else {
         res = await contactService.updateContact(formData.mascon_id, formData);
@@ -164,21 +181,39 @@ const ContactMaster = () => {
 
       if (res.success) {
         const savedContact = res.data;
-        showNotification(
-          `Contact ${savedContact.mascon_id} ${editState === 'adding' ? 'saved' : 'updated'} successfully!`,
-          'success'
-        );
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: `Contact ${savedContact.mascon_id} ${isAdding ? 'saved' : 'updated'} successfully!`,
+          confirmButtonColor: 'var(--accent)',
+          background: 'var(--panel)',
+          color: 'var(--text-h)'
+        });
         loadContact(savedContact);
         setEditState('idle');
         fetchContacts();
       } else {
-        showNotification(res.message || 'Failed to save contact', 'error');
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: res.message || 'Failed to save contact',
+          confirmButtonColor: 'var(--accent)',
+          background: 'var(--panel)',
+          color: 'var(--text-h)'
+        });
         if (res.errors) setErrors(res.errors);
       }
     } catch (err) {
       console.error(err);
       const apiMsg = err.response?.data?.message || 'Network error: failed to save contact';
-      showNotification(apiMsg, 'error');
+      Swal.fire({
+        icon: 'error',
+        title: 'Network Error',
+        text: apiMsg,
+        confirmButtonColor: 'var(--accent)',
+        background: 'var(--panel)',
+        color: 'var(--text-h)'
+      });
       if (err.response?.data?.errors) setErrors(err.response.data.errors);
     }
   };
@@ -254,7 +289,7 @@ const ContactMaster = () => {
       designation: row['Designation'] || '',
       mobile: row['Mobile'] || '',
       email: row['Email'] || '',
-      key_person: row['Key Person'] || 'N',
+      key_person: row['Key Person'] || '',
       user_name: row['Sales User'] || '',
       mascon_remarks: row['Remarks'] || ''
     };

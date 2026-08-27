@@ -45,8 +45,8 @@ const ContactTable = ({ contacts, onEdit, activeId, onRowDoubleClick, onLoadMore
             {renderHeader('designation', 'Designation')}
             {renderHeader('mobile', 'Mobile')}
             {renderHeader('email', 'Email')}
-            {renderHeader('key_person', 'Key')}
-            {renderHeader('user_name', 'Key Person')}
+            {renderHeader('key_person', 'Key Person')}
+            {renderHeader('user_name', 'Sales User')}
             {renderHeader('stage', 'Stage')}
             {renderHeader('mascon_remarks', 'Remarks')}
           </tr>
@@ -71,11 +71,7 @@ const ContactTable = ({ contacts, onEdit, activeId, onRowDoubleClick, onLoadMore
               <td>{contact.designation || '—'}</td>
               <td>{contact.mobile || '—'}</td>
               <td className="contact-email" title={contact.email}>{contact.email || '—'}</td>
-              <td className="key-cell">
-                <span className={`badge ${contact.key_person === 'Y' ? 'badge-key-yes' : 'badge-key-no'}`}>
-                  {contact.key_person}
-                </span>
-              </td>
+              <td>{contact.key_person || '—'}</td>
               <td>{contact.user_name || '—'}</td>
               <td>{contact.stage || '—'}</td>
               <td className="contact-remarks" title={contact.mascon_remarks}>

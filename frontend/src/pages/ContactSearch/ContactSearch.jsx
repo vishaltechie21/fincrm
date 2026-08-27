@@ -15,8 +15,8 @@ const COLUMN_LABEL_MAP = {
   designation: 'Designation',
   mobile: 'Mobile',
   email: 'Email',
-  key_person: 'Key',
-  user_name: 'Key Person',
+  key_person: 'Key Person',
+  user_name: 'Sales User',
   stage: 'Stage',
   mascon_remarks: 'Remarks'
 };
@@ -101,7 +101,7 @@ const ContactSearch = () => {
   const getPropValue = (row, field) => {
     if (!row) return '';
     if (field === 'company_name') return row.company?.company_name || row.ct.mascom_id || '';
-    if (field === 'key_person') return row.ct.key_person || 'N';
+    if (field === 'key_person') return row.ct.key_person || '';
     if (field === 'user_name') return row.ct.user_name || '';
     if (field === 'stage') return row.stage || '';
     if (row.ct && row.ct[field] !== undefined) return row.ct[field];
@@ -283,7 +283,7 @@ const ContactSearch = () => {
       'Designation': r.ct.designation || '',
       'Mobile': r.ct.mobile || '',
       'Email': r.ct.email || '',
-      'Key Person': r.ct.key_person || 'N',
+      'Key Person': r.ct.key_person || '',
       'Sales Agent': r.ct.user_name || '',
       'Stage': r.stage,
       'Remarks': r.ct.mascon_remarks || '',
@@ -440,8 +440,8 @@ const ContactSearch = () => {
                     {renderSortableHeader('designation', 'Designation')}
                     {renderSortableHeader('mobile', 'Mobile')}
                     {renderSortableHeader('email', 'Email')}
-                    {renderSortableHeader('key_person', 'Key')}
-                    {renderSortableHeader('user_name', 'Key Person')}
+                    {renderSortableHeader('key_person', 'Key Person')}
+                    {renderSortableHeader('user_name', 'Sales User')}
                     {renderSortableHeader('stage', 'Stage')}
                     {renderSortableHeader('mascon_remarks', 'Remarks')}
                   </tr>
@@ -463,12 +463,12 @@ const ContactSearch = () => {
                           <td className="company-name">{r.company.company_name || r.ct.mascom_id}</td>
                           <td>
                             <b>{r.ct.contact_name}</b>
-                            {r.ct.key_person === "Y" && <span className="keyflag">KEY</span>}
+                            {r.ct.key_person && <span className="keyflag">KEY</span>}
                           </td>
                           <td>{r.ct.designation || '—'}</td>
                           <td>{r.ct.mobile || '—'}</td>
                           <td>{r.ct.email || '—'}</td>
-                          <td>{r.ct.key_person || 'N'}</td>
+                          <td>{r.ct.key_person || '—'}</td>
                           <td>{r.ct.user_name || '—'}</td>
                           <td>
                             <span className={`stage ${STAGE_CLASS[r.stage]}`}>{r.stage}</span>
@@ -502,8 +502,8 @@ const ContactSearch = () => {
                                       <span className="v">{r.ct.email || '—'}</span>
                                     </div>
                                     <div className="fact">
-                                      <span className="k">Key Person Status</span>
-                                      <span className="v">{r.ct.key_person === "Y" ? "Yes (Key contact)" : "No"}</span>
+                                      <span className="k">Key Person</span>
+                                      <span className="v">{r.ct.key_person || '—'}</span>
                                     </div>
                                     <div className="fact">
                                       <span className="k">Sales Owner</span>

@@ -14,20 +14,22 @@ const SelectField = ({
       <label htmlFor={name}>
         {label} {required && <span className="req">*</span>}
       </label>
-      <select id={name} name={name} value={value} onChange={onChange} disabled={disabled}>
-        <option value="">-- Select {label} --</option>
-        {options.map((opt) => {
-          const isObj = typeof opt === 'object' && opt !== null;
-          const optValue = isObj ? opt.value : opt;
-          const optLabel = isObj ? opt.label : opt;
-          return (
-            <option key={optValue} value={optValue}>
-              {optLabel}
-            </option>
-          );
-        })}
-      </select>
-      {error && <span className="error-message">{error}</span>}
+      <div className="field-control-container">
+        <select id={name} name={name} value={value} onChange={onChange} disabled={disabled}>
+          <option value="">-- Select {label} --</option>
+          {options.map((opt) => {
+            const isObj = typeof opt === 'object' && opt !== null;
+            const optValue = isObj ? opt.value : opt;
+            const optLabel = isObj ? opt.label : opt;
+            return (
+              <option key={optValue} value={optValue}>
+                {optLabel}
+              </option>
+            );
+          })}
+        </select>
+
+      </div>
     </div>
   );
 };

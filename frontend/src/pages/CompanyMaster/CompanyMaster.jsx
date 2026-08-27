@@ -9,6 +9,8 @@ import { useCompanyForm } from '../../hooks/useCompanyForm';
 import * as companyService from '../../services/companyService';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import ImportModal from '../../components/ImportModal/ImportModal';
+import Swal from 'sweetalert2';
+import { validateCompany } from '../../utils/validation';
 import './CompanyMaster.css';
 
 const CompanyMaster = () => {
@@ -137,10 +139,25 @@ const CompanyMaster = () => {
   };
 
   const handleSave = async () => {
-    if (!validate()) return;
+    if (!validate()) {
+      const validationErrors = validateCompany(formData);
+      const errorMessages = Object.values(validationErrors);
+      Swal.fire({
+        icon: 'warning',
+        title: 'Validation Warning',
+        html: `<ul style="text-align: left; font-size: 11px; margin: 0; padding-left: 20px;">
+          ${errorMessages.map(msg => `<li style="margin-bottom: 4px; color: var(--text-h);">${msg}</li>`).join('')}
+        </ul>`,
+        confirmButtonColor: 'var(--accent)',
+        background: 'var(--panel)',
+        color: 'var(--text-h)'
+      });
+      return;
+    }
     try {
       let res;
-      if (editState === 'adding') {
+      const isAdding = editState === 'adding';
+      if (isAdding) {
         res = await companyService.createCompany(formData);
       } else {
         res = await companyService.updateCompany(formData.mascom_id, formData);
@@ -148,21 +165,39 @@ const CompanyMaster = () => {
 
       if (res.success) {
         const savedCompany = res.data;
-        showNotification(
-          `Company ${savedCompany.mascom_id} ${editState === 'adding' ? 'saved' : 'updated'} successfully!`,
-          'success'
-        );
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: `Company ${savedCompany.mascom_id} ${isAdding ? 'saved' : 'updated'} successfully!`,
+          confirmButtonColor: 'var(--accent)',
+          background: 'var(--panel)',
+          color: 'var(--text-h)'
+        });
         loadCompany(savedCompany);
         setEditState('idle');
         fetchCompanies();
       } else {
-        showNotification(res.message || 'Failed to save company', 'error');
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: res.message || 'Failed to save company',
+          confirmButtonColor: 'var(--accent)',
+          background: 'var(--panel)',
+          color: 'var(--text-h)'
+        });
         if (res.errors) setErrors(res.errors);
       }
     } catch (err) {
       console.error(err);
       const apiMsg = err.response?.data?.message || 'Network error: failed to save company';
-      showNotification(apiMsg, 'error');
+      Swal.fire({
+        icon: 'error',
+        title: 'Network Error',
+        text: apiMsg,
+        confirmButtonColor: 'var(--accent)',
+        background: 'var(--panel)',
+        color: 'var(--text-h)'
+      });
       if (err.response?.data?.errors) setErrors(err.response.data.errors);
     }
   };

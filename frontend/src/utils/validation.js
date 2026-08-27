@@ -69,6 +69,12 @@ export const validateContact = (data) => {
     errors.mascom_id = 'Company is required.';
   }
 
+  if (!data.key_person || data.key_person.trim() === '') {
+    errors.key_person = 'Key Person name is required.';
+  } else if (data.key_person.trim().length > 100) {
+    errors.key_person = 'Key Person name cannot exceed 100 characters.';
+  }
+
   if (!data.user_name || data.user_name.trim() === '') {
     errors.user_name = 'Sales User is required.';
   } else if (data.user_name.trim().length > 100) {

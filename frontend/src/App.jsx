@@ -223,7 +223,7 @@ function App() {
       <header className="top-nav">
         <div className="top-nav-left">
           <div className="logo-text">
-            <img src="https://i0.wp.com/fincrm.com/wp-content/uploads/2023/03/FinCRM-Logo.png?w=753&ssl=1" alt="FinCRM Logo" />
+            <img src="/logo.png" alt="FinCRM Logo" />
           </div>
         </div>
 

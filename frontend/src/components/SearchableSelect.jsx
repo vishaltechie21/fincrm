@@ -59,52 +59,53 @@ const SearchableSelect = ({
         {label} {required && <span className="req">*</span>}
       </label>
       
-      <div className="searchable-select-wrapper">
-        <input
-          type="text"
-          id={name}
-          name={name}
-          value={isOpen ? searchTerm : (value || '')}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onFocus={() => {
-            if (!disabled) setIsOpen(true);
-          }}
-          placeholder={value ? '' : `-- Select ${label} --`}
-          disabled={disabled}
-          autoComplete="off"
-          className="searchable-select-input"
-        />
-        <span className="dropdown-arrow-icon">▼</span>
-        
-        {isOpen && !disabled && (
-          <div className="dropdown-options-list">
-            {filteredOptions.length > 0 ? (
-              filteredOptions.map((opt, index) => {
-                const isObj = typeof opt === 'object' && opt !== null;
-                const optValue = isObj ? opt.value : opt;
-                const optLabel = isObj ? opt.label : opt;
-                const isSelected = optValue === value;
-                
-                return (
-                  <div
-                    key={`${optValue}-${index}`}
-                    className={`dropdown-option-item ${isSelected ? 'selected' : ''}`}
-                    onMouseDown={() => handleOptionClick(optValue)}
-                  >
-                    {optLabel}
-                  </div>
-                );
-              })
-            ) : (
-              <div className="dropdown-option-item no-results">
-                No matching options
-              </div>
-            )}
-          </div>
-        )}
+      <div className="field-control-container">
+        <div className="searchable-select-wrapper">
+          <input
+            type="text"
+            id={name}
+            name={name}
+            value={isOpen ? searchTerm : (value || '')}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onFocus={() => {
+              if (!disabled) setIsOpen(true);
+            }}
+            placeholder={value ? '' : `-- Select ${label} --`}
+            disabled={disabled}
+            autoComplete="off"
+            className="searchable-select-input"
+          />
+          <span className="dropdown-arrow-icon">▼</span>
+          
+          {isOpen && !disabled && (
+            <div className="dropdown-options-list">
+              {filteredOptions.length > 0 ? (
+                filteredOptions.map((opt, index) => {
+                  const isObj = typeof opt === 'object' && opt !== null;
+                  const optValue = isObj ? opt.value : opt;
+                  const optLabel = isObj ? opt.label : opt;
+                  const isSelected = optValue === value;
+                  
+                  return (
+                    <div
+                      key={`${optValue}-${index}`}
+                      className={`dropdown-option-item ${isSelected ? 'selected' : ''}`}
+                      onMouseDown={() => handleOptionClick(optValue)}
+                    >
+                      {optLabel}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="dropdown-option-item no-results">
+                  No matching options
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
       </div>
-      
-      {error && <span className="error-message">{error}</span>}
     </div>
   );
 };

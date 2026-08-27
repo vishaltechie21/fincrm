@@ -114,3 +114,12 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted);
 }
+
+/* Container for input/select/textarea and its error message inside horizontal form fields */
+.field-control-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+

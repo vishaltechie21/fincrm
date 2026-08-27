@@ -8,8 +8,8 @@ const initialFormState = {
   designation: '',
   mobile: '',
   email: '',
-  key_person: 'N',
-  user_name: '',
+  key_person: '',
+  user_name: 'admin_fincrm',
   mascon_remarks: ''
 };
 
@@ -58,8 +58,8 @@ export const useContactForm = () => {
       designation: contact.designation || '',
       mobile: contact.mobile || '',
       email: contact.email || '',
-      key_person: contact.key_person || 'N',
-      user_name: contact.user_name || '',
+      key_person: contact.key_person || '',
+      user_name: contact.user_name || 'admin_fincrm',
       mascon_remarks: contact.mascon_remarks || ''
     });
     setErrors({});

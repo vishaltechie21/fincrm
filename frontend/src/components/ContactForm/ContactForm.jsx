@@ -1,15 +1,10 @@
 import { Plus, Edit, Trash2, Save } from 'lucide-react';
 import FormField from '../FormField';
-import SelectField from '../SelectField';
 import SearchableSelect from '../SearchableSelect';
 import TextareaField from '../TextareaField';
 import { RefreshCw } from 'lucide-react';
 import './ContactForm.css';
 
-const KEY_PERSON_OPTIONS = [
-  { value: 'Y', label: 'Yes' },
-  { value: 'N', label: 'No' }
-];
 
 const ContactForm = ({
   formData,
@@ -123,27 +118,16 @@ const ContactForm = ({
         </div>
 
         {/* Row 3 */}
-        <div className="col-3">
-          <SelectField
+        <div className="col-12">
+          <FormField
             label="Key Person"
             name="key_person"
             value={formData.key_person}
-            onChange={(e) => handleSelectChange('key_person', e.target.value)}
-            options={KEY_PERSON_OPTIONS}
-            error={errors.key_person}
-            disabled={isIdle}
-          />
-        </div>
-        <div className="col-5">
-          <FormField
-            label="Sales User"
-            name="user_name"
-            value={formData.user_name}
             onChange={handleChange}
-            placeholder="Enter sales user"
+            placeholder="Enter name of key person"
             required={true}
-            error={errors.user_name}
-            maxLength={100}
+            error={errors.key_person}
+            maxLength={25}
             disabled={isIdle}
           />
         </div>
