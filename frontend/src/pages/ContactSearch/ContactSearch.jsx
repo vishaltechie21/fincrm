@@ -1,8 +1,12 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { User, FileSpreadsheet, Search, RefreshCw } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import Loading from '../../components/Loading/Loading';
+import FilterModal from '../../components/FilterModal/FilterModal';
+import HighlightText from '../../components/HighlightText';
+import * as settingsService from '../../services/settingsService';
+import Swal from 'sweetalert2';
 import * as companyService from '../../services/companyService';
 import * as contactService from '../../services/contactService';
 import { MASCOM_SEED, MASCON_SEED, TRACOM_SEED } from '../../utils/activityData';
@@ -32,17 +36,18 @@ const ContactSearch = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchModeColumn, setSearchModeColumn] = useState(null); // null = General, 'field_name' = Generic
 
-  // Dynamic filter slots config
-  const [filter1Col, setFilter1Col] = useState('designation');
-  const [filter2Col, setFilter2Col] = useState('key_person');
-  const [filter3Col, setFilter3Col] = useState('user_name');
+  // Layout & Persistent Settings State
+  const [isFixedHeader, setIsFixedHeader] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [visibleColumns, setVisibleColumns] = useState(Object.keys(COLUMN_LABEL_MAP));
+  const [activeFilters, setActiveFilters] = useState({});
+  const [hasSavedSettings, setHasSavedSettings] = useState(false);
 
-  const [filter1Val, setFilter1Val] = useState('');
-  const [filter2Val, setFilter2Val] = useState('');
-  const [filter3Val, setFilter3Val] = useState('');
+  // Selection Checkbox State (Set of mascon_id keys)
+  const [selectedRowIds, setSelectedRowIds] = useState(new Set());
 
-  // Accordion open state (Only one row open at a time)
-  const [openRowId, setOpenRowId] = useState(null);
+  // Accordion expanded row IDs (Set of mascon_id keys)
+  const [expandedRowIds, setExpandedRowIds] = useState(new Set());
 
   // Infinite Scroll & Sorting
   const [visibleCount, setVisibleCount] = useState(50);
@@ -97,6 +102,28 @@ const ContactSearch = () => {
     fetchAllData();
   }, [fetchAllData]);
 
+  // Load saved settings on mount
+  useEffect(() => {
+    const loadSavedSettings = async () => {
+      try {
+        const res = await settingsService.getSettings('contact_search');
+        if (res && res.success && res.data) {
+          const saved = res.data;
+          setIsFixedHeader(saved.isFixedHeader !== undefined ? saved.isFixedHeader : false);
+          if (saved.visibleColumns !== undefined) setVisibleColumns(saved.visibleColumns);
+          if (saved.activeFilters !== undefined) setActiveFilters(saved.activeFilters);
+          if (saved.sortField !== undefined) setSortField(saved.sortField);
+          if (saved.sortAsc !== undefined) setSortAsc(saved.sortAsc);
+          if (saved.selectedRowIds !== undefined) setSelectedRowIds(new Set(saved.selectedRowIds));
+          setHasSavedSettings(true);
+        }
+      } catch (err) {
+        console.error('Failed to load saved settings:', err);
+      }
+    };
+    loadSavedSettings();
+  }, []);
+
   // Resolve values helper
   const getPropValue = (row, field) => {
     if (!row) return '';
@@ -125,7 +152,7 @@ const ContactSearch = () => {
       <th 
         className={`clickable-header ${isSearchActive ? 'active-search-header' : ''}`}
         onClick={() => handleHeaderClick(field)}
-        title="Click for generic search"
+        title="Click to toggle Specific Column Search"
       >
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', width: '100%', justifyContent: 'space-between' }}>
           <span>{label}</span>
@@ -142,14 +169,12 @@ const ContactSearch = () => {
     );
   };
 
-  // Header click handler toggles search mode and binds Filter Slot 1
+  // Header click handler toggles search mode
   const handleHeaderClick = (field) => {
     if (searchModeColumn === field) {
       setSearchModeColumn(null);
     } else {
       setSearchModeColumn(field);
-      setFilter1Col(field);
-      setFilter1Val('');
       setTimeout(() => {
         const input = document.getElementById('search-input');
         if (input) input.focus();
@@ -203,26 +228,38 @@ const ContactSearch = () => {
   });
 
   // Unique options generators for dropdown selectors
-  const getUniqueOptionsForColumn = (field) => {
-    const vals = fullRows.map((r) => getPropValue(r, field)).filter(Boolean);
-    return [...new Set(vals)].sort();
-  };
+  const uniqueValuesMap = useMemo(() => {
+    const map = {};
+    Object.keys(COLUMN_LABEL_MAP).forEach((field) => {
+      const vals = fullRows.map((r) => {
+        const val = getPropValue(r, field);
+        return val === null || val === undefined ? '' : String(val).trim();
+      });
+      map[field] = Array.from(new Set(vals)).map(v => v || '—').sort();
+    });
+    return map;
+  }, [fullRows]);
 
-  const filter1Options = getUniqueOptionsForColumn(filter1Col);
-  const filter2Options = getUniqueOptionsForColumn(filter2Col);
-  const filter3Options = getUniqueOptionsForColumn(filter3Col);
+  const activeFilterCount = useMemo(() => {
+    return Object.keys(activeFilters).filter((field) => {
+      const checked = activeFilters[field];
+      const total = uniqueValuesMap[field] || [];
+      return checked !== undefined && checked.length < total.length;
+    }).length;
+  }, [activeFilters, uniqueValuesMap]);
 
   // Apply filters
   const filteredRows = fullRows.filter((r) => {
-    // 1. Dynamic Filters
-    const val1 = getPropValue(r, filter1Col);
-    const match1 = !filter1Val || String(val1).toLowerCase() === filter1Val.toLowerCase();
-
-    const val2 = getPropValue(r, filter2Col);
-    const match2 = !filter2Val || String(val2).toLowerCase() === filter2Val.toLowerCase();
-
-    const val3 = getPropValue(r, filter3Col);
-    const match3 = !filter3Val || String(val3).toLowerCase() === filter3Val.toLowerCase();
+    // 1. Multi-select filters from FilterModal
+    for (const field of Object.keys(COLUMN_LABEL_MAP)) {
+      const checkedVals = activeFilters[field];
+      if (checkedVals !== undefined) {
+        const val = getPropValue(r, field) || '—';
+        if (!checkedVals.includes(val)) {
+          return false;
+        }
+      }
+    }
 
     // 2. Search Box (General or Column Generic)
     let matchesSearch = true;
@@ -236,17 +273,19 @@ const ContactSearch = () => {
       }
     }
 
-    return match1 && match2 && match3 && matchesSearch;
+    return matchesSearch;
   });
 
   const handleRowClick = (ct) => {
-    if (openRowId === ct.mascon_id) {
-      setOpenRowId(null);
-      setSearchQuery('');
-    } else {
-      setOpenRowId(ct.mascon_id);
-      setSearchQuery(ct.contact_name);
-    }
+    setExpandedRowIds(prev => {
+      const next = new Set(prev);
+      if (next.has(ct.mascon_id)) {
+        next.delete(ct.mascon_id);
+      } else {
+        next.add(ct.mascon_id);
+      }
+      return next;
+    });
   };
 
   // Sorting & Infinite Scroll Slice
@@ -264,15 +303,76 @@ const ContactSearch = () => {
 
   const paginatedRows = sortedRows.slice(0, visibleCount);
 
+  // Settings Save & Clear actions
+  const handleSaveSettings = async () => {
+    try {
+      const payload = {
+        isFixedHeader,
+        visibleColumns,
+        activeFilters,
+        sortField,
+        sortAsc,
+        selectedRowIds: Array.from(selectedRowIds)
+      };
+      await settingsService.saveSettings('contact_search', payload);
+      setHasSavedSettings(true);
+      Swal.fire({
+        icon: 'success',
+        title: 'Settings Saved',
+        text: 'Your grid layout, filters, and sticky header preferences have been saved!',
+        confirmButtonColor: 'var(--accent)',
+        background: 'var(--panel)',
+        color: 'var(--text-h)'
+      });
+    } catch (err) {
+      console.error('Save settings error:', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Save Failed',
+        text: 'Failed to save settings. Please try again.',
+        confirmButtonColor: 'var(--accent)',
+        background: 'var(--panel)',
+        color: 'var(--text-h)'
+      });
+    }
+  };
+
+  const handleClearSettings = async () => {
+    try {
+      await settingsService.clearSettings('contact_search');
+      setHasSavedSettings(false);
+      setIsFixedHeader(false);
+      setVisibleColumns(Object.keys(COLUMN_LABEL_MAP));
+      setActiveFilters({});
+      setSortField('mascon_id');
+      setSortAsc(true);
+      setSelectedRowIds(new Set());
+      Swal.fire({
+        icon: 'success',
+        title: 'Settings Cleared',
+        text: 'Grid layout has been restored to default settings.',
+        confirmButtonColor: 'var(--accent)',
+        background: 'var(--panel)',
+        color: 'var(--text-h)'
+      });
+    } catch (err) {
+      console.error('Clear settings error:', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Clear Failed',
+        text: 'Failed to clear settings. Please try again.',
+        confirmButtonColor: 'var(--accent)',
+        background: 'var(--panel)',
+        color: 'var(--text-h)'
+      });
+    }
+  };
+
   const handleClearFilters = () => {
     setSearchQuery('');
     setSearchModeColumn(null);
-    setFilter1Col('designation');
-    setFilter2Col('key_person');
-    setFilter3Col('user_name');
-    setFilter1Val('');
-    setFilter2Val('');
-    setFilter3Val('');
+    setActiveFilters({});
+    setSelectedRowIds(new Set());
   };
 
   const handleExportExcel = () => {
@@ -308,13 +408,6 @@ const ContactSearch = () => {
     return `₹ ${Number(n).toLocaleString("en-IN")}`;
   };
 
-  const getPluralLabel = (label) => {
-    if (label === 'Industry') return 'Industries';
-    if (label === 'Company') return 'Companies';
-    if (label === 'Category') return 'Categories';
-    return `${label}s`;
-  };
-
   return (
     <div className="contact-search-page">
       {/* Header */}
@@ -328,57 +421,80 @@ const ContactSearch = () => {
         </div>
       </div>
 
-      {/* Reordered Toolbar: Selects First, then Search */}
+      {/* Reordered Toolbar: Filter Modal, Sticky Toggle, Settings Save/Clear, Search Mode, Search Input */}
       <div className="cs-toolbar-row">
-        {/* Dropdown 1 */}
-        <div className="cs-filters">
-          <div className="dynamic-filter-wrapper">
-            <select className="dynamic-col-select" value={filter1Col} onChange={(e) => { setFilter1Col(e.target.value); setFilter1Val(''); }}>
-              {Object.entries(COLUMN_LABEL_MAP).map(([field, label]) => (
-                <option key={field} value={field}>{label}</option>
-              ))}
-            </select>
-            <select value={filter1Val} onChange={(e) => setFilter1Val(e.target.value)}>
-              <option value="">All {getPluralLabel(COLUMN_LABEL_MAP[filter1Col])}</option>
-              {filter1Options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
-            </select>
-          </div>
+        {/* Advanced Layout & Filter buttons */}
+        <button 
+          type="button" 
+          className="btn btn-secondary" 
+          onClick={() => setIsFilterModalOpen(true)}
+          title="Configure Visible Columns & Excel-like Value Filters"
+        >
+          Filters {activeFilterCount > 0 ? `(${activeFilterCount})` : ''}
+        </button>
 
-          {/* Dropdown 2 */}
-          <div className="dynamic-filter-wrapper">
-            <select className="dynamic-col-select" value={filter2Col} onChange={(e) => { setFilter2Col(e.target.value); setFilter2Val(''); }}>
-              {Object.entries(COLUMN_LABEL_MAP).map(([field, label]) => (
-                <option key={field} value={field}>{label}</option>
-              ))}
-            </select>
-            <select value={filter2Val} onChange={(e) => setFilter2Val(e.target.value)}>
-              <option value="">All {getPluralLabel(COLUMN_LABEL_MAP[filter2Col])}</option>
-              {filter2Options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
-            </select>
-          </div>
+        <button 
+          type="button" 
+          className={`btn ${isFixedHeader ? 'btn-success' : 'btn-secondary'}`}
+          onClick={() => setIsFixedHeader(prev => !prev)}
+          title="Toggle locking table headers at the top on scroll (Freeze Header)"
+        >
+          Freeze Header
+        </button>
 
-          {/* Dropdown 3 */}
-          <div className="dynamic-filter-wrapper">
-            <select className="dynamic-col-select" value={filter3Col} onChange={(e) => { setFilter3Col(e.target.value); setFilter3Val(''); }}>
-              {Object.entries(COLUMN_LABEL_MAP).map(([field, label]) => (
-                <option key={field} value={field}>{label}</option>
-              ))}
-            </select>
-            <select value={filter3Val} onChange={(e) => setFilter3Val(e.target.value)}>
-              <option value="">All {getPluralLabel(COLUMN_LABEL_MAP[filter3Col])}</option>
-              {filter3Options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
-            </select>
-          </div>
+        <button 
+          type="button" 
+          className="btn btn-secondary" 
+          onClick={handleSaveSettings}
+          title="Save layout and filter settings to backend"
+        >
+          Save Settings
+        </button>
+
+        <button 
+          type="button" 
+          className="btn btn-secondary" 
+          onClick={handleClearSettings}
+          disabled={filteredRows.length === 0 || !hasSavedSettings}
+          title="Clear saved layout settings from backend"
+        >
+          Clear Settings
+        </button>
+
+        {/* Search Mode Toggles */}
+        <div style={{ display: 'flex', gap: '2px', borderLeft: '1px solid var(--border)', paddingLeft: '6px', marginLeft: '2px' }}>
+          <button 
+            type="button" 
+            className={`btn ${!searchModeColumn ? 'btn-success' : 'btn-secondary'}`}
+            onClick={() => setSearchModeColumn(null)}
+            title="Search across all columns with highlighting"
+          >
+            Generic Search
+          </button>
+          <button 
+            type="button" 
+            className={`btn ${searchModeColumn ? 'btn-success' : 'btn-secondary'}`}
+            onClick={() => {
+              if (!searchModeColumn) {
+                setSearchModeColumn(visibleColumns[0] || 'contact_name');
+              } else {
+                setSearchModeColumn(null);
+              }
+            }}
+            title="Click column headers to search specific fields"
+          >
+            Specific Search
+          </button>
         </div>
 
-        {/* Single General Search input supporting column search toggling */}
+        {/* Single General Search input */}
         <div className="cs-search-box">
           <Search size={13} className="cs-search-icon" />
           <input
             id="search-input"
             type="text"
             className={`cs-search-input ${searchModeColumn ? 'active-col-search' : ''}`}
-            placeholder={searchModeColumn ? `Search by ${COLUMN_LABEL_MAP[searchModeColumn]}...` : "General Search..."}
+            placeholder={searchModeColumn ? `Search ${COLUMN_LABEL_MAP[searchModeColumn]}...` : "General Search..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -394,11 +510,27 @@ const ContactSearch = () => {
           )}
         </div>
 
-        {/* Reusable Styled Green and Red buttons */}
-        <button className="btn btn-success" type="button" onClick={() => { if (filteredRows.length > 0) { setOpenRowId(filteredRows[0].ct.mascon_id); setSearchQuery(filteredRows[0].ct.contact_name); } }}>
-          Expand row
+        {/* Reusable Styled Green and Red buttons - Expand All and Collapse All */}
+        <button 
+          className="btn btn-success" 
+          type="button" 
+          onClick={() => {
+            const allIds = filteredRows.map((r) => r.ct.mascon_id);
+            setExpandedRowIds(new Set(allIds));
+          }}
+          title="Expand all table rows"
+        >
+          Expand all
         </button>
-        <button className="btn btn-danger" type="button" onClick={() => { setOpenRowId(null); setSearchQuery(''); }}>
+        <button 
+          className="btn btn-danger" 
+          type="button" 
+          onClick={() => {
+            setExpandedRowIds(new Set());
+            setSearchQuery('');
+          }}
+          title="Collapse all table rows"
+        >
           Collapse all
         </button>
 
@@ -422,7 +554,7 @@ const ContactSearch = () => {
         ) : (
           <>
             <div 
-              className="contact-table-container"
+              className={`contact-table-container ${isFixedHeader ? 'fixed-header-active' : ''}`}
               onScroll={(e) => {
                 const { scrollTop, scrollHeight, clientHeight } = e.target;
                 if (scrollHeight - scrollTop - clientHeight < 20) {
@@ -433,22 +565,50 @@ const ContactSearch = () => {
               <table className="contact-table">
                 <thead>
                   <tr>
+                    <th style={{ width: '30px', textAlign: 'center' }}>
+                      <label className="checkbox-container select-all-header-cb">
+                        <input 
+                          type="checkbox" 
+                          checked={paginatedRows.length > 0 && paginatedRows.every(r => selectedRowIds.has(r.ct.mascon_id))}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setSelectedRowIds(prev => {
+                              const next = new Set(prev);
+                              paginatedRows.forEach(row => {
+                                if (checked) {
+                                  next.add(row.ct.mascon_id);
+                                } else {
+                                  next.delete(row.ct.mascon_id);
+                                }
+                              });
+                              return next;
+                            });
+                          }}
+                        />
+                        <span className="checkmark"></span>
+                      </label>
+                    </th>
                     <th style={{ width: '30px' }}></th>
-                    {renderSortableHeader('mascon_id', 'Code')}
-                    {renderSortableHeader('company_name', 'Company')}
-                    {renderSortableHeader('contact_name', 'Contact Name')}
-                    {renderSortableHeader('designation', 'Designation')}
-                    {renderSortableHeader('mobile', 'Mobile')}
-                    {renderSortableHeader('email', 'Email')}
-                    {renderSortableHeader('key_person', 'Key Person')}
-                    {renderSortableHeader('user_name', 'Sales User')}
-                    {renderSortableHeader('stage', 'Stage')}
-                    {renderSortableHeader('mascon_remarks', 'Remarks')}
+                    {visibleColumns.includes('mascon_id') && renderSortableHeader('mascon_id', 'Code')}
+                    {visibleColumns.includes('company_name') && renderSortableHeader('company_name', 'Company')}
+                    {visibleColumns.includes('contact_name') && renderSortableHeader('contact_name', 'Contact Name')}
+                    {visibleColumns.includes('designation') && renderSortableHeader('designation', 'Designation')}
+                    {visibleColumns.includes('mobile') && renderSortableHeader('mobile', 'Mobile')}
+                    {visibleColumns.includes('email') && renderSortableHeader('email', 'Email')}
+                    {visibleColumns.includes('key_person') && renderSortableHeader('key_person', 'Key Person')}
+                    {visibleColumns.includes('user_name') && renderSortableHeader('user_name', 'Sales User')}
+                    {visibleColumns.includes('stage') && renderSortableHeader('stage', 'Stage')}
+                    {visibleColumns.includes('mascon_remarks') && renderSortableHeader('mascon_remarks', 'Remarks')}
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedRows.map((r, idx) => {
-                    const isExpanded = openRowId === r.ct.mascon_id;
+                    const isExpanded = expandedRowIds.has(r.ct.mascon_id);
+                    
+                    const renderCellText = (text, field) => {
+                      const isHighlightActive = !searchModeColumn || searchModeColumn === field;
+                      return <HighlightText text={text} highlight={isHighlightActive ? searchQuery : ''} />;
+                    };
 
                     return (
                       <React.Fragment key={r.ct.mascon_id}>
@@ -456,31 +616,58 @@ const ContactSearch = () => {
                           className={`master-row ${isExpanded ? 'open-row' : ''} ${idx % 2 === 1 ? 'even-row' : 'odd-row'} clickable-row`}
                           onClick={() => handleRowClick(r.ct)}
                         >
+                          <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                            <label className="checkbox-container">
+                              <input 
+                                type="checkbox" 
+                                checked={selectedRowIds.has(r.ct.mascon_id)}
+                                onChange={(e) => {
+                                  const checked = e.target.checked;
+                                  setSelectedRowIds(prev => {
+                                    const next = new Set(prev);
+                                    if (checked) {
+                                      next.add(r.ct.mascon_id);
+                                    } else {
+                                      next.delete(r.ct.mascon_id);
+                                    }
+                                    return next;
+                                  });
+                                }}
+                              />
+                              <span className="checkmark"></span>
+                            </label>
+                          </td>
                           <td style={{ textAlign: 'center' }}>
-                            <span className="twisty-icon">▶</span>
+                            <span className="twisty-icon" style={{ fontWeight: 'bold', fontSize: '12px' }}>{isExpanded ? '−' : '＋'}</span>
                           </td>
-                          <td className="contact-id">{r.ct.mascon_id}</td>
-                          <td className="company-name">{r.company.company_name || r.ct.mascom_id}</td>
-                          <td>
-                            <b>{r.ct.contact_name}</b>
-                            {r.ct.key_person && <span className="keyflag">KEY</span>}
-                          </td>
-                          <td>{r.ct.designation || '—'}</td>
-                          <td>{r.ct.mobile || '—'}</td>
-                          <td>{r.ct.email || '—'}</td>
-                          <td>{r.ct.key_person || '—'}</td>
-                          <td>{r.ct.user_name || '—'}</td>
-                          <td>
-                            <span className={`stage ${STAGE_CLASS[r.stage]}`}>{r.stage}</span>
-                          </td>
-                          <td className="contact-remarks" title={r.ct.mascon_remarks}>
-                            {r.ct.mascon_remarks || '—'}
-                          </td>
+                          {visibleColumns.includes('mascon_id') && <td className="contact-id">{renderCellText(r.ct.mascon_id, 'mascon_id')}</td>}
+                          {visibleColumns.includes('company_name') && <td className="company-name">{renderCellText(r.company.company_name || r.ct.mascom_id, 'company_name')}</td>}
+                          {visibleColumns.includes('contact_name') && (
+                            <td>
+                              <b>{renderCellText(r.ct.contact_name, 'contact_name')}</b>
+                              {r.ct.key_person && <span className="keyflag">KEY</span>}
+                            </td>
+                          )}
+                          {visibleColumns.includes('designation') && <td>{renderCellText(r.ct.designation || '—', 'designation')}</td>}
+                          {visibleColumns.includes('mobile') && <td>{renderCellText(r.ct.mobile || '—', 'mobile')}</td>}
+                          {visibleColumns.includes('email') && <td className="contact-email" title={r.ct.email}>{renderCellText(r.ct.email || '—', 'email')}</td>}
+                          {visibleColumns.includes('key_person') && <td>{renderCellText(r.ct.key_person || '—', 'key_person')}</td>}
+                          {visibleColumns.includes('user_name') && <td>{renderCellText(r.ct.user_name || '—', 'user_name')}</td>}
+                          {visibleColumns.includes('stage') && (
+                            <td>
+                              <span className={`stage ${STAGE_CLASS[r.stage]}`}>{r.stage}</span>
+                            </td>
+                          )}
+                          {visibleColumns.includes('mascon_remarks') && (
+                            <td className="contact-remarks" title={r.ct.mascon_remarks}>
+                              {renderCellText(r.ct.mascon_remarks || '—', 'mascon_remarks')}
+                            </td>
+                          )}
                         </tr>
 
                         {isExpanded && (
                           <tr className="detail">
-                            <td colSpan="11" className="detail-cell">
+                            <td colSpan={visibleColumns.length + 2} className="detail-cell">
                               <div className="detail-box">
                                 {/* Contact Info */}
                                 <div className="sec">
@@ -620,7 +807,7 @@ const ContactSearch = () => {
                   })}
                   {!paginatedRows.length && (
                     <tr>
-                      <td colSpan="11">
+                      <td colSpan={visibleColumns.length + 2}>
                         <div className="table-empty-state">
                           <p>No records match your filters. Select different values above or toggle search columns.</p>
                         </div>
@@ -633,6 +820,19 @@ const ContactSearch = () => {
           </>
         )}
       </div>
+
+      {/* Checklist Filter Modal */}
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        columns={COLUMN_LABEL_MAP}
+        dataset={fullRows}
+        getPropValue={getPropValue}
+        visibleColumns={visibleColumns}
+        onVisibleColumnsChange={setVisibleColumns}
+        activeFilters={activeFilters}
+        onFiltersChange={setActiveFilters}
+      />
     </div>
   );
 };

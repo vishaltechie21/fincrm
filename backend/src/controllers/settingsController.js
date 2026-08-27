@@ -49,7 +49,7 @@ async function getSettings(req, res, next) {
 async function clearSettings(req, res, next) {
   try {
     const { pageName } = req.params;
-    const userKey = req.body.user_key || req.query.user_key || 'admin_fincrm';
+    const userKey = (req.body && req.body.user_key) || req.query.user_key || 'admin_fincrm';
 
     await settingsService.clearSettings(pageName, userKey);
     res.json({

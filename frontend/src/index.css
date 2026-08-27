@@ -123,3 +123,90 @@ body {
   min-width: 0;
 }
 
+/* Custom search highlighting */
+mark.highlight-search {
+  background-color: #fef08a !important;
+  color: #1e293b !important;
+  padding: 0 1px;
+  border-radius: 2px;
+}
+
+/* Sticky Headers on Scroll */
+.company-table-container.fixed-header-active th,
+.contact-table-container.fixed-header-active th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 15 !important;
+  background-color: var(--panel2) !important;
+  box-shadow: inset 0 -1px 0 var(--border), 0 1px 2px rgba(0,0,0,0.05) !important;
+}
+
+/* Force normal scroll behavior when Freeze Header is disabled (not active) */
+.company-table-container:not(.fixed-header-active) th,
+.contact-table-container:not(.fixed-header-active) th {
+  position: relative !important;
+  top: auto !important;
+  z-index: 1 !important;
+  box-shadow: none !important;
+}
+
+/* Custom premium checkboxes */
+.checkbox-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  line-height: 1;
+}
+
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: relative;
+  display: inline-block;
+  height: 13px;
+  width: 13px;
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  flex-shrink: 0;
+  transition: all 0.1s ease;
+}
+
+.checkbox-container:hover input ~ .checkmark {
+  border-color: var(--accent);
+}
+
+.checkbox-container input:checked ~ .checkmark {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+.checkmark::after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 3.5px;
+  top: 1px;
+  width: 3px;
+  height: 6px;
+  border: solid white;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox-container input:checked ~ .checkmark::after {
+  display: block;
+}
+
+.select-all-header-cb .checkmark {
+  margin: 0 auto;
+}
+

@@ -1,0 +1,328 @@
+/* Filter Modal Overlay */
+.filter-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(9, 18, 42, 0.45);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modal Content Box */
+.filter-modal-box {
+  width: 580px;
+  height: 420px;
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUp 0.18s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Header */
+.filter-modal-header {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--panel2);
+}
+
+.filter-modal-header h3 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.close-x-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.close-x-btn:hover {
+  color: var(--red);
+}
+
+/* Body Split Container */
+.filter-modal-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Left Sidebar - Visibility and tabs */
+.columns-sidebar {
+  width: 220px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--panel2);
+}
+
+.sidebar-title {
+  padding: 6px 12px;
+  font-size: 9px;
+  font-weight: 900;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-h);
+  transition: background-color 0.15s ease;
+}
+
+.sidebar-item:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.sidebar-item.active-tab {
+  background-color: var(--panel);
+  border-right: 2px solid var(--accent);
+  color: var(--accent);
+}
+
+.column-tab-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-left: 6px;
+}
+
+.active-filter-badge {
+  color: var(--green);
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+/* Right Panel - Value checklist selection */
+.values-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  background-color: var(--panel);
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.panel-header h4 {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.search-filter-box {
+  width: 140px;
+}
+
+.modal-val-search {
+  width: 100%;
+  padding: 2px 6px;
+  font-size: 9px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--panel2);
+  color: var(--text-h);
+  outline: none;
+}
+
+.modal-val-search:focus {
+  border-color: var(--accent);
+  background-color: var(--panel);
+}
+
+.select-all-row {
+  padding: 4px 0 6px 0;
+  border-bottom: 1px dashed var(--border);
+  margin-bottom: 6px;
+}
+
+.values-checklist {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 4px;
+}
+
+.value-item {
+  padding: 4px 2px;
+  border-radius: 3px;
+  transition: background-color 0.1s ease;
+}
+
+.value-item:hover {
+  background-color: var(--panel2);
+}
+
+.no-values-placeholder,
+.no-tab-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--muted);
+  font-size: 10px;
+  font-style: italic;
+}
+
+/* Checkbox Customization styling */
+.checkbox-container {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  font-size: 9.5px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1;
+}
+
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: relative;
+  display: inline-block;
+  height: 12px;
+  width: 12px;
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.checkbox-container:hover input ~ .checkmark {
+  border-color: var(--accent);
+}
+
+.checkbox-container input:checked ~ .checkmark {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+.checkmark::after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 3.5px;
+  top: 1px;
+  width: 3px;
+  height: 6px;
+  border: solid white;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox-container input:checked ~ .checkmark::after {
+  display: block;
+}
+
+.label-text {
+  margin-left: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}
+
+/* Footer styling */
+.filter-modal-footer {
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--panel2);
+}
+
+.footer-left-info {
+  font-size: 9px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.footer-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* Custom scrollbars inside the modal */
+.sidebar-list::-webkit-scrollbar,
+.values-checklist::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar-list::-webkit-scrollbar-track,
+.values-checklist::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-list::-webkit-scrollbar-thumb,
+.values-checklist::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.sidebar-list::-webkit-scrollbar-thumb:hover,
+.values-checklist::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}

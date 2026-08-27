@@ -47,6 +47,8 @@
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   flex-wrap: nowrap;
+  position: relative;
+  z-index: 20;
 }
 
 .cs-search-box {
@@ -131,7 +133,7 @@
 
 .company-table th.clickable-header:hover {
   background-color: #1a3f70;
-  color: #ffffff;
+  color: #ecb848;
 }
 
 .company-table th.active-search-header {
