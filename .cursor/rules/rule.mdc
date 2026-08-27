@@ -1,0 +1,70 @@
+---
+description: Project rules and guidelines to ensure code quality, UI consistency, and performance in the ERP/CRM system.
+globs: **/*
+---
+
+# ERP/CRM Project Rules
+
+### Core Engineering
+* Write only necessary code. No redundant lines, duplicate logic, dead code, unnecessary wrappers, or speculative features.
+* Before creating new code, inspect the existing project and reuse suitable components, utilities, hooks, services, styles, and libraries.
+* Prefer established, maintained libraries already used by the project instead of implementing common functionality from scratch.
+* Do not introduce a new dependency when existing project code/library can solve the requirement.
+* Keep code modular, readable, typed/validated where applicable, and easy to maintain.
+
+### Architecture
+* Follow the existing project architecture and naming conventions.
+* Do not create a new page, controller, service, hook, utility, or component when an existing one can be extended safely.
+* New controllers/services/pages must have a clear responsibility and must not contain unrelated logic.
+* Keep UI, API, business logic, and database responsibilities separated.
+* Before changing architecture, explain why the existing structure cannot support the requirement.
+
+### API & Performance
+* Avoid unnecessary API calls. Fetch only the data required for the current screen/action.
+* Never call the same API repeatedly without a real reason.
+* Do not fetch data in multiple components when one parent/request can provide it.
+* Do not reload complete datasets after small mutations when the local state can be updated safely.
+* Use pagination, filtering, search, debouncing, caching, or memoization where appropriate for large datasets.
+* Design for an ERP environment with 1000+ concurrent users. Prefer efficient queries and predictable network usage.
+* Never put database credentials, secrets, or environment-specific values in frontend code.
+
+### UI Consistency
+* Reuse shared components for buttons, inputs, forms, tables, headers, dialogs, pagination, loaders, notifications, and layout patterns.
+* Do not create one-off UI styles when a reusable component or shared style exists.
+* Maintain consistent spacing, typography, borders, shadows, radius, and interaction states across modules.
+* New reusable UI patterns should be added to the shared component system rather than duplicated inside pages.
+
+### Theme & Styling
+* Never hardcode colors in component/page files.
+* All colors must come from the existing theme variables, design tokens, or main CSS/theme files.
+* Reuse existing typography, spacing, shadows, borders, and breakpoints.
+* Never use unnecessary uppercase text or CSS `text-transform: uppercase` for normal UI content.
+* Do not introduce arbitrary font sizes, colors, shadows, or spacing values when existing design tokens are available.
+* Keep styling centralized and reusable.
+
+### Forms & Tables
+* Forms must use shared field/control components and consistent validation patterns.
+* Tables must use shared table/layout components wherever possible.
+* Do not duplicate table, filter, search, pagination, or action-button implementations across modules.
+* New fields should fit the existing form architecture without breaking future extensibility.
+
+### Changes
+* Before coding, inspect related existing files and understand current dependencies.
+* Make the smallest correct change that solves the requirement.
+* Do not rewrite working code without a measurable reason.
+* Do not create files unless they are actually required.
+* After changes, remove unused imports, variables, functions, styles, and dependencies.
+* Preserve backward compatibility with existing modules unless the requirement explicitly requires a breaking change.
+
+### Agent Decision Rule
+Before adding code, answer internally:
+1. Can existing code be reused?
+2. Can the existing component/service be extended?
+3. Is this API call necessary?
+4. Is this dependency necessary?
+5. Is this styling already available from the theme/shared components?
+6. Is every new line required?
+
+If the answer is no to reuse and yes to necessity, implement the smallest maintainable solution.
+
+Do not over-engineer. Do not optimize blindly. Prefer simple, reusable, measurable solutions.

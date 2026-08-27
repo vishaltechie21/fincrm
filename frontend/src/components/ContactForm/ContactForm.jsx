@@ -1,6 +1,7 @@
 import { Plus, Edit, Trash2, Save } from 'lucide-react';
 import FormField from '../FormField';
 import SelectField from '../SelectField';
+import SearchableSelect from '../SearchableSelect';
 import TextareaField from '../TextareaField';
 import { RefreshCw } from 'lucide-react';
 import './ContactForm.css';
@@ -58,7 +59,7 @@ const ContactForm = ({
           />
         </div>
         <div className="col-5">
-          <SelectField
+          <SearchableSelect
             label="Company"
             name="mascom_id"
             value={selectedCompanyOption}

@@ -1,0 +1,84 @@
+.searchable-select-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.searchable-select-input {
+  width: 100%;
+  padding-right: 20px !important; /* space for arrow icon */
+}
+
+.dropdown-arrow-icon {
+  position: absolute;
+  right: 8px;
+  font-size: 8px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.dropdown-options-list {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: var(--shadow), 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-height: 156px; /* accommodating exactly 6 rows (26px each) */
+  overflow-y: auto;
+}
+
+.dropdown-option-item {
+  padding: 4px 8px;
+  font-size: 9px;
+  color: var(--text-h);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.dropdown-option-item:hover {
+  background-color: var(--accent-bg);
+  color: var(--accent);
+}
+
+.dropdown-option-item.selected {
+  background-color: var(--accent);
+  color: #ffffff;
+}
+
+.dropdown-option-item.no-results {
+  color: var(--muted);
+  cursor: default;
+  font-style: italic;
+  justify-content: center;
+}
+
+/* Custom scrollbars inside the dropdown list to look premium */
+.dropdown-options-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-options-list::-webkit-scrollbar-track {
+  background: var(--panel2);
+  border-radius: 0 4px 4px 0;
+}
+
+.dropdown-options-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.dropdown-options-list::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
