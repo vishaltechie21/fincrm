@@ -741,6 +741,159 @@ mark.highlight-search {
   border-top: 1px solid var(--border);
   position: relative;
 }
+
+/* Search page table area wrapper and scrollable table containers */
+.cs-table-area {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.company-table-container,
+.contact-table-container {
+  flex: 1;
+  overflow: auto;
+  background-color: var(--panel);
+  position: relative;
+  min-height: 120px;
+}
+.company-table,
+.contact-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9.5px;
+  text-align: left;
+  white-space: nowrap;
+}
+.company-table th,
+.contact-table th {
+  position: sticky;
+  top: 0;
+  background-color: var(--panel2);
+  color: var(--text-h);
+  font-weight: 700;
+  padding: 6px 8px;
+  border-bottom: 2px solid var(--border);
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+  user-select: none;
+  z-index: 3;
+}
+.company-table th:last-child,
+.contact-table th:last-child {
+  border-right: none;
+}
+.company-table td,
+.contact-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  color: var(--text);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.company-table td:last-child,
+.contact-table td:last-child {
+  border-right: none;
+}
+
+/* Fixed header mode — table resets top so sticky TH sticks to container top */
+.fixed-header-active {
+  overflow: auto;
+}
+.fixed-header-active thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+/* Toolbar actions (Records + Export Excel) */
+.cs-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.total-records-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background-color: var(--panel);
+  color: var(--text-h);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.total-records-btn:hover {
+  background-color: var(--panel2);
+}
+.export-excel-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  height: 22px;
+  border-radius: 4px;
+  border: none;
+  background-color: #1c7a4a;
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  gap: 4px;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.25);
+}
+.export-excel-btn:hover {
+  background-color: #16653e;
+  transform: translateY(-1px);
+}
+.export-count-badge {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
+  padding: 0 4px;
+  font-size: 9px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+/* Search mode clear button */
+.search-mode-clear-btn {
+  position: absolute;
+  right: 5px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+  display: flex;
+  align-items: center;
+}
+.search-mode-clear-btn:hover {
+  color: var(--red);
+}
+
+/* Header right badges */
+.view-pill-badge {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background-color: rgba(201, 151, 60, 0.2);
+  color: #c9973c;
+  border: 1px solid rgba(201, 151, 60, 0.4);
+}
+.cs-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 table.cs-table {
   width: 100%;
   border-collapse: separate;
@@ -959,6 +1112,13 @@ tr.master-row.open-row td strong {
 }
 tr.master-row.even-row td {
   background-color: var(--panel2);
+}
+/* Hover must NOT change open row — keep navy intact */
+tr.master-row.open-row:hover td,
+.company-table tr.master-row.open-row:hover td,
+.contact-table tr.master-row.open-row:hover td {
+  background-color: #0f2544 !important;
+  color: #ffffff !important;
 }
 tr.detail > td {
   border-bottom: 3px solid #0f2544 !important;

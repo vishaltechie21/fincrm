@@ -49,11 +49,11 @@
 }
 
 .company-table tr:hover td {
-  background-color: rgba(30, 64, 175, 0.04);
+  background-color: #d1dce8 !important;
 }
 
 .company-table tr:nth-child(even) td {
-  background-color: var(--panel2);
+  background-color: #7fb1ee;
 }
 
 .company-table tr.active-row td {

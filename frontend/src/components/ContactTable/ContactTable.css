@@ -49,15 +49,15 @@
 }
 
 .contact-table tr:hover td {
-  background-color: rgba(30, 64, 175, 0.04);
+  background-color: #d1dce8 !important;
 }
 
 .contact-table tr:nth-child(even) td {
-  background-color: var(--panel2);
-}
+  background-color: #8bb7f0;
+} 
 
 .contact-table tr.active-row td {
-  background-color: #fef08a !important;
+  background-color: var(--highlight);
   color: #0f172a !important;
   font-weight: 700;
 }
