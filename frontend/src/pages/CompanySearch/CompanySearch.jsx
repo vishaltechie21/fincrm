@@ -581,7 +581,7 @@ const CompanySearch = () => {
           Collapse all
         </button>
 
-        <div className="cs-toolbar-actions">
+        <div className="cs-toolbar-actions" style={{ marginLeft: 'auto' }}>
           <button type="button" className="total-records-btn" onClick={handleClearFilters} title="Reset filters">
             <RefreshCw size={11} style={{ marginRight: '4px' }} />
             Records: {filteredRows.length}
