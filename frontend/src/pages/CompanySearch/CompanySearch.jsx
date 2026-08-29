@@ -10,7 +10,7 @@ import Swal from 'sweetalert2';
 import * as companyService from '../../services/companyService';
 import * as contactService from '../../services/contactService';
 import { MASCOM_SEED, MASCON_SEED, TRACOM_SEED } from '../../utils/activityData';
-import './CompanySearch.css';
+
 
 const COLUMN_LABEL_MAP = {
   mascom_id: 'Code',
@@ -40,7 +40,7 @@ const CompanySearch = () => {
   const [isFixedHeader, setIsFixedHeader] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState(Object.keys(COLUMN_LABEL_MAP));
-  const [activeFilters, setActiveFilters] = useState({});
+  const [activeFilters, setActiveFilters] = useState([]);
   const [hasSavedSettings, setHasSavedSettings] = useState(false);
 
   // Selection Checkbox State (Set of mascom_id keys)
@@ -112,10 +112,12 @@ const CompanySearch = () => {
           const saved = res.data;
           setIsFixedHeader(saved.isFixedHeader !== undefined ? saved.isFixedHeader : false);
           if (saved.visibleColumns !== undefined) setVisibleColumns(saved.visibleColumns);
-          if (saved.activeFilters !== undefined) setActiveFilters(saved.activeFilters);
+          if (saved.activeFilters !== undefined) setActiveFilters(Array.isArray(saved.activeFilters) ? saved.activeFilters : []);
           if (saved.sortField !== undefined) setSortField(saved.sortField);
           if (saved.sortAsc !== undefined) setSortAsc(saved.sortAsc);
           if (saved.selectedRowIds !== undefined) setSelectedRowIds(new Set(saved.selectedRowIds));
+          if (saved.searchQuery !== undefined) setSearchQuery(saved.searchQuery);
+          if (saved.searchModeColumn !== undefined) setSearchModeColumn(saved.searchModeColumn);
           setHasSavedSettings(true);
         }
       } catch (err) {
@@ -240,22 +242,33 @@ const CompanySearch = () => {
   }, [fullRows]);
 
   const activeFilterCount = useMemo(() => {
-    return Object.keys(activeFilters).filter((field) => {
-      const checked = activeFilters[field];
-      const total = uniqueValuesMap[field] || [];
-      return checked !== undefined && checked.length < total.length;
-    }).length;
-  }, [activeFilters, uniqueValuesMap]);
+    if (Array.isArray(activeFilters)) {
+      return activeFilters.filter((f) => f.f && f.v).length;
+    }
+    return 0;
+  }, [activeFilters]);
 
   // Apply filters
   const filteredRows = fullRows.filter((r) => {
-    // 1. Multi-select filters from FilterModal
-    for (const field of Object.keys(COLUMN_LABEL_MAP)) {
-      const checkedVals = activeFilters[field];
-      if (checkedVals !== undefined) {
-        const val = getPropValue(r, field) || '—';
-        if (!checkedVals.includes(val)) {
-          return false;
+    // 1. Array filters (new condition-based filters)
+    if (Array.isArray(activeFilters)) {
+      for (const filter of activeFilters) {
+        if (filter.f && filter.v) {
+          const val = getPropValue(r, filter.f) || '—';
+          if (String(val) !== filter.v) {
+            return false;
+          }
+        }
+      }
+    } else {
+      // Legacy object filters fallback
+      for (const field of Object.keys(COLUMN_LABEL_MAP)) {
+        const checkedVals = activeFilters[field];
+        if (checkedVals !== undefined) {
+          const val = getPropValue(r, field) || '—';
+          if (!checkedVals.includes(val)) {
+            return false;
+          }
         }
       }
     }
@@ -287,8 +300,29 @@ const CompanySearch = () => {
     });
   };
 
+  const handleCellClick = (e, field) => {
+    e.stopPropagation();
+    setSearchModeColumn(field);
+    setTimeout(() => {
+      const input = document.getElementById('search-input');
+      if (input) {
+        input.focus();
+        const len = input.value.length;
+        input.setSelectionRange(len, len);
+      }
+    }, 50);
+  };
+
   // Sorting & Infinite Scroll Slice
   const sortedRows = [...filteredRows].sort((a, b) => {
+    if (sortField === 'selection') {
+      const aSel = selectedRowIds.has(a.co.mascom_id) ? 1 : 0;
+      const bSel = selectedRowIds.has(b.co.mascom_id) ? 1 : 0;
+      if (aSel !== bSel) {
+        return sortAsc ? (bSel - aSel) : (aSel - bSel); // sortAsc true -> selected (1) first
+      }
+    }
+
     let valA = getPropValue(a, sortField);
     let valB = getPropValue(b, sortField);
     
@@ -311,7 +345,9 @@ const CompanySearch = () => {
         activeFilters,
         sortField,
         sortAsc,
-        selectedRowIds: Array.from(selectedRowIds)
+        selectedRowIds: Array.from(selectedRowIds),
+        searchQuery,
+        searchModeColumn
       };
       await settingsService.saveSettings('company_search', payload);
       setHasSavedSettings(true);
@@ -342,10 +378,12 @@ const CompanySearch = () => {
       setHasSavedSettings(false);
       setIsFixedHeader(false);
       setVisibleColumns(Object.keys(COLUMN_LABEL_MAP));
-      setActiveFilters({});
+      setActiveFilters([]);
       setSortField('mascom_id');
       setSortAsc(true);
       setSelectedRowIds(new Set());
+      setSearchQuery('');
+      setSearchModeColumn(null);
       Swal.fire({
         icon: 'success',
         title: 'Settings Cleared',
@@ -408,7 +446,7 @@ const CompanySearch = () => {
   };
 
   return (
-    <div className="company-search-page">
+    <div className="search-page">
       {/* Header */}
       <div className="cs-header">
         <div className="cs-header-left">
@@ -465,7 +503,13 @@ const CompanySearch = () => {
           <button 
             type="button" 
             className={`btn ${!searchModeColumn ? 'btn-success' : 'btn-secondary'}`}
-            onClick={() => setSearchModeColumn(null)}
+            onClick={() => {
+              setSearchModeColumn(null);
+              setTimeout(() => {
+                const input = document.getElementById('search-input');
+                if (input) input.focus();
+              }, 50);
+            }}
             title="Search across all columns with highlighting"
           >
             Generic Search
@@ -474,15 +518,19 @@ const CompanySearch = () => {
             type="button" 
             className={`btn ${searchModeColumn ? 'btn-success' : 'btn-secondary'}`}
             onClick={() => {
-              if (!searchModeColumn) {
-                setSearchModeColumn(visibleColumns[0] || 'company_name');
-              } else {
+              if (searchModeColumn) {
                 setSearchModeColumn(null);
+              } else {
+                setSearchModeColumn(visibleColumns[0] || 'company_name');
+                setTimeout(() => {
+                  const input = document.getElementById('search-input');
+                  if (input) input.focus();
+                }, 50);
               }
             }}
-            title="Click column headers to search specific fields"
+            title="Search specific field (click table cells to choose)"
           >
-            Specific Search
+            {searchModeColumn ? COLUMN_LABEL_MAP[searchModeColumn] : "Specific Field Search"}
           </button>
         </div>
 
@@ -564,28 +612,45 @@ const CompanySearch = () => {
               <table className="company-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '30px', textAlign: 'center' }}>
-                      <label className="checkbox-container select-all-header-cb">
-                        <input 
-                          type="checkbox" 
-                          checked={paginatedRows.length > 0 && paginatedRows.every(r => selectedRowIds.has(r.co.mascom_id))}
-                          onChange={(e) => {
-                            const checked = e.target.checked;
-                            setSelectedRowIds(prev => {
-                              const next = new Set(prev);
-                              paginatedRows.forEach(row => {
-                                if (checked) {
-                                  next.add(row.co.mascom_id);
-                                } else {
-                                  next.delete(row.co.mascom_id);
-                                }
+                    <th style={{ width: '54px', textAlign: 'center' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', justifyContent: 'center', width: '100%' }}>
+                        <label className="checkbox-container select-all-header-cb" style={{ marginRight: 0 }}>
+                          <input 
+                            type="checkbox" 
+                            checked={paginatedRows.length > 0 && paginatedRows.every(r => selectedRowIds.has(r.co.mascom_id))}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              setSelectedRowIds(prev => {
+                                const next = new Set(prev);
+                                paginatedRows.forEach(row => {
+                                  if (checked) {
+                                    next.add(row.co.mascom_id);
+                                  } else {
+                                    next.delete(row.co.mascom_id);
+                                  }
+                                });
+                                return next;
                               });
-                              return next;
-                            });
+                            }}
+                          />
+                          <span className="checkmark"></span>
+                        </label>
+                        <span 
+                          className="sort-trigger-icon"
+                          onClick={() => {
+                            if (sortField === 'selection') {
+                              setSortAsc(prev => !prev);
+                            } else {
+                              setSortField('selection');
+                              setSortAsc(true);
+                            }
                           }}
-                        />
-                        <span className="checkmark"></span>
-                      </label>
+                          style={{ cursor: 'pointer', opacity: sortField === 'selection' ? 1 : 0.4, fontSize: '10px' }}
+                          title="Sort selected first/last"
+                        >
+                          {sortField === 'selection' ? (sortAsc ? '▲' : '▼') : '⇅'}
+                        </span>
+                      </div>
                     </th>
                     <th style={{ width: '30px' }}></th>
                     {visibleColumns.includes('mascom_id') && renderSortableHeader('mascom_id', 'Code')}
@@ -639,21 +704,93 @@ const CompanySearch = () => {
                           <td style={{ textAlign: 'center' }}>
                             <span className="twisty-icon" style={{ fontWeight: 'bold', fontSize: '12px' }}>{isExpanded ? '−' : '＋'}</span>
                           </td>
-                          {visibleColumns.includes('mascom_id') && <td className="company-id">{renderCellText(r.co.mascom_id, 'mascom_id')}</td>}
-                          {visibleColumns.includes('company_name') && <td className="company-name">{renderCellText(r.co.company_name, 'company_name')}</td>}
-                          {visibleColumns.includes('industry_type') && <td>{renderCellText(r.co.industry_type, 'industry_type')}</td>}
-                          {visibleColumns.includes('city') && <td>{renderCellText(r.co.city, 'city')}</td>}
-                          {visibleColumns.includes('state') && <td>{renderCellText(r.co.state, 'state')}</td>}
-                          {visibleColumns.includes('data_source') && <td>{renderCellText(r.co.data_source, 'data_source')}</td>}
-                          {visibleColumns.includes('erp_using') && <td>{renderCellText(r.co.erp_using || '—', 'erp_using')}</td>}
-                          {visibleColumns.includes('key_person') && <td>{renderCellText(r.key.contact_name || '—', 'key_person')}</td>}
+                           {visibleColumns.includes('mascom_id') && (
+                            <td 
+                              className="company-id hit" 
+                              onClick={(e) => handleCellClick(e, 'mascom_id')}
+                              title="Click to search in Code"
+                            >
+                              {renderCellText(r.co.mascom_id, 'mascom_id')}
+                            </td>
+                          )}
+                          {visibleColumns.includes('company_name') && (
+                            <td 
+                              className="company-name hit" 
+                              onClick={(e) => handleCellClick(e, 'company_name')}
+                              title="Click to search in Company Name"
+                            >
+                              {renderCellText(r.co.company_name, 'company_name')}
+                            </td>
+                          )}
+                          {visibleColumns.includes('industry_type') && (
+                            <td 
+                              className="hit" 
+                              onClick={(e) => handleCellClick(e, 'industry_type')}
+                              title="Click to search in Industry"
+                            >
+                              {renderCellText(r.co.industry_type, 'industry_type')}
+                            </td>
+                          )}
+                          {visibleColumns.includes('city') && (
+                            <td 
+                              className="hit" 
+                              onClick={(e) => handleCellClick(e, 'city')}
+                              title="Click to search in City"
+                            >
+                              {renderCellText(r.co.city, 'city')}
+                            </td>
+                          )}
+                          {visibleColumns.includes('state') && (
+                            <td 
+                              className="hit" 
+                              onClick={(e) => handleCellClick(e, 'state')}
+                              title="Click to search in State"
+                            >
+                              {renderCellText(r.co.state, 'state')}
+                            </td>
+                          )}
+                          {visibleColumns.includes('data_source') && (
+                            <td 
+                              className="hit" 
+                              onClick={(e) => handleCellClick(e, 'data_source')}
+                              title="Click to search in Source"
+                            >
+                              {renderCellText(r.co.data_source, 'data_source')}
+                            </td>
+                          )}
+                          {visibleColumns.includes('erp_using') && (
+                            <td 
+                              className="hit" 
+                              onClick={(e) => handleCellClick(e, 'erp_using')}
+                              title="Click to search in ERP Used"
+                            >
+                              {renderCellText(r.co.erp_using || '—', 'erp_using')}
+                            </td>
+                          )}
+                          {visibleColumns.includes('key_person') && (
+                            <td 
+                              className="hit" 
+                              onClick={(e) => handleCellClick(e, 'key_person')}
+                              title="Click to search in Key Person"
+                            >
+                              {renderCellText(r.key.contact_name || '—', 'key_person')}
+                            </td>
+                          )}
                           {visibleColumns.includes('stage') && (
-                            <td>
+                            <td 
+                              className="hit" 
+                              onClick={(e) => handleCellClick(e, 'stage')}
+                              title="Click to search in Stage"
+                            >
                               <span className={`stage ${STAGE_CLASS[r.stage]}`}>{r.stage}</span>
                             </td>
                           )}
                           {visibleColumns.includes('mascom_remarks') && (
-                            <td className="company-remarks" title={r.co.mascom_remarks}>
+                            <td 
+                              className="company-remarks hit" 
+                              title={r.co.mascom_remarks}
+                              onClick={(e) => handleCellClick(e, 'mascom_remarks')}
+                            >
                               {renderCellText(r.co.mascom_remarks || '—', 'mascom_remarks')}
                             </td>
                           )}
@@ -663,7 +800,7 @@ const CompanySearch = () => {
                           <tr className="detail">
                             <td colSpan={visibleColumns.length + 2} className="detail-cell">
                               <div className="detail-box">
-                                {/* Company Info */}
+                                {/* Company Info Facts */}
                                 <div className="sec">
                                   <div className="sec-h">
                                     <span className="t">Company Details</span>
@@ -675,10 +812,6 @@ const CompanySearch = () => {
                                       <span className="v">{r.co.state}</span>
                                     </div>
                                     <div className="fact">
-                                      <span className="k">Industry</span>
-                                      <span className="v">{r.co.industry_type}</span>
-                                    </div>
-                                    <div className="fact">
                                       <span className="k">Data Source</span>
                                       <span className="v">{r.co.data_source}</span>
                                     </div>
@@ -687,24 +820,16 @@ const CompanySearch = () => {
                                       <span className="v">{r.co.erp_using || '—'}</span>
                                     </div>
                                     <div className="fact">
-                                      <span className="k">Demo Date</span>
-                                      <span className="v">{r.firstDemo ? `${fmtDate(r.firstDemo.demo_date)} · ${r.firstDemo.demo_time || ''}` : '—'}</span>
-                                    </div>
-                                    <div className="fact">
-                                      <span className="k">Quoted Price</span>
+                                      <span className="k">Quoted Value</span>
                                       <span className="v money">{r.lastQuote ? money(r.lastQuote.price_quoted) : '—'}</span>
                                     </div>
                                     <div className="fact">
-                                      <span className="k">AMC Quote</span>
-                                      <span className="v money">{r.lastQuote ? money(r.lastQuote.amc_quoted) : '—'}</span>
+                                      <span className="k">Owner</span>
+                                      <span className="v">{r.co.user_name}</span>
                                     </div>
                                     <div className="fact">
-                                      <span className="k">Invoice Sent</span>
-                                      <span className="v">{r.invoice ? fmtDate(r.invoice.tracom_date) : '—'}</span>
-                                    </div>
-                                    <div className="fact">
-                                      <span className="k">Touchpoints</span>
-                                      <span className="v">{r.acts.length}</span>
+                                      <span className="k">E-mail</span>
+                                      <span className="v">{r.key.email || '—'}</span>
                                     </div>
                                   </div>
                                   {r.co.mascom_remarks && (
@@ -717,8 +842,8 @@ const CompanySearch = () => {
                                 {/* Contact Table */}
                                 <div className="sec">
                                   <div className="sec-h">
-                                    <span className="t">Contacts</span>
-                                    <span className="src">MASCON · {r.contacts.length} record(s)</span>
+                                    <span className="t">Contact Persons</span>
+                                    <span className="src">CUSCON · {r.contacts.length} record(s)</span>
                                   </div>
                                   <table className="sub">
                                     <thead>
@@ -726,9 +851,7 @@ const CompanySearch = () => {
                                         <th style={{ width: '70px' }}>Code</th>
                                         <th style={{ width: '180px' }}>Name</th>
                                         <th style={{ width: '150px' }}>Designation</th>
-                                        <th style={{ width: '110px' }}>Mobile</th>
-                                        <th style={{ width: '230px' }}>E-mail</th>
-                                        <th>Remarks</th>
+                                        <th>Mobile No</th>
                                       </tr>
                                     </thead>
                                     <tbody>
@@ -742,13 +865,11 @@ const CompanySearch = () => {
                                             </td>
                                             <td className="muted">{ct.designation || '—'}</td>
                                             <td className="mono">{ct.mobile || '—'}</td>
-                                            <td className="mono">{ct.email || '—'}</td>
-                                            <td className="muted">{ct.mascon_remarks || '—'}</td>
                                           </tr>
                                         ))
                                       ) : (
                                         <tr>
-                                          <td colSpan="6" className="dim" style={{ textAlign: 'center', padding: '12px' }}>
+                                          <td colSpan="4" className="dim" style={{ textAlign: 'center', padding: '12px' }}>
                                             No contact persons recorded.
                                           </td>
                                         </tr>
@@ -757,54 +878,40 @@ const CompanySearch = () => {
                                   </table>
                                 </div>
 
-                                {/* Activity Rail Timeline */}
+                                {/* Recent Activity Table */}
                                 <div className="sec">
                                   <div className="sec-h">
-                                    <span className="t">Activity History</span>
-                                    <span className="src">TRACOM · {r.acts.length} logs · latest first</span>
+                                    <span className="t">Recent Activity</span>
+                                    <span className="src">ACTTRN · {r.acts.length} log(s)</span>
                                   </div>
-                                  <div className="rail">
-                                    {[...r.acts].reverse().map((act) => {
-                                      const ctPerson = r.contacts.find((x) => x.mascon_id === act.mascon_id) || {};
-                                      const isDue = act.followup_date && new Date(act.followup_date) >= new Date();
-                                      return (
-                                        <div key={act.tracom_id} className={`evt k-${act.mode.toLowerCase()}`}>
-                                          <div className="gutter">
-                                            <span className="node"></span>
-                                            <span className="date">{fmtDate(act.tracom_date)}</span>
-                                            <span className="time">{act.tracom_id}</span>
-                                          </div>
-                                          <div className="body">
-                                            <div className="head">
-                                              <span className="kind">{act.mode}</span>
-                                              <span className="who">
-                                                with <b>{ctPerson.contact_name || '—'}</b> · by {act.user_name}
-                                              </span>
-                                            </div>
-                                            <div className="note">{act.remarks}</div>
-                                            {(act.demo_date || act.price_quoted != null || act.amc_quoted != null) && (
-                                              <div className="meta">
-                                                {act.demo_date && <span><i>demo</i> {fmtDate(act.demo_date)} {act.demo_time || ''} {act.demo_mode ? `· ${act.demo_mode}` : ''}</span>}
-                                                {act.price_quoted != null && <span><i>price</i> {money(act.price_quoted)}</span>}
-                                                {act.amc_quoted != null && <span><i>amc</i> {money(act.amc_quoted)}</span>}
-                                              </div>
-                                            )}
-                                          </div>
-                                          <div className={`fu ${isDue ? 'due' : ''}`}>
-                                            <span className="lbl">Follow-up</span>
-                                            {act.followup_date ? (
-                                              <span className="val">{fmtDate(act.followup_date)} · {act.followup_time || ''}</span>
-                                            ) : (
-                                              <span className="val">—</span>
-                                            )}
-                                          </div>
-                                        </div>
-                                      );
-                                    })}
-                                    {!r.acts.length && (
-                                      <div className="empty">No interactions registered yet.</div>
-                                    )}
-                                  </div>
+                                  <table className="sub">
+                                    <thead>
+                                      <tr>
+                                        <th style={{ width: '90px' }}>Date</th>
+                                        <th style={{ width: '110px' }}>Mode</th>
+                                        <th>Remarks</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {r.acts.length ? (
+                                        [...r.acts].reverse().map((act) => (
+                                          <tr key={act.tracom_id}>
+                                            <td className="mono">{fmtDate(act.tracom_date)}</td>
+                                            <td>
+                                              <span className="pill c" style={{ display: 'inline-block', fontSize: '8.5px', fontWeight: 700, padding: '1px 4px', borderRadius: '2px', border: '1px solid', color: '#1c7a4a', borderColor: '#a9d9be', backgroundColor: '#ecf8f1' }}>{act.mode}</span>
+                                            </td>
+                                            <td className="muted">{act.remarks}</td>
+                                          </tr>
+                                        ))
+                                      ) : (
+                                        <tr>
+                                          <td colSpan="3" className="dim" style={{ textAlign: 'center', padding: '12px' }}>
+                                            No recent activities recorded.
+                                          </td>
+                                        </tr>
+                                      )}
+                                    </tbody>
+                                  </table>
                                 </div>
                               </div>
                             </td>

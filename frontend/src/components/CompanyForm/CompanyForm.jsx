@@ -3,7 +3,7 @@ import FormField from '../FormField';
 import SelectField from '../SelectField';
 import TextareaField from '../TextareaField';
 import { RefreshCw } from 'lucide-react';
-import './CompanyForm.css';
+
 
 const INDUSTRY_OPTIONS = [
   'Pharma Manufacturing',

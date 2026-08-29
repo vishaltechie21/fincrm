@@ -12,7 +12,7 @@ import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import ImportModal from '../../components/ImportModal/ImportModal';
 import Swal from 'sweetalert2';
 import { validateContact } from '../../utils/validation';
-import './ContactMaster.css';
+
 
 const ContactMaster = () => {
   const [contacts, setContacts] = useState([]);
@@ -322,7 +322,7 @@ const ContactMaster = () => {
   const visibleContacts = sortedContacts.slice(0, visibleCount);
 
   return (
-    <div className="contact-master-page">
+    <div className="master-page">
       {/* Sub-header navigation row */}
       <div className="master-sub-header">
         <div className="sub-header-center">

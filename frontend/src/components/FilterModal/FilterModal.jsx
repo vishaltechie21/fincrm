@@ -1,5 +1,102 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import './FilterModal.css';
+
+// Custom Popover Multi-Select Dropdown Component
+const ValueMultiSelect = ({ field, selectedValues = [], options = [], onChange, disabled }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('.val-multiselect-container')) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [isOpen]);
+
+  if (disabled) {
+    return (
+      <div className="val-multiselect-trigger disabled">
+        <span className="trigger-label">— All —</span>
+        <span className="trigger-arrow">▼</span>
+      </div>
+    );
+  }
+
+  const handleToggle = (val) => {
+    let next;
+    if (selectedValues.includes(val)) {
+      next = selectedValues.filter((v) => v !== val);
+    } else {
+      next = [...selectedValues, val];
+    }
+    onChange(next);
+  };
+
+  const handleSelectAll = (checked) => {
+    onChange(checked ? [...options] : []);
+  };
+
+  // Label text to show on trigger button
+  let triggerLabel = '— All —';
+  if (selectedValues.length > 0) {
+    if (selectedValues.length === options.length) {
+      triggerLabel = 'All Selected';
+    } else if (selectedValues.length <= 2) {
+      triggerLabel = selectedValues.join(', ');
+    } else {
+      triggerLabel = `${selectedValues.length} Selected`;
+    }
+  }
+
+  return (
+    <div className="val-multiselect-container">
+      <div 
+        className={`val-multiselect-trigger ${isOpen ? 'active' : ''}`}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span className="trigger-label">{triggerLabel}</span>
+        <span className="trigger-arrow">▼</span>
+      </div>
+      {isOpen && (
+        <div className="val-multiselect-dropdown">
+          <div className="multiselect-option select-all-option">
+            <label className="checkbox-container col-item">
+              <input 
+                type="checkbox"
+                checked={options.length > 0 && selectedValues.length === options.length}
+                onChange={(e) => handleSelectAll(e.target.checked)}
+              />
+              <span className="checkmark"></span>
+              <span className="label-text">Select All</span>
+            </label>
+          </div>
+          <div className="multiselect-options-list">
+            {options.map((val) => {
+              const isChecked = selectedValues.includes(val);
+              return (
+                <div key={val} className="multiselect-option">
+                  <label className="checkbox-container col-item">
+                    <input 
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => handleToggle(val)}
+                    />
+                    <span className="checkmark"></span>
+                    <span className="label-text">{val}</span>
+                  </label>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const FilterModal = ({
   isOpen,
@@ -9,11 +106,11 @@ const FilterModal = ({
   getPropValue, // (row, field) => string
   visibleColumns = [], // array of visible fields
   onVisibleColumnsChange,
-  activeFilters = {}, // { field: [val1, val2] }
+  activeFilters = [], // array of [{ f: field, v: [val1, val2] }]
   onFiltersChange
 }) => {
-  const [activeTab, setActiveTab] = useState(Object.keys(columns)[0] || '');
-  const [valSearch, setValSearch] = useState('');
+  const [draftFilters, setDraftFilters] = useState([]);
+  const [draftVisibleColumns, setDraftVisibleColumns] = useState([]);
 
   // Extract unique values for each column from the loaded dataset
   const uniqueValuesMap = useMemo(() => {
@@ -23,7 +120,7 @@ const FilterModal = ({
         const val = getPropValue(row, field);
         return val === null || val === undefined ? '' : String(val).trim();
       });
-      // Filter out empty and get unique sorted list
+      // Normalize empty/falsy to '—' and get unique sorted list
       map[field] = Array.from(new Set(vals))
         .map(v => v || '—')
         .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
@@ -31,169 +128,211 @@ const FilterModal = ({
     return map;
   }, [columns, dataset, getPropValue]);
 
+  // Sync draft states when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      const initialFilters = Array.isArray(activeFilters)
+        ? activeFilters.map((f) => {
+            let valArray = [];
+            if (f.v) {
+              valArray = Array.isArray(f.v) ? f.v : [f.v];
+            }
+            return { f: f.f, v: valArray };
+          })
+        : [];
+      setDraftFilters(
+        initialFilters.length > 0 ? initialFilters : [{ f: '', v: [] }]
+      );
+      setDraftVisibleColumns([...visibleColumns]);
+    }
+  }, [isOpen, activeFilters, visibleColumns]);
+
   if (!isOpen) return null;
 
   const columnKeys = Object.keys(columns);
-  const currentUniqueValues = uniqueValuesMap[activeTab] || [];
 
-  // Filter unique values by search input inside the modal
-  const filteredUniqueValues = currentUniqueValues.filter((val) =>
-    val.toLowerCase().includes(valSearch.toLowerCase())
-  );
-
-  // Helper to get checked values for a column, defaulting to all unique values if undefined
-  const getFieldCheckedValues = (field) => {
-    return activeFilters[field] !== undefined ? activeFilters[field] : (uniqueValuesMap[field] || []);
-  };
-
-  // Visibility toggle
-  const handleVisibilityToggle = (field) => {
-    const isVisible = visibleColumns.includes(field);
-    let nextVisible;
-    if (isVisible) {
-      if (visibleColumns.length <= 1) return;
-      nextVisible = visibleColumns.filter((col) => col !== field);
-    } else {
-      nextVisible = [...visibleColumns, field];
-    }
-    onVisibleColumnsChange(nextVisible);
-  };
-
-  // Checkbox checklist toggle for value filters
-  const handleValueToggle = (field, value) => {
-    const currentChecked = getFieldCheckedValues(field);
-    let nextChecked;
-    if (currentChecked.includes(value)) {
-      nextChecked = currentChecked.filter((v) => v !== value);
-    } else {
-      nextChecked = [...currentChecked, value];
-    }
-    onFiltersChange({
-      ...activeFilters,
-      [field]: nextChecked
+  // Condition Handlers
+  const handleFieldChange = (index, field) => {
+    setDraftFilters((prev) => {
+      const next = prev.map((f, idx) => {
+        if (idx === index) {
+          return { f: field, v: [] }; // reset value array on field change
+        }
+        return f;
+      });
+      return next;
     });
   };
 
-  const handleSelectAllValues = (field, checked) => {
-    const allVals = uniqueValuesMap[field] || [];
-    onFiltersChange({
-      ...activeFilters,
-      [field]: checked ? [...allVals] : []
+  const handleValueChange = (index, valueArray) => {
+    setDraftFilters((prev) => {
+      const next = prev.map((f, idx) => {
+        if (idx === index) {
+          return { ...f, v: valueArray };
+        }
+        return f;
+      });
+      return next;
     });
   };
+
+  const handleDeleteCondition = (index) => {
+    setDraftFilters((prev) => {
+      if (prev.length <= 1) return prev;
+      return prev.filter((_, idx) => idx !== index);
+    });
+  };
+
+  const handleAddCondition = () => {
+    setDraftFilters((prev) => [...prev, { f: '', v: [] }]);
+  };
+
+  const handleClearAllConditions = () => {
+    setDraftFilters([{ f: '', v: [] }]);
+  };
+
+  // Visible Column Toggle
+  const handleColumnToggle = (field, checked) => {
+    setDraftVisibleColumns((prev) => {
+      if (checked) {
+        if (!prev.includes(field)) {
+          return [...prev, field];
+        }
+        return prev;
+      } else {
+        if (prev.length <= 1) return prev; // Keep at least one column visible
+        return prev.filter((c) => c !== field);
+      }
+    });
+  };
+
+  const handleApply = () => {
+    // Save filters (only valid completed ones with non-empty selected values)
+    const validFilters = draftFilters.filter((f) => f.f && Array.isArray(f.v) && f.v.length > 0);
+    onFiltersChange(validFilters);
+    onVisibleColumnsChange(draftVisibleColumns);
+    onClose();
+  };
+
+  const activeCondsCount = draftFilters.filter((f) => f.f && Array.isArray(f.v) && f.v.length > 0).length;
 
   return (
     <div className="filter-modal-overlay">
       <div className="filter-modal-box">
         {/* Header */}
         <div className="filter-modal-header">
-          <h3>Table Settings & Filters</h3>
-          <button type="button" className="close-x-btn" onClick={onClose}>&times;</button>
+          <h3>Filter Condition</h3>
+          <button type="button" className="close-x-btn" onClick={onClose}>
+            ✕
+          </button>
         </div>
 
-        {/* Body Split */}
+        {/* Body */}
         <div className="filter-modal-body">
-          {/* Left Column list (Visibility control) */}
-          <div className="columns-sidebar">
-            <div className="sidebar-title">Columns & Visibility</div>
-            <div className="sidebar-list">
-              {columnKeys.map((field) => {
-                const label = columns[field];
-                const isVisible = visibleColumns.includes(field);
-                const isSelected = activeTab === field;
-                const checkedCount = getFieldCheckedValues(field).length;
-                const totalCount = (uniqueValuesMap[field] || []).length;
-                const isFiltered = activeFilters[field] !== undefined && checkedCount < totalCount;
-
+          {/* Filter Conditions Section */}
+          <div className="filter-section">
+            <div className="sech">Filter Conditions</div>
+            <div className="fgrid fg-head">
+              <div></div>
+              <div className="lab">Field Name</div>
+              <div className="lab">Contents</div>
+              <div></div>
+            </div>
+            
+            <div className="conditions-list-container">
+              {draftFilters.map((cond, i) => {
+                const values = cond.f ? uniqueValuesMap[cond.f] || [] : [];
                 return (
-                  <div 
-                    key={field} 
-                    className={`sidebar-item ${isSelected ? 'active-tab' : ''}`}
-                    onClick={() => {
-                      setActiveTab(field);
-                      setValSearch('');
-                    }}
-                  >
-                    <label className="checkbox-container" onClick={(e) => e.stopPropagation()}>
-                      <input 
-                        type="checkbox" 
-                        checked={isVisible} 
-                        onChange={() => handleVisibilityToggle(field)}
+                  <div key={i} className="fgrid fg-row">
+                    <div className="cond-index">{i + 1}</div>
+                    <div>
+                      <select 
+                        value={cond.f} 
+                        onChange={(e) => handleFieldChange(i, e.target.value)}
+                        className="modal-select"
+                      >
+                        <option value="">Select Field</option>
+                        {columnKeys.map((k) => (
+                          <option key={k} value={k}>
+                            {columns[k]}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <ValueMultiSelect
+                        field={cond.f}
+                        selectedValues={cond.v}
+                        options={values}
+                        onChange={(nextVals) => handleValueChange(i, nextVals)}
+                        disabled={!cond.f}
                       />
-                      <span className="checkmark"></span>
-                    </label>
-                    <span className="column-tab-label">{label}</span>
-                    {isFiltered && <span className="active-filter-badge">✓</span>}
+                    </div>
+                    <div>
+                      {draftFilters.length > 1 && (
+                        <button 
+                          type="button" 
+                          className="del-cond-btn" 
+                          onClick={() => handleDeleteCondition(i)}
+                          title="Delete condition"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
             </div>
+
+            <div className="conditions-actions">
+              <button type="button" className="btn btn-secondary btn-sm" onClick={handleAddCondition}>
+                + Add Condition
+              </button>
+              <button type="button" className="btn btn-danger btn-sm" onClick={handleClearAllConditions}>
+                Clear All Condition
+              </button>
+            </div>
           </div>
 
-          {/* Right Value checklist container */}
-          <div className="values-panel">
-            {activeTab ? (
-              <>
-                <div className="panel-header">
-                  <h4>Filter Values: {columns[activeTab]}</h4>
-                  <div className="search-filter-box">
-                    <input 
-                      type="text" 
-                      placeholder="Search values..." 
-                      value={valSearch}
-                      onChange={(e) => setValSearch(e.target.value)}
-                      className="modal-val-search"
-                    />
-                  </div>
-                </div>
-
-                <div className="select-all-row">
-                  <label className="checkbox-container">
+          {/* Selection Field Section */}
+          <div className="filter-section selection-section">
+            <div className="sech">Selection Field</div>
+            <div className="col-info-text">
+              columns shown in grid — {draftVisibleColumns.length} of {columnKeys.length}
+            </div>
+            
+            <div className="cols-grid">
+              {columnKeys.map((field) => {
+                const label = columns[field];
+                const isChecked = draftVisibleColumns.includes(field);
+                return (
+                  <label key={field} className="checkbox-container col-item">
                     <input 
                       type="checkbox" 
-                      checked={getFieldCheckedValues(activeTab).length === currentUniqueValues.length && currentUniqueValues.length > 0} 
-                      onChange={(e) => handleSelectAllValues(activeTab, e.target.checked)}
+                      checked={isChecked}
+                      onChange={(e) => handleColumnToggle(field, e.target.checked)}
                     />
                     <span className="checkmark"></span>
-                    <span className="label-text"><b>Select All</b></span>
+                    <span className="label-text">{label}</span>
                   </label>
-                </div>
-
-                <div className="values-checklist">
-                  {filteredUniqueValues.length > 0 ? (
-                    filteredUniqueValues.map((val) => {
-                      const isChecked = getFieldCheckedValues(activeTab).includes(val);
-                      return (
-                        <label key={val} className="checkbox-container value-item">
-                          <input 
-                            type="checkbox" 
-                            checked={isChecked}
-                            onChange={() => handleValueToggle(activeTab, val)}
-                          />
-                          <span className="checkmark"></span>
-                          <span className="label-text">{val}</span>
-                        </label>
-                      );
-                    })
-                  ) : (
-                    <div className="no-values-placeholder">No matching values</div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="no-tab-placeholder">Select a column on the left to configure filters</div>
-            )}
+                );
+              })}
+            </div>
           </div>
         </div>
 
         {/* Footer */}
         <div className="filter-modal-footer">
           <div className="footer-left-info">
-            Selected columns: {visibleColumns.length} of {columnKeys.length}
+            {activeCondsCount} condition{activeCondsCount === 1 ? '' : 's'} · {draftVisibleColumns.length} columns
           </div>
           <div className="footer-actions">
             <button type="button" className="btn btn-secondary" onClick={onClose}>
               Close
+            </button>
+            <button type="button" className="btn btn-primary" onClick={handleApply}>
+              Apply
             </button>
           </div>
         </div>
