@@ -30,7 +30,7 @@
 .top-nav {
   height: 40px; /* Reduced from 54px */
   background: linear-gradient(90deg, #0c1938 0%, #152b5c 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 2px solid #c9973c;
   display: flex;
   align-items: center;
   justify-content: space-between;

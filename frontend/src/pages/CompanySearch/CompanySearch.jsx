@@ -642,7 +642,7 @@ const CompanySearch = () => {
         ) : (
           <>
             <div 
-              className={`data-table-container ${isFixedHeader ? 'fixed-header-active' : ''}`}
+              className={`data-table-container company-search-table-container ${isFixedHeader ? 'fixed-header-active' : ''}`}
               onScroll={(e) => {
                 const { scrollTop, scrollHeight, clientHeight } = e.target;
                 if (scrollHeight - scrollTop - clientHeight < 20) {

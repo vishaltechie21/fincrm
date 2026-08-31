@@ -138,8 +138,8 @@ mark.highlight-search {
 }
 
 /* Sticky Headers on Scroll */
-.company-table-container.fixed-header-active th,
-.contact-table-container.fixed-header-active th {
+.company-search-table-container.fixed-header-active th,
+.contact-search-table-container.fixed-header-active th {
   position: sticky !important;
   top: 0 !important;
   z-index: 15 !important;
@@ -148,8 +148,8 @@ mark.highlight-search {
 }
 
 /* Force normal scroll behavior when Freeze Header is disabled (not active) */
-.company-table-container:not(.fixed-header-active) th,
-.contact-table-container:not(.fixed-header-active) th {
+.company-search-table-container:not(.fixed-header-active) th,
+.contact-search-table-container:not(.fixed-header-active) th {
   position: relative !important;
   top: auto !important;
   z-index: 1 !important;

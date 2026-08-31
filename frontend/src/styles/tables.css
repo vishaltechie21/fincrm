@@ -53,7 +53,7 @@
   border-right: none;
 }
 
-.data-table tr:hover td {
+.data-table tr:not(.open-row):not(.detail):hover td {
   background-color: #d1dce8 !important;
 }
 
