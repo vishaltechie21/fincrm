@@ -338,9 +338,12 @@ mark.highlight-search {
   color: var(--text-h);
   text-transform: none;
   letter-spacing: 0.2px;
+  width: 115px;
+  flex-shrink: 0;
   text-align: left;
   white-space: nowrap;
-  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .form-field input,
 .form-field select,
@@ -1152,4 +1155,26 @@ td.hit {
 .contact-id { width: 75px; }
 .contact-email { width: 210px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
 .contact-remarks { text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
+
+/* Column Resizing */
+th.sortable-header,
+th.clickable-header {
+  position: relative;
+}
+
+.column-resizer {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+  z-index: 10;
+  user-select: none;
+}
+
+.column-resizer:hover {
+  background-color: #c9973c;
+  width: 2px;
+}
 
