@@ -27,7 +27,6 @@
   height: 100%;
 }
 
-/* Top Navigation Bar - Deep Navy Theme */
 .top-nav {
   height: 40px; /* Reduced from 54px */
   background: linear-gradient(90deg, #0c1938 0%, #152b5c 100%);
@@ -39,6 +38,7 @@
   box-sizing: border-box;
   width: 100%;
   flex-shrink: 0;
+  position: relative;
 }
 
 /* Logo image text */
@@ -48,13 +48,16 @@
 }
 
 .logo-text img {
-  max-width: 110px;
-  max-height: 22px; /* Reduced from 30px */
+  max-width: 130px;
+  max-height: 26px; /* Increased a little bit */
   object-fit: contain;
 }
 
 /* Center Noida Metadata info */
 .top-nav-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -959,7 +962,7 @@
 
 .form-panel {
   border-bottom: 1.5px solid var(--border);
-  background-color: var(--panel0);
+  background-color: var(--panel);
   padding: 6px 12px;
   flex-shrink: 0;
 }
@@ -970,31 +973,29 @@
   display: flex;
   flex-direction: column;
   background-color: var(--bg);
-  padding: 0px 5px 0 5px;
+  padding: -1px 12px 12px 0px;
 }
 
 
 
 .lower-table-panel .panel-title {
   display: block;
-  background-color: #2b76e8;
-  padding: 4px 8px;
+  background-color: var(--header-bg);
+  padding: 6px 12px;
   border: 1px solid var(--border);
   border-bottom: none;
   border-radius: 4px 4px 0 0;
-  text-align: center;
+  text-align: left;
   margin-bottom: 0;
 }
 
 .lower-table-panel .panel-title h3 {
-  font-size: 9.5px;
+  font-size: 11px;
   font-weight: 700;
   color: #ffffff;
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  background-color: var(--nav-active-bg);
-  
 }
 
 /* Search layout: search bar on top, table below */

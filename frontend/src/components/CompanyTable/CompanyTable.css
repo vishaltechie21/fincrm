@@ -57,14 +57,14 @@
 }
 
 .company-table tr.active-row td {
-  background-color: #fef08a !important;
-  color: #0f172a !important;
+  background-color: #c9973c !important;
+  color: #ffffff !important;
   font-weight: 700;
 }
 
 .company-table tr.active-row .company-id {
   font-weight: 700;
-  color: #0f172a !important;
+  color: #ffffff !important;
 }
 
 .company-id {

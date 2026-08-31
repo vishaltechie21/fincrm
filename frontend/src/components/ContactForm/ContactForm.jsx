@@ -1,7 +1,6 @@
 import { Plus, Edit, Trash2, Save } from 'lucide-react';
 import FormField from '../FormField';
 import SearchableSelect from '../SearchableSelect';
-import TextareaField from '../TextareaField';
 import { RefreshCw } from 'lucide-react';
 
 
@@ -43,8 +42,8 @@ const ContactForm = ({
   return (
     <form className="contact-form" onSubmit={(e) => e.preventDefault()}>
       <div className="form-grid">
-        {/* Row 1 */}
-        <div className="col-3">
+        {/* Column 1 */}
+        <div className="col-4 form-column">
           <FormField
             label="Contact ID"
             name="mascon_id"
@@ -52,35 +51,6 @@ const ContactForm = ({
             placeholder="[Auto-generated]"
             disabled={true}
           />
-        </div>
-        <div className="col-5">
-          <SearchableSelect
-            label="Company"
-            name="mascom_id"
-            value={selectedCompanyOption}
-            onChange={(e) => handleCompanySelect(e.target.value)}
-            options={companyOptions}
-            required={true}
-            error={errors.mascom_id}
-            disabled={isIdle}
-          />
-        </div>
-        <div className="col-4">
-          <FormField
-            label="Contact Name"
-            name="contact_name"
-            value={formData.contact_name}
-            onChange={handleChange}
-            placeholder="Enter contact name"
-            required={true}
-            error={errors.contact_name}
-            maxLength={150}
-            disabled={isIdle}
-          />
-        </div>
-
-        {/* Row 2 */}
-        <div className="col-4">
           <FormField
             label="Designation"
             name="designation"
@@ -91,34 +61,6 @@ const ContactForm = ({
             maxLength={100}
             disabled={isIdle}
           />
-        </div>
-        <div className="col-4">
-          <FormField
-            label="Mobile"
-            name="mobile"
-            value={formData.mobile}
-            onChange={handleChange}
-            placeholder="Enter mobile number"
-            error={errors.mobile}
-            maxLength={13}
-            disabled={isIdle}
-          />
-        </div>
-        <div className="col-4">
-          <FormField
-            label="Email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Enter email address"
-            error={errors.email}
-            maxLength={150}
-            disabled={isIdle}
-          />
-        </div>
-
-        {/* Row 3 */}
-        <div className="col-4">
           <FormField
             label="Key Person"
             name="key_person"
@@ -131,23 +73,64 @@ const ContactForm = ({
             disabled={isIdle}
           />
         </div>
-        <div className="col-8">
-          <TextareaField
+
+        {/* Column 2 */}
+        <div className="col-4 form-column">
+          <SearchableSelect
+            label="Company"
+            name="mascom_id"
+            value={selectedCompanyOption}
+            onChange={(e) => handleCompanySelect(e.target.value)}
+            options={companyOptions}
+            required={true}
+            error={errors.mascom_id}
+            disabled={isIdle}
+          />
+          <FormField
+            label="Mobile"
+            name="mobile"
+            value={formData.mobile}
+            onChange={handleChange}
+            placeholder="Enter mobile number"
+            error={errors.mobile}
+            maxLength={13}
+            disabled={isIdle}
+          />
+          <FormField
             label="Remarks"
             name="mascon_remarks"
             value={formData.mascon_remarks}
             onChange={handleChange}
             placeholder="Enter remarks (Optional)"
             error={errors.mascon_remarks}
-            rows={2}
             maxLength={1000}
             disabled={isIdle}
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
-            <span style={{ fontSize: '11px', color: 'var(--muted)' }}>
-              {formData.mascon_remarks ? 1000 - formData.mascon_remarks.length : 1000} characters remaining
-            </span>
-          </div>
+        </div>
+
+        {/* Column 3 */}
+        <div className="col-4 form-column">
+          <FormField
+            label="Contact Name"
+            name="contact_name"
+            value={formData.contact_name}
+            onChange={handleChange}
+            placeholder="Enter contact name"
+            required={true}
+            error={errors.contact_name}
+            maxLength={150}
+            disabled={isIdle}
+          />
+          <FormField
+            label="Email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Enter email address"
+            error={errors.email}
+            maxLength={150}
+            disabled={isIdle}
+          />
         </div>
       </div>
 

@@ -57,14 +57,14 @@
 } 
 
 .contact-table tr.active-row td {
-  background-color: var(--highlight);
-  color: #0f172a !important;
+  background-color: #c9973c !important;
+  color: #ffffff !important;
   font-weight: 700;
 }
 
 .contact-table tr.active-row .contact-id {
   font-weight: 700;
-  color: #0f172a !important;
+  color: #ffffff !important;
 }
 
 .contact-id {
