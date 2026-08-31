@@ -223,6 +223,8 @@ mark.highlight-search {
 .col-3 { grid-column: span 3; }
 .col-4 { grid-column: span 4; }
 .col-5 { grid-column: span 5; }
+.col-6 { grid-column: span 6; }
+.col-8 { grid-column: span 8; }
 .col-9 { grid-column: span 9; }
 .col-12 { grid-column: span 12; }
 
@@ -357,7 +359,7 @@ mark.highlight-search {
   background-color: var(--panel);
   border: 1px solid var(--border);
   color: var(--text-h);
-  padding: 4px 8px;
+  padding: 1px 5px;
   border-radius: 4px;
   font-size: 12px;
   height: auto;
@@ -714,6 +716,14 @@ mark.highlight-search {
 .cs-search-input.active-col-search {
   border: 1.5px solid #c9973c;
   background-color: var(--panel2);
+}
+.specific-search-btn {
+  width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-flex;
+  justify-content: center;
 }
 .cs-filters {
   display: flex;
@@ -1117,7 +1127,7 @@ tr.master-row.even-row td {
 tr.master-row.open-row:hover td,
 .company-table tr.master-row.open-row:hover td,
 .contact-table tr.master-row.open-row:hover td {
-  background-color: #0f2544 !important;
+  background-color: #7fb1ee59 !important;
   color: #ffffff !important;
 }
 tr.detail > td {

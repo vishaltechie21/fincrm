@@ -139,12 +139,8 @@ const ContactSearch = () => {
   };
 
   const handleSort = (field) => {
-    if (sortField === field) {
-      setSortAsc((prev) => !prev);
-    } else {
-      setSortField(field);
-      setSortAsc(true);
-    }
+    setSortField(field);
+    setSortAsc(true);
   };
 
   const renderSortableHeader = (field, label) => {
@@ -164,7 +160,7 @@ const ContactSearch = () => {
             style={{ cursor: 'pointer', padding: '0 2px', opacity: isSorted ? 1 : 0.4 }}
             title="Click to sort by this column"
           >
-            {isSorted ? (sortAsc ? '▲' : '▼') : '⇅'}
+            {isSorted ? '▲' : '⇅'}
           </span>
         </div>
       </th>
@@ -517,7 +513,7 @@ const ContactSearch = () => {
           </button>
           <button 
             type="button" 
-            className={`btn ${searchModeColumn ? 'btn-success' : 'btn-secondary'}`}
+            className={`btn specific-search-btn ${searchModeColumn ? 'btn-success' : 'btn-secondary'}`}
             onClick={() => {
               if (searchModeColumn) {
                 setSearchModeColumn(null);
@@ -575,7 +571,6 @@ const ContactSearch = () => {
           type="button" 
           onClick={() => {
             setExpandedRowIds(new Set());
-            setSearchQuery('');
           }}
           title="Collapse all table rows"
         >
@@ -639,17 +634,13 @@ const ContactSearch = () => {
                         <span 
                           className="sort-trigger-icon"
                           onClick={() => {
-                            if (sortField === 'selection') {
-                              setSortAsc(prev => !prev);
-                            } else {
-                              setSortField('selection');
-                              setSortAsc(true);
-                            }
+                            setSortField('selection');
+                            setSortAsc(true);
                           }}
                           style={{ cursor: 'pointer', opacity: sortField === 'selection' ? 1 : 0.4, fontSize: '10px' }}
                           title="Sort selected first/last"
                         >
-                          {sortField === 'selection' ? (sortAsc ? '▲' : '▼') : '⇅'}
+                          {sortField === 'selection' ? '▲' : '⇅'}
                         </span>
                       </div>
                     </th>

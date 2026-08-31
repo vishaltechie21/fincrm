@@ -53,7 +53,7 @@
 }
 
 .contact-table tr:nth-child(even) td {
-  background-color: #8bb7f0;
+  background-color: #7fb1ee59;
 } 
 
 .contact-table tr.active-row td {

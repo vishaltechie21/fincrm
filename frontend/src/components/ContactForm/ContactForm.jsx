@@ -118,7 +118,7 @@ const ContactForm = ({
         </div>
 
         {/* Row 3 */}
-        <div className="col-12">
+        <div className="col-4">
           <FormField
             label="Key Person"
             name="key_person"
@@ -131,9 +131,7 @@ const ContactForm = ({
             disabled={isIdle}
           />
         </div>
-
-        {/* Row 4 */}
-        <div className="col-12">
+        <div className="col-8">
           <TextareaField
             label="Remarks"
             name="mascon_remarks"

@@ -53,7 +53,7 @@
 }
 
 .company-table tr:nth-child(even) td {
-  background-color: #7fb1ee;
+  background-color: #7fb1ee59;
 }
 
 .company-table tr.active-row td {
