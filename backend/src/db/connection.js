@@ -18,6 +18,20 @@ async function testConnection() {
     console.log('Database connected successfully');
     connection.release();
   } catch (error) {
+    if (error.code === 'ER_BAD_DB_ERROR') {
+      console.log('Database does not exist. Initializing database...');
+      try {
+        const initDb = require('./init');
+        await initDb();
+        const connection = await pool.getConnection();
+        console.log('Database connected successfully after initialization');
+        connection.release();
+        return;
+      } catch (initError) {
+        console.error('Database initialization failed:', initError.message);
+        process.exit(1);
+      }
+    }
     console.error('Database connection failed:', error.message);
     process.exit(1);
   }

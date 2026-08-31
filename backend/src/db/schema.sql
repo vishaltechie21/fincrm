@@ -56,6 +56,15 @@ CREATE TABLE IF NOT EXISTS TRACOM (
   FOREIGN KEY (mascom_id) REFERENCES MASCOM(mascom_id) ON DELETE CASCADE,
   FOREIGN KEY (mascon_id) REFERENCES MASCON(mascon_id) ON DELETE CASCADE
 );
+-- User Settings / Page Layout preferences
+CREATE TABLE IF NOT EXISTS USER_SETTINGS (
+  page_name VARCHAR(100) NOT NULL,
+  user_key VARCHAR(100) NOT NULL,
+  setting_data TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (page_name, user_key)
+);
 
 -- Optimization Indexes
 CREATE INDEX idx_mascom_name ON MASCOM(company_name);

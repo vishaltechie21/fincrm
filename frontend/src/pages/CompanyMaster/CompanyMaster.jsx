@@ -11,7 +11,7 @@ import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import ImportModal from '../../components/ImportModal/ImportModal';
 import Swal from 'sweetalert2';
 import { validateCompany } from '../../utils/validation';
-import './CompanyMaster.css';
+
 
 const CompanyMaster = () => {
   const [companies, setCompanies] = useState([]);
@@ -303,7 +303,7 @@ const CompanyMaster = () => {
 
 
   return (
-    <div className="company-master-page">
+    <div className="master-page">
       {/* Sub-header navigation row */}
       <div className="master-sub-header">
         {/* <div className="sub-header-left">
