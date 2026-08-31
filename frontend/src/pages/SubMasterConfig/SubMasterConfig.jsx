@@ -1,19 +1,23 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Settings, Plus, Trash2, ArrowLeftRight } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Settings, Plus, Trash2, Search, Sliders, Database, HelpCircle } from 'lucide-react';
 import * as subMasterService from '../../services/subMasterService';
 import DataTable from '../../components/DataTable/DataTable';
 import Notification from '../../components/Notification/Notification';
 import Swal from 'sweetalert2';
 
 const CATEGORIES = [
-  { key: 'industry_type', label: 'Industry Type' },
-  { key: 'data_source', label: 'Enquiry/Data Source' },
-  { key: 'stage', label: 'Sales Stage' }
+  { key: 'industry_type', label: 'Industry Type', desc: 'Used in Company Master Form' },
+  { key: 'data_source', label: 'Enquiry/Data Source', desc: 'Used in Company & Lead Forms' },
+  { key: 'stage', label: 'Sales Stage', desc: 'Used in Search & Demo Status' },
+  { key: 'erp_using', label: 'ERP System', desc: 'Used in Company Master Form' },
+  { key: 'state', label: 'State List', desc: 'Used in Addresses & Filters' },
+  { key: 'designation', label: 'Designation', desc: 'Used in Contact Master Form' }
 ];
 
 const SubMasterConfig = () => {
   const [selectedCategory, setSelectedCategory] = useState('industry_type');
-  const [options, setOptions] = useState([]);
+  const [allItems, setAllItems] = useState([]);
+  const [categorySearch, setCategorySearch] = useState('');
   const [newValue, setNewValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: 'success' });
@@ -22,13 +26,13 @@ const SubMasterConfig = () => {
     setNotification({ message, type });
   };
 
-  // Fetch options for the selected category
-  const fetchOptions = useCallback(async () => {
+  // Fetch all lookup items
+  const fetchAllItems = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await subMasterService.getSubMasters(selectedCategory);
+      const res = await subMasterService.getSubMasters();
       if (res.success) {
-        setOptions(res.data);
+        setAllItems(res.data);
       } else {
         showNotification(res.message || 'Failed to fetch options', 'error');
       }
@@ -38,13 +42,31 @@ const SubMasterConfig = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedCategory]);
+  }, []);
 
   useEffect(() => {
-    fetchOptions();
-  }, [fetchOptions]);
+    fetchAllItems();
+  }, [fetchAllItems]);
 
-  // Add new option handler
+  // Grouped options for currently selected category
+  const filteredOptions = useMemo(() => {
+    return allItems.filter(item => item.master_type === selectedCategory);
+  }, [allItems, selectedCategory]);
+
+  // Live item count per category helper
+  const getCategoryCount = useCallback((categoryKey) => {
+    return allItems.filter(item => item.master_type === categoryKey).length;
+  }, [allItems]);
+
+  // Filtered list of categories based on category search input
+  const filteredCategories = useMemo(() => {
+    return CATEGORIES.filter(cat =>
+      cat.label.toLowerCase().includes(categorySearch.toLowerCase()) ||
+      cat.desc.toLowerCase().includes(categorySearch.toLowerCase())
+    );
+  }, [categorySearch]);
+
+  // Add lookup value handler
   const handleAddOption = async (e) => {
     e.preventDefault();
     if (!newValue.trim()) {
@@ -57,7 +79,7 @@ const SubMasterConfig = () => {
       if (res.success) {
         showNotification('Lookup option added successfully!', 'success');
         setNewValue('');
-        fetchOptions();
+        fetchAllItems();
       } else {
         showNotification(res.message || 'Failed to add option', 'error');
       }
@@ -68,14 +90,14 @@ const SubMasterConfig = () => {
     }
   };
 
-  // Delete option handler
+  // Delete lookup value handler
   const handleDeleteOption = async (id, valueName) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: `Do you want to delete lookup option "${valueName}"?`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#c9973c', // Theme Gold
+      confirmButtonColor: '#c9973c',
       cancelButtonColor: '#5a6268',
       confirmButtonText: 'Yes, delete it!'
     });
@@ -86,7 +108,7 @@ const SubMasterConfig = () => {
       const res = await subMasterService.deleteSubMaster(id);
       if (res.success) {
         showNotification('Lookup option deleted successfully!', 'success');
-        fetchOptions();
+        fetchAllItems();
       } else {
         showNotification(res.message || 'Failed to delete option', 'error');
       }
@@ -96,7 +118,7 @@ const SubMasterConfig = () => {
     }
   };
 
-  // Define columns for our reusable DataTable
+  // Column config for DataTable
   const columns = [
     {
       key: 'id',
@@ -107,7 +129,7 @@ const SubMasterConfig = () => {
     {
       key: 'value_name',
       label: 'Option Value',
-      width: 300,
+      width: 320,
       sortable: true
     },
     {
@@ -119,93 +141,158 @@ const SubMasterConfig = () => {
         <button
           type="button"
           className="btn btn-danger btn-sm"
-          style={{ padding: '2px 8px', height: 'auto', minHeight: 'unset' }}
+          style={{ padding: '3px 8px', height: 'auto', minHeight: 'unset' }}
           onClick={() => handleDeleteOption(row.id, row.value_name)}
         >
-          <Trash2 size={12} style={{ marginRight: '4px' }} /> Delete
+          <Trash2 size={11} style={{ marginRight: '4px' }} /> Delete
         </button>
       )
     }
   ];
 
   return (
-    <div className="master-page">
-      {/* Sub-header navigation row matching CompanyMaster/ContactMaster */}
-      <div className="master-sub-header">
-        <div className="sub-header-center">
-          <span className="sub-title-icon"><Settings size={16} /></span>
-          <span className="sub-title-text">Sub Master Configuration</span>
+    <div className="flex flex-col flex-1 h-full overflow-hidden bg-slate-50">
+      {/* Dynamic Sub-header Panel */}
+      <div className="flex items-center justify-between px-4 py-3 bg-navy-800 border-b-2 border-gold text-white shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="text-gold"><Settings size={16} /></span>
+          <span className="text-sm font-bold tracking-wide uppercase">Sub Master Configuration</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-2xs font-semibold px-2 py-0.5 rounded bg-gold-deep text-gold border border-gold-muted">LOOKUPS</span>
         </div>
       </div>
 
-      <div className="master-layout-content" style={{ display: 'flex', flex: 1, padding: '20px', gap: '20px', overflow: 'hidden' }}>
-        {/* Left Side: Category selector & Add Value Form */}
-        <div className="col-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: 'var(--panel)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-          <div className="panel-title" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '8px', marginBottom: '8px' }}>
-            <h3 style={{ margin: 0, fontSize: '13px', fontWeight: '750', color: 'var(--text-h)' }}>Category Details</h3>
+      {/* Main Configurations Dashboard Layout */}
+      <div className="flex flex-col lg:flex-row flex-1 p-4 gap-4 overflow-hidden">
+        
+        {/* LEFT COLUMN: Categories Browser Sidebar */}
+        <div className="w-full lg:w-80 flex flex-col bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden shrink-0">
+          {/* Header */}
+          <div className="p-3 border-b border-slate-100 bg-slate-50/50">
+            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
+              <Sliders size={13} className="text-slate-400" />
+              Dropdown Types
+            </h3>
           </div>
 
-          <div className="form-field">
-            <label style={{ fontSize: '10px', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase' }}>Select Category</label>
-            <div className="field-control-container">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid var(--border)', backgroundColor: 'var(--bg)', color: 'var(--text-h)', outline: 'none' }}
-              >
-                {CATEGORIES.map(cat => (
-                  <option key={cat.key} value={cat.key}>{cat.label}</option>
-                ))}
-              </select>
+          {/* Search box for filtering categories */}
+          <div className="p-2.5 border-b border-slate-100">
+            <div className="relative flex items-center">
+              <Search className="absolute left-2.5 text-slate-400" size={13} />
+              <input
+                type="text"
+                placeholder="Search master categories..."
+                value={categorySearch}
+                onChange={(e) => setCategorySearch(e.target.value)}
+                className="w-full pl-7 pr-3 py-1.5 text-2xs border border-slate-200 rounded-md focus:border-gold outline-none"
+              />
             </div>
           </div>
 
-          <form onSubmit={handleAddOption} style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
-            <div className="form-field">
-              <label style={{ fontSize: '10px', fontWeight: '800', color: 'var(--muted)', textTransform: 'uppercase' }}>New Lookup Value</label>
-              <div className="field-control-container">
+          {/* Categories List */}
+          <div className="flex-1 overflow-y-auto p-1.5 space-y-1">
+            {filteredCategories.length > 0 ? (
+              filteredCategories.map(cat => {
+                const isActive = selectedCategory === cat.key;
+                const count = getCategoryCount(cat.key);
+                return (
+                  <button
+                    key={cat.key}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat.key)}
+                    className={`w-full text-left p-2.5 rounded-md transition-all flex items-center justify-between group ${
+                      isActive
+                        ? 'bg-navy-800 text-white border-l-4 border-gold'
+                        : 'hover:bg-slate-100 text-slate-600 border-l-4 border-transparent'
+                    }`}
+                  >
+                    <div className="flex flex-col gap-0.5 max-w-[80%]">
+                      <span className={`text-2xs font-bold ${isActive ? 'text-white' : 'text-slate-700'}`}>
+                        {cat.label}
+                      </span>
+                      <span className={`text-3xs truncate ${isActive ? 'text-slate-300' : 'text-slate-400'}`}>
+                        {cat.desc}
+                      </span>
+                    </div>
+                    <span className={`text-3xs font-bold px-2 py-0.5 rounded-full ${
+                      isActive ? 'bg-gold text-navy-800' : 'bg-slate-200 text-slate-600 group-hover:bg-slate-300'
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })
+            ) : (
+              <div className="text-center py-8 text-slate-400 text-3xs italic flex flex-col items-center gap-1">
+                <HelpCircle size={20} className="text-slate-300" />
+                No categories match search
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: Active category options workspace */}
+        <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+          
+          {/* Quick Option Add Form Panel */}
+          <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4 shrink-0">
+            <div className="border-b border-slate-100 pb-2 mb-3">
+              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
+                <Database size={13} className="text-slate-400" />
+                Add Value: {CATEGORIES.find(c => c.key === selectedCategory)?.label}
+              </h3>
+            </div>
+
+            <form onSubmit={handleAddOption} className="flex flex-col md:flex-row items-end gap-3">
+              <div className="flex-1 w-full text-left">
+                <label className="block text-3xs font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">
+                  Lookup Name Value
+                </label>
                 <input
                   type="text"
                   value={newValue}
                   onChange={(e) => setNewValue(e.target.value)}
-                  placeholder={`Enter new option for ${CATEGORIES.find(c => c.key === selectedCategory)?.label}`}
-                  style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', fontSize: '11px' }}
+                  placeholder={`e.g. Enter value for ${CATEGORIES.find(c => c.key === selectedCategory)?.label}`}
+                  className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:border-gold"
+                  maxLength={100}
                 />
               </div>
+              <button
+                type="submit"
+                className="btn btn-success w-full md:w-auto px-5 py-2 text-xs font-semibold flex items-center justify-center gap-1.5"
+                style={{ height: '32px' }}
+              >
+                <Plus size={14} /> Add Option
+              </button>
+            </form>
+          </div>
+
+          {/* Current Options List (Reusable DataTable) */}
+          <div className="flex-1 bg-white border border-slate-200 rounded-lg shadow-sm p-4 overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-3 shrink-0">
+              <h3 className="text-xs font-bold text-white bg-navy-800 px-3 py-1 rounded uppercase tracking-wide">
+                Current List Values
+              </h3>
+              <span className="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">
+                Total: {filteredOptions.length} items
+              </span>
             </div>
 
-            <button
-              type="submit"
-              className="btn btn-success"
-              style={{ marginTop: '8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-            >
-              <Plus size={14} /> Add Option
-            </button>
-          </form>
-        </div>
-
-        {/* Right Side: Options List Table */}
-        <div className="col-8 lower-table-panel" style={{ display: 'flex', flexDirection: 'column', flex: 1, backgroundColor: 'var(--panel)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border)', overflow: 'hidden' }}>
-          <div className="panel-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '8px', marginBottom: '12px' }}>
-            <h3 style={{ margin: 0, fontSize: '13px', fontWeight: '750', color: 'var(--text-h)' }}>
-              Current Options: {CATEGORIES.find(c => c.key === selectedCategory)?.label}
-            </h3>
-            <span style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: '600' }}>
-              Total: {options.length} item(s)
-            </span>
+            <div className="flex-1 overflow-hidden flex flex-col">
+              <DataTable
+                columns={columns}
+                data={filteredOptions}
+                loading={isLoading}
+                storageKey={`sub_masters_${selectedCategory}`}
+                idField="id"
+                emptyMessage={`No values configured yet for ${CATEGORIES.find(c => c.key === selectedCategory)?.label}.`}
+              />
+            </div>
           </div>
 
-          <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            <DataTable
-              columns={columns}
-              data={options}
-              loading={isLoading}
-              storageKey="sub_masters_table"
-              idField="id"
-              emptyMessage={`No options configured for ${CATEGORIES.find(c => c.key === selectedCategory)?.label}.`}
-            />
-          </div>
         </div>
+
       </div>
 
       <Notification

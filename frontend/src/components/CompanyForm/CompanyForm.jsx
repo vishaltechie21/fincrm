@@ -4,7 +4,7 @@ import SelectField from '../SelectField';
 import { RefreshCw } from 'lucide-react';
 
 
-const INDUSTRY_OPTIONS = [
+const INDUSTRY_DEFAULT_OPTIONS = [
   'Pharma Manufacturing',
   'Pharma Marketing',
   'Medical Devices',
@@ -14,7 +14,7 @@ const INDUSTRY_OPTIONS = [
   'Other'
 ];
 
-const SOURCE_OPTIONS = [
+const SOURCE_DEFAULT_OPTIONS = [
   'Website',
   'Referral',
   'WhatsApp',
@@ -36,7 +36,9 @@ const CompanyForm = ({
   editState = 'idle',
   onModify,
   onCancel,
-  onRefresh
+  onRefresh,
+  industryOptions = INDUSTRY_DEFAULT_OPTIONS,
+  sourceOptions = SOURCE_DEFAULT_OPTIONS
 }) => {
   const isIdle = editState === 'idle';
 
@@ -57,7 +59,7 @@ const CompanyForm = ({
             name="industry_type"
             value={formData.industry_type}
             onChange={(e) => handleSelectChange('industry_type', e.target.value)}
-            options={INDUSTRY_OPTIONS}
+            options={industryOptions}
             required={true}
             error={errors.industry_type}
             disabled={isIdle}
@@ -67,7 +69,7 @@ const CompanyForm = ({
             name="data_source"
             value={formData.data_source}
             onChange={(e) => handleSelectChange('data_source', e.target.value)}
-            options={SOURCE_OPTIONS}
+            options={sourceOptions}
             required={true}
             error={errors.data_source}
             disabled={isIdle}

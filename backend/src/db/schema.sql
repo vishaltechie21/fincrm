@@ -72,3 +72,12 @@ CREATE INDEX idx_mascom_city ON MASCOM(city);
 CREATE INDEX idx_mascom_state ON MASCOM(state);
 CREATE INDEX idx_mascon_mascom ON MASCON(mascom_id);
 CREATE INDEX idx_tracom_mascom ON TRACOM(mascom_id);
+
+-- Sub Master Configuration Lookup Tables
+CREATE TABLE IF NOT EXISTS SUB_MASTERS (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  master_type VARCHAR(50) NOT NULL,
+  value_name VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_type_value (master_type, value_name)
+);
