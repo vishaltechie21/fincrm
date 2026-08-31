@@ -151,47 +151,48 @@ const SubMasterConfig = () => {
   ];
 
   return (
-    <div className="flex flex-col flex-1 h-full overflow-hidden bg-slate-50">
+    <div className="flex flex-col flex-1 h-full overflow-hidden bg-slate-50 submaster-page">
       {/* Dynamic Sub-header Panel */}
-      <div className="flex items-center justify-between px-4 py-3 bg-navy-800 border-b-2 border-gold text-white shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="text-gold"><Settings size={16} /></span>
-          <span className="text-sm font-bold tracking-wide uppercase">Sub Master Configuration</span>
+      <div className="submaster-header flex items-center justify-between px-4 py-3 bg-navy-800 border-b-2 border-gold text-white shrink-0">
+        <div className="submaster-header-left flex items-center gap-2">
+          <span className="text-gold flex items-center"><Settings size={16} /></span>
+          <span className="submaster-header-title text-sm font-bold tracking-wide uppercase">Sub Master Configuration</span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-2xs font-semibold px-2 py-0.5 rounded bg-gold-deep text-gold border border-gold-muted">LOOKUPS</span>
+        <div>
+          <span className="submaster-header-badge text-2xs font-semibold px-2 py-0.5 rounded bg-gold-deep text-gold border border-gold-muted">LOOKUPS</span>
         </div>
       </div>
 
       {/* Main Configurations Dashboard Layout */}
-      <div className="flex flex-col lg:flex-row flex-1 p-4 gap-4 overflow-hidden">
+      <div className="submaster-dashboard flex flex-col lg:flex-row flex-1 p-4 gap-4 overflow-hidden">
         
         {/* LEFT COLUMN: Categories Browser Sidebar */}
-        <div className="w-full lg:w-80 flex flex-col bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden shrink-0">
+        <div className="submaster-sidebar w-full lg:w-80 flex flex-col bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden shrink-0">
           {/* Header */}
-          <div className="p-3 border-b border-slate-100 bg-slate-50/50">
-            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
-              <Sliders size={13} className="text-slate-400" />
+          <div className="submaster-sidebar-header p-3 border-b border-slate-100 bg-slate-50/50">
+            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5" style={{ margin: 0 }}>
+              <Sliders size={13} className="text-slate-400 flex shrink-0" />
               Dropdown Types
             </h3>
           </div>
 
           {/* Search box for filtering categories */}
-          <div className="p-2.5 border-b border-slate-100">
+          <div className="submaster-search-wrapper p-2.5 border-b border-slate-100">
             <div className="relative flex items-center">
-              <Search className="absolute left-2.5 text-slate-400" size={13} />
+              <Search className="absolute left-2.5 text-slate-400" size={13} style={{ position: 'absolute', left: '10px' }} />
               <input
                 type="text"
                 placeholder="Search master categories..."
                 value={categorySearch}
                 onChange={(e) => setCategorySearch(e.target.value)}
-                className="w-full pl-7 pr-3 py-1.5 text-2xs border border-slate-200 rounded-md focus:border-gold outline-none"
+                className="submaster-search-input w-full pl-7 pr-3 py-1.5 text-2xs border border-slate-200 rounded-md focus:border-gold outline-none"
+                style={{ paddingLeft: '28px' }}
               />
             </div>
           </div>
 
           {/* Categories List */}
-          <div className="flex-1 overflow-y-auto p-1.5 space-y-1">
+          <div className="submaster-cat-list flex-1 overflow-y-auto p-1.5 space-y-1">
             {filteredCategories.length > 0 ? (
               filteredCategories.map(cat => {
                 const isActive = selectedCategory === cat.key;
@@ -201,21 +202,21 @@ const SubMasterConfig = () => {
                     key={cat.key}
                     type="button"
                     onClick={() => setSelectedCategory(cat.key)}
-                    className={`w-full text-left p-2.5 rounded-md transition-all flex items-center justify-between group ${
+                    className={`submaster-cat-btn w-full text-left p-2.5 rounded-md transition-all flex items-center justify-between group ${
                       isActive
-                        ? 'bg-navy-800 text-white border-l-4 border-gold'
+                        ? 'active bg-navy-800 text-white border-l-4 border-gold'
                         : 'hover:bg-slate-100 text-slate-600 border-l-4 border-transparent'
                     }`}
                   >
                     <div className="flex flex-col gap-0.5 max-w-[80%]">
-                      <span className={`text-2xs font-bold ${isActive ? 'text-white' : 'text-slate-700'}`}>
+                      <span className={`submaster-cat-title text-2xs font-bold ${isActive ? 'text-white' : 'text-slate-700'}`}>
                         {cat.label}
                       </span>
-                      <span className={`text-3xs truncate ${isActive ? 'text-slate-300' : 'text-slate-400'}`}>
+                      <span className={`submaster-cat-desc text-3xs truncate ${isActive ? 'text-slate-300' : 'text-slate-400'}`}>
                         {cat.desc}
                       </span>
                     </div>
-                    <span className={`text-3xs font-bold px-2 py-0.5 rounded-full ${
+                    <span className={`submaster-cat-badge text-3xs font-bold px-2 py-0.5 rounded-full ${
                       isActive ? 'bg-gold text-navy-800' : 'bg-slate-200 text-slate-600 group-hover:bg-slate-300'
                     }`}>
                       {count}
@@ -233,19 +234,19 @@ const SubMasterConfig = () => {
         </div>
 
         {/* RIGHT COLUMN: Active category options workspace */}
-        <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+        <div className="submaster-workspace flex-1 flex flex-col gap-4 overflow-hidden">
           
           {/* Quick Option Add Form Panel */}
-          <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4 shrink-0">
-            <div className="border-b border-slate-100 pb-2 mb-3">
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
-                <Database size={13} className="text-slate-400" />
+          <div className="submaster-card bg-white border border-slate-200 rounded-lg shadow-sm p-4 shrink-0">
+            <div className="submaster-card-header border-b border-slate-100 pb-2 mb-3">
+              <h3 className="submaster-card-title text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5" style={{ margin: 0 }}>
+                <Database size={13} className="text-slate-400 flex shrink-0" />
                 Add Value: {CATEGORIES.find(c => c.key === selectedCategory)?.label}
               </h3>
             </div>
 
-            <form onSubmit={handleAddOption} className="flex flex-col md:flex-row items-end gap-3">
-              <div className="flex-1 w-full text-left">
+            <form onSubmit={handleAddOption} className="flex flex-col md:flex-row items-end gap-3" style={{ margin: 0 }}>
+              <div className="submaster-form-group flex-1 w-full text-left">
                 <label className="block text-3xs font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">
                   Lookup Name Value
                 </label>
@@ -254,7 +255,7 @@ const SubMasterConfig = () => {
                   value={newValue}
                   onChange={(e) => setNewValue(e.target.value)}
                   placeholder={`e.g. Enter value for ${CATEGORIES.find(c => c.key === selectedCategory)?.label}`}
-                  className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:border-gold"
+                  className="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-md outline-none focus:border-gold"
                   maxLength={100}
                 />
               </div>
@@ -269,12 +270,12 @@ const SubMasterConfig = () => {
           </div>
 
           {/* Current Options List (Reusable DataTable) */}
-          <div className="flex-1 bg-white border border-slate-200 rounded-lg shadow-sm p-4 overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-3 shrink-0">
-              <h3 className="text-xs font-bold text-white bg-navy-800 px-3 py-1 rounded uppercase tracking-wide">
+          <div className="submaster-card flex-1 bg-white border border-slate-200 rounded-lg shadow-sm p-4 overflow-hidden flex flex-col">
+            <div className="submaster-card-header flex items-center justify-between border-b border-slate-100 pb-2 mb-3 shrink-0">
+              <h3 className="submaster-card-title text-xs font-bold text-white bg-navy-800 px-3 py-1 rounded uppercase tracking-wide" style={{ margin: 0, color: '#ffffff' }}>
                 Current List Values
               </h3>
-              <span className="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">
+              <span className="submaster-card-badge text-3xs font-extrabold text-slate-400 uppercase tracking-wider">
                 Total: {filteredOptions.length} items
               </span>
             </div>
