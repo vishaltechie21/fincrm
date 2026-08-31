@@ -3,6 +3,7 @@ const cors = require('cors');
 const companyRoutes = require('./routes/companyRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
+const subMasterRoutes = require('./routes/subMasterRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use('/api/companies', companyRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/sub-masters', subMasterRoutes);
 
 // Catch-all undefined routes
 app.use((req, res, next) => {

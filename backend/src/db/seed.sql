@@ -15,3 +15,27 @@ INSERT INTO MASCON (mascon_id, mascom_id, contact_name, designation, mobile, ema
 INSERT INTO TRACOM (tracom_id, mascom_id, mascon_id, tracom_date, demo_date, demo_time, demo_mode, price_quoted, amc_quoted, mode, user_name, remarks, followup_date, followup_time) VALUES
 ('178-00001', '178-00001', '178-00001', '2026-08-20', '2026-08-21', '14:00:00', 'Online', 150000.00, 25000.00, 'Referral', 'Sourav', 'Demo planned', '2026-08-21', '11:00:00'),
 ('178-00002', '178-00002', '178-00002', '2026-08-20', NULL, NULL, NULL, NULL, NULL, 'WhatsApp', 'Ayush', 'Call customer for demo', '2026-08-22', '10:30:00');
+
+-- Seed data for SUB_MASTERS
+INSERT INTO SUB_MASTERS (master_type, value_name) VALUES
+('industry_type', 'Pharma Manufacturing'),
+('industry_type', 'Pharma Marketing'),
+('industry_type', 'Medical Devices'),
+('industry_type', 'Nutraceuticals'),
+('industry_type', 'Food Manufacturing'),
+('industry_type', 'Chemical Manufacturing'),
+('industry_type', 'Other'),
+('data_source', 'Website'),
+('data_source', 'Referral'),
+('data_source', 'WhatsApp'),
+('data_source', 'Bulk Mail'),
+('data_source', 'Cold Call'),
+('data_source', 'Exhibition'),
+('data_source', 'Existing Client'),
+('data_source', 'Other'),
+('stage', 'Lead'),
+('stage', 'Demo Done'),
+('stage', 'Quoted'),
+('stage', 'Negotiation'),
+('stage', 'Won'),
+('stage', 'Lost');

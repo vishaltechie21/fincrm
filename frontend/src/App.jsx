@@ -6,6 +6,7 @@ import CompanyMaster from './pages/CompanyMaster/CompanyMaster';
 import ContactMaster from './pages/ContactMaster/ContactMaster';
 import CompanySearch from './pages/CompanySearch/CompanySearch';
 import ContactSearch from './pages/ContactSearch/ContactSearch';
+import SubMasterConfig from './pages/SubMasterConfig/SubMasterConfig';
 import './App.css';
 
 const menuGroups = [
@@ -550,6 +551,8 @@ function App() {
               <CompanySearch />
             ) : activeMenu === 'contact-search' ? (
               <ContactSearch />
+            ) : activeMenu === 'masters' ? (
+              <SubMasterConfig />
             ) : (
               <div className="dummy-page">
                 <div className="dummy-card">

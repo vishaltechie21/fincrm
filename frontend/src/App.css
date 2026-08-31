@@ -28,7 +28,8 @@
 }
 
 .top-nav {
-  height: 40px; /* Reduced from 54px */
+  height: 40px;
+  /* Reduced from 54px */
   background: linear-gradient(90deg, #0c1938 0%, #152b5c 100%);
   border-bottom: 2px solid #c9973c;
   display: flex;
@@ -49,7 +50,8 @@
 
 .logo-text img {
   max-width: 130px;
-  max-height: 26px; /* Increased a little bit */
+  max-height: 26px;
+  /* Increased a little bit */
   object-fit: contain;
 }
 
@@ -66,7 +68,8 @@
 
 .top-company-title {
   color: #ffffff;
-  font-size: 11px; /* Reduced from 12px */
+  font-size: 11px;
+  /* Reduced from 12px */
   font-weight: 800;
   letter-spacing: 0.5px;
   padding-left: 0;
@@ -75,7 +78,8 @@
 
 .top-company-meta {
   color: rgba(255, 255, 255, 0.65);
-  font-size: 8.5px; /* Reduced from 9.5px */
+  font-size: 8.5px;
+  /* Reduced from 9.5px */
   margin-top: 1px;
   padding-left: 0;
   line-height: 1.2;
@@ -85,7 +89,8 @@
 .top-nav-right {
   display: flex;
   align-items: center;
-  gap: 14px; /* Increased from 12px */
+  gap: 14px;
+  /* Increased from 12px */
 }
 
 /* Search Box styling */
@@ -106,11 +111,15 @@
   background-color: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.25);
   color: #ffffff;
-  padding: 3px 8px 3px 26px; /* Reduced padding */
+  padding: 3px 8px 3px 26px;
+  /* Reduced padding */
   border-radius: 4px;
-  font-size: 10px; /* Reduced from 11.5px */
-  width: 160px; /* Reduced from 180px */
-  height: 24px; /* Reduced from 28px */
+  font-size: 10px;
+  /* Reduced from 11.5px */
+  width: 160px;
+  /* Reduced from 180px */
+  height: 24px;
+  /* Reduced from 28px */
   outline: none;
   font-weight: 500;
   box-sizing: border-box;
@@ -134,7 +143,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px; /* Reduced from 32px */
+  width: 24px;
+  /* Reduced from 32px */
   height: 24px;
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
@@ -148,8 +158,9 @@
 }
 
 .bell-icon {
-  font-size: 11px; 
-  color: #ffffff;/* Reduced from 13.5px */
+  font-size: 11px;
+  color: #ffffff;
+  /* Reduced from 13.5px */
 }
 
 .bell-badge {
@@ -170,7 +181,8 @@
   background-color: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: #ffffff;
-  width: 24px; /* Reduced from 32px */
+  width: 24px;
+  /* Reduced from 32px */
   height: 24px;
   border-radius: 4px;
   font-size: 11px;
@@ -193,12 +205,14 @@
   gap: 6px;
   background-color: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 3px 6px 3px 3px; /* Reduced padding */
+  padding: 3px 6px 3px 3px;
+  /* Reduced padding */
   border-radius: 4px;
 }
 
 .profile-initial {
-  width: 18px; /* Reduced from 24px */
+  width: 18px;
+  /* Reduced from 24px */
   height: 18px;
   background-color: var(--nav-active-bg);
   color: #ffffff;
@@ -212,7 +226,8 @@
 
 .profile-name {
   color: #ffffff;
-  font-size: 10px; /* Reduced from 11px */
+  font-size: 10px;
+  /* Reduced from 11px */
   font-weight: 600;
   letter-spacing: 0.5px;
 }
@@ -317,7 +332,8 @@
 .content-tabs-bar {
   display: flex;
   background-color: #0b1426;
-  border-bottom: 2px solid #0f2544; /* Matches active tab background */
+  border-bottom: 2px solid #0f2544;
+  /* Matches active tab background */
   padding: 8px 16px 0 16px;
   gap: 2px;
   overflow-x: auto;
@@ -327,7 +343,8 @@
 /* Chrome tab item container */
 .tab-item {
   position: relative;
-  padding: 6px 20px 6px 12px; /* Extra right padding for close button */
+  padding: 6px 20px 6px 12px;
+  /* Extra right padding for close button */
   font-size: 11px;
   font-weight: 500;
   color: #94a3b8;
@@ -344,14 +361,14 @@
   user-select: none;
 }
 
-.tab-item > span {
+.tab-item>span {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   line-height: 1;
 }
 
-.tab-item > span svg {
+.tab-item>span svg {
   display: block;
   flex-shrink: 0;
   margin: 0;
@@ -376,7 +393,8 @@
 
 /* Active tab style */
 .tab-item.active {
-  background-color: #0f2544 !important; /* Matches active sub-header bg */
+  background-color: #0f2544 !important;
+  /* Matches active sub-header bg */
   color: #ffffff !important;
   font-weight: 600;
   border: none;
@@ -398,7 +416,8 @@
   height: 8px;
   background-color: transparent;
   border-bottom-right-radius: 8px;
-  box-shadow: 4px 0 0 0 #0f2544; /* Match active tab background */
+  box-shadow: 4px 0 0 0 #0f2544;
+  /* Match active tab background */
   pointer-events: none;
 }
 
@@ -412,7 +431,8 @@
   height: 8px;
   background-color: transparent;
   border-bottom-left-radius: 8px;
-  box-shadow: -4px 0 0 0 #0f2544; /* Match active tab background */
+  box-shadow: -4px 0 0 0 #0f2544;
+  /* Match active tab background */
   pointer-events: none;
 }
 
@@ -420,11 +440,11 @@
   background: none;
   border: none;
   color: inherit;
-  font-size: 13px;
-  line-height: 1;
-  padding: 2px;
+  font-size: 24px;
+  line-height: 1.5;
+  padding: 2.5px;
   cursor: pointer;
-  opacity: 0.6;
+  opacity: 0.9;
   transition: all 0.15s ease;
   border-radius: 50%;
   display: inline-flex;
@@ -447,8 +467,8 @@
   background-color: #c9973c;
   border-radius: 50%;
   position: absolute;
-  top: 3px;
-  right: 3px;
+  top: 6px;
+  right: 6px;
 }
 
 /* Scroll content area */
@@ -595,6 +615,7 @@
     transform: translateY(-8px) scale(0.98);
     opacity: 0;
   }
+
   to {
     transform: translateY(0) scale(1);
     opacity: 1;
@@ -602,7 +623,8 @@
 }
 
 .notif-header {
-  background-color: var(--header-bg); /* Matches topnav colors */
+  background-color: var(--header-bg);
+  /* Matches topnav colors */
   padding: 12px 16px;
   display: flex;
   align-items: center;
@@ -1126,7 +1148,7 @@
 }
 
 /* SearchBar inside toolbar has a short fixed width of 200px */
-.search-toolbar-row > .search-bar-wrapper {
+.search-toolbar-row>.search-bar-wrapper {
   width: 200px;
   flex-shrink: 0;
 }

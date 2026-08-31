@@ -17,6 +17,50 @@ async function testConnection() {
     const connection = await pool.getConnection();
     console.log('Database connected successfully');
     connection.release();
+
+    // Auto-create SUB_MASTERS lookup lookup table if not exists
+    const createTableSql = `
+      CREATE TABLE IF NOT EXISTS SUB_MASTERS (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        master_type VARCHAR(50) NOT NULL,
+        value_name VARCHAR(100) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_type_value (master_type, value_name)
+      )
+    `;
+    await pool.query(createTableSql);
+
+    // Seed default lookup values if empty
+    const [countRows] = await pool.query('SELECT COUNT(*) as count FROM SUB_MASTERS');
+    if (countRows[0].count === 0) {
+      console.log('Seeding default sub-master lookup values...');
+      const seedSql = `
+        INSERT INTO SUB_MASTERS (master_type, value_name) VALUES
+        ('industry_type', 'Pharma Manufacturing'),
+        ('industry_type', 'Pharma Marketing'),
+        ('industry_type', 'Medical Devices'),
+        ('industry_type', 'Nutraceuticals'),
+        ('industry_type', 'Food Manufacturing'),
+        ('industry_type', 'Chemical Manufacturing'),
+        ('industry_type', 'Other'),
+        ('data_source', 'Website'),
+        ('data_source', 'Referral'),
+        ('data_source', 'WhatsApp'),
+        ('data_source', 'Bulk Mail'),
+        ('data_source', 'Cold Call'),
+        ('data_source', 'Exhibition'),
+        ('data_source', 'Existing Client'),
+        ('data_source', 'Other'),
+        ('stage', 'Lead'),
+        ('stage', 'Demo Done'),
+        ('stage', 'Quoted'),
+        ('stage', 'Negotiation'),
+        ('stage', 'Won'),
+        ('stage', 'Lost')
+      `;
+      await pool.query(seedSql);
+      console.log('Default lookup values seeded successfully.');
+    }
   } catch (error) {
     if (error.code === 'ER_BAD_DB_ERROR') {
       console.log('Database does not exist. Initializing database...');

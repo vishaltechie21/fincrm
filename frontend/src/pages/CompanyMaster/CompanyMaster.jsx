@@ -11,12 +11,15 @@ import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import ImportModal from '../../components/ImportModal/ImportModal';
 import Swal from 'sweetalert2';
 import { validateCompany } from '../../utils/validation';
+import * as subMasterService from '../../services/subMasterService';
 
 
 const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
   const [companies, setCompanies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: 'success' });
+  const [industryOptions, setIndustryOptions] = useState([]);
+  const [sourceOptions, setSourceOptions] = useState([]);
   
   // Infinite Scroll & Sorting state
   const [visibleCount, setVisibleCount] = useState(50);
@@ -64,9 +67,27 @@ const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
     }
   }, []);
 
+  const fetchDropdownOptions = useCallback(async () => {
+    try {
+      const [indRes, srcRes] = await Promise.all([
+        subMasterService.getSubMasters('industry_type'),
+        subMasterService.getSubMasters('data_source')
+      ]);
+      if (indRes.success) {
+        setIndustryOptions(indRes.data.map(opt => opt.value_name));
+      }
+      if (srcRes.success) {
+        setSourceOptions(srcRes.data.map(opt => opt.value_name));
+      }
+    } catch (err) {
+      console.error('Failed to load sub-masters in master page:', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchCompanies();
-  }, [fetchCompanies]);
+    fetchDropdownOptions();
+  }, [fetchCompanies, fetchDropdownOptions]);
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -383,6 +404,8 @@ const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
               onModify={handleModifyMode}
               onCancel={handleCancelEdit}
               onRefresh={handleRefresh}
+              industryOptions={industryOptions}
+              sourceOptions={sourceOptions}
             />
           </div>
 
