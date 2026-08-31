@@ -33,6 +33,13 @@ const menuGroups = [
       { id: 'followup', icon: <Calendar size={14} />, label: 'Follow-up' }
     ]
   }
+  , {
+    title: 'CONFIGURATION',
+    items: [
+      { id: 'masters', icon: <User size={14} />, label: 'Sub Master Configuration' },
+      { id: 'activity', icon: <Monitor size={14} />, label: 'Activity Log' }
+    ]
+  }
 ];
 
 const allModules = menuGroups.flatMap(group => group.items.map(item => ({

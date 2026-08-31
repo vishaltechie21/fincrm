@@ -1,7 +1,11 @@
-import { useState } from 'react';
+/**
+ * useContactForm — thin wrapper over useEntityForm.
+ * Kept for backward compatibility with existing ContactMaster usage.
+ */
+import { useEntityForm } from './useEntityForm';
 import { validateContact } from '../utils/validation';
 
-const initialFormState = {
+const CONTACT_INITIAL_STATE = {
   mascon_id: '',
   mascom_id: '',
   contact_name: '',
@@ -10,79 +14,19 @@ const initialFormState = {
   email: '',
   key_person: '',
   user_name: 'admin_fincrm',
-  mascon_remarks: ''
+  mascon_remarks: '',
 };
 
 export const useContactForm = () => {
-  const [formData, setFormData] = useState(initialFormState);
-  const [errors, setErrors] = useState({});
-  const [isDirty, setIsDirty] = useState(false);
+  const form = useEntityForm({
+    initialState: CONTACT_INITIAL_STATE,
+    validationFn: validateContact,
+  });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setIsDirty(true);
-
-    if (errors[name]) {
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next[name];
-        return next;
-      });
-    }
-  };
-
-  const handleSelectChange = (name, value) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setIsDirty(true);
-    if (errors[name]) {
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next[name];
-        return next;
-      });
-    }
-  };
-
-  const resetForm = () => {
-    setFormData(initialFormState);
-    setErrors({});
-    setIsDirty(false);
-  };
-
-  const loadContact = (contact) => {
-    setFormData({
-      mascon_id: contact.mascon_id || '',
-      mascom_id: contact.mascom_id || '',
-      contact_name: contact.contact_name || '',
-      designation: contact.designation || '',
-      mobile: contact.mobile || '',
-      email: contact.email || '',
-      key_person: contact.key_person || '',
-      user_name: contact.user_name || 'admin_fincrm',
-      mascon_remarks: contact.mascon_remarks || ''
-    });
-    setErrors({});
-    setIsDirty(false);
-  };
-
-  const validate = () => {
-    const validationErrors = validateContact(formData);
-    setErrors(validationErrors);
-    return Object.keys(validationErrors).length === 0;
-  };
-
+  // Alias loadEntity -> loadContact for backward compatibility
   return {
-    formData,
-    errors,
-    handleChange,
-    handleSelectChange,
-    resetForm,
-    loadContact,
-    validate,
-    setErrors,
-    setFormData,
-    isDirty,
-    setIsDirty
+    ...form,
+    loadContact: form.loadEntity,
+    validate: form.validate,
   };
 };
