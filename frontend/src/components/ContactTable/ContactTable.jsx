@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './ContactTable.css';
 
 const COLUMN_LABEL_MAP = {
   mascon_id: 'ID',
@@ -30,7 +29,8 @@ const DEFAULT_ORDER = [
 const ContactTable = ({ contacts, onEdit, activeId, onRowDoubleClick, onLoadMore, sortField, sortAsc, onSort }) => {
   const [columnOrder, setColumnOrder] = useState(() => {
     const saved = localStorage.getItem('contact_table_column_order');
-    return saved ? JSON.parse(saved) : DEFAULT_ORDER;
+    const baseOrder = saved ? JSON.parse(saved) : DEFAULT_ORDER;
+    return baseOrder.filter(colKey => COLUMN_LABEL_MAP[colKey] !== undefined);
   });
 
   const [columnWidths, setColumnWidths] = useState(() => {
@@ -140,8 +140,8 @@ const ContactTable = ({ contacts, onEdit, activeId, onRowDoubleClick, onLoadMore
   };
 
   return (
-    <div className="contact-table-container" onScroll={handleScroll}>
-      <table className="contact-table">
+    <div className="data-table-container" onScroll={handleScroll}>
+      <table className="data-table">
         <thead>
           <tr>
             {columnOrder.map((colKey) => renderHeader(colKey, COLUMN_LABEL_MAP[colKey]))}

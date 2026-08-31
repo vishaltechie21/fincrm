@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { User } from 'lucide-react';
 import ContactForm from '../../components/ContactForm/ContactForm';
 import ContactTable from '../../components/ContactTable/ContactTable';
@@ -14,7 +14,7 @@ import Swal from 'sweetalert2';
 import { validateContact } from '../../utils/validation';
 
 
-const ContactMaster = () => {
+const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
   const [contacts, setContacts] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -169,7 +169,7 @@ const ContactMaster = () => {
         background: 'var(--panel)',
         color: 'var(--text-h)'
       });
-      return;
+      return false;
     }
     try {
       let res;
@@ -193,6 +193,7 @@ const ContactMaster = () => {
         loadContact(savedContact);
         setEditState('idle');
         fetchContacts();
+        return true;
       } else {
         Swal.fire({
           icon: 'error',
@@ -203,6 +204,7 @@ const ContactMaster = () => {
           color: 'var(--text-h)'
         });
         if (res.errors) setErrors(res.errors);
+        return false;
       }
     } catch (err) {
       console.error(err);
@@ -216,8 +218,24 @@ const ContactMaster = () => {
         color: 'var(--text-h)'
       });
       if (err.response?.data?.errors) setErrors(err.response.data.errors);
+      return false;
     }
   };
+
+  useEffect(() => {
+    if (onEditStateChange) {
+      onEditStateChange(editState !== 'idle');
+    }
+  }, [editState, onEditStateChange]);
+
+  useImperativeHandle(ref, () => ({
+    save: async () => {
+      return await handleSave();
+    },
+    discard: () => {
+      handleCancelEdit();
+    }
+  }));
 
   const handleDelete = (idToDelete) => {
     const targetId = idToDelete || formData.mascon_id;
@@ -409,6 +427,6 @@ const ContactMaster = () => {
       />
     </div>
   );
-};
+});
 
 export default ContactMaster;

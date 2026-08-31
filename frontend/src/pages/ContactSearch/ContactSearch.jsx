@@ -643,7 +643,7 @@ const ContactSearch = () => {
         ) : (
           <>
             <div 
-              className={`contact-table-container ${isFixedHeader ? 'fixed-header-active' : ''}`}
+              className={`data-table-container ${isFixedHeader ? 'fixed-header-active' : ''}`}
               onScroll={(e) => {
                 const { scrollTop, scrollHeight, clientHeight } = e.target;
                 if (scrollHeight - scrollTop - clientHeight < 20) {
@@ -651,7 +651,7 @@ const ContactSearch = () => {
                 }
               }}
             >
-              <table className="contact-table">
+              <table className="data-table">
                 <thead>
                   <tr>
                     <th style={{ width: '54px', textAlign: 'center' }}>
@@ -695,7 +695,7 @@ const ContactSearch = () => {
                         </span>
                       </div>
                     </th>
-                    <th style={{ width: '30px' }}></th>
+                    <th style={{ width: '45px', textAlign: 'center', fontSize: '9.5px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-h)', letterSpacing: '0.6px' }}>Detail</th>
                     {visibleColumns.map((colKey) => renderSortableHeader(colKey, COLUMN_LABEL_MAP[colKey]))}
                   </tr>
                 </thead>

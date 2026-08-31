@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import Swal from 'sweetalert2';
 import { LayoutDashboard, Bell, Building2, User, Inbox, Monitor, Calendar, Search, RotateCw, Volume2, CheckCheck, Trash2, Sun, Moon, Info } from 'lucide-react';
 import CompanyMaster from './pages/CompanyMaster/CompanyMaster';
 import ContactMaster from './pages/ContactMaster/ContactMaster';
@@ -42,6 +43,10 @@ const allModules = menuGroups.flatMap(group => group.items.map(item => ({
 })));
 
 function App() {
+  const companyMasterRef = useRef();
+  const contactMasterRef = useRef();
+  const [isFormDirty, setIsFormDirty] = useState(false);
+
   const [pathname, setPathname] = useState(window.location.pathname);
   const [isBwTheme, setIsBwTheme] = useState(() => {
     const saved = localStorage.getItem('theme-bw');
@@ -92,6 +97,17 @@ function App() {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isFormDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isFormDirty]);
 
   useEffect(() => {
     if (isBwTheme) {
@@ -159,7 +175,54 @@ function App() {
     return () => window.removeEventListener('click', handleOutsideClick);
   }, [showNotifications]);
 
-  const handleMenuClick = (menuId) => {
+  const handleEditStateChange = (dirty) => {
+    setIsFormDirty(dirty);
+  };
+
+  const handleMenuClick = async (menuId) => {
+    if (menuId === activeMenu) return;
+
+    if (isFormDirty) {
+      const result = await Swal.fire({
+        title: 'Unsaved Changes',
+        text: 'You have unsaved changes in the form. What would you like to do?',
+        icon: 'warning',
+        showCancelButton: true,
+        showDenyButton: true,
+        confirmButtonText: 'Save & Leave',
+        denyButtonText: 'Discard & Leave',
+        cancelButtonText: 'Stay Here',
+        confirmButtonColor: 'var(--btn-success)',
+        denyButtonColor: 'var(--btn-danger)',
+        cancelButtonColor: 'var(--border)',
+        background: 'var(--panel)',
+        color: 'var(--text-h)'
+      });
+
+      if (result.isConfirmed) {
+        const activeRef = activeMenu === 'company' ? companyMasterRef.current : contactMasterRef.current;
+        if (activeRef && activeRef.save) {
+          const saveSuccess = await activeRef.save();
+          if (saveSuccess) {
+            setIsFormDirty(false);
+            performNavigation(menuId);
+          }
+        }
+      } else if (result.isDenied) {
+        const activeRef = activeMenu === 'company' ? companyMasterRef.current : contactMasterRef.current;
+        if (activeRef && activeRef.discard) {
+          activeRef.discard();
+        }
+        setIsFormDirty(false);
+        performNavigation(menuId);
+      }
+      return;
+    }
+
+    performNavigation(menuId);
+  };
+
+  const performNavigation = (menuId) => {
     const item = allModules.find(m => m.id === menuId);
     if (item) {
       const exists = openTabs.some(t => t.id === menuId);
@@ -181,16 +244,58 @@ function App() {
     }
   };
 
-  const handleCloseTab = (e, tabId) => {
+  const handleCloseTab = async (e, tabId) => {
     e.stopPropagation();
     if (openTabs.length === 1) return;
+
+    if (tabId === activeMenu && isFormDirty) {
+      const result = await Swal.fire({
+        title: 'Unsaved Changes',
+        text: 'You have unsaved changes in the form. What would you like to do?',
+        icon: 'warning',
+        showCancelButton: true,
+        showDenyButton: true,
+        confirmButtonText: 'Save & Close',
+        denyButtonText: 'Discard & Close',
+        cancelButtonText: 'Stay Here',
+        confirmButtonColor: 'var(--btn-success)',
+        denyButtonColor: 'var(--btn-danger)',
+        cancelButtonColor: 'var(--border)',
+        background: 'var(--panel)',
+        color: 'var(--text-h)'
+      });
+
+      if (result.isConfirmed) {
+        const activeRef = activeMenu === 'company' ? companyMasterRef.current : contactMasterRef.current;
+        if (activeRef && activeRef.save) {
+          const saveSuccess = await activeRef.save();
+          if (saveSuccess) {
+            setIsFormDirty(false);
+            performCloseTab(tabId);
+          }
+        }
+      } else if (result.isDenied) {
+        const activeRef = activeMenu === 'company' ? companyMasterRef.current : contactMasterRef.current;
+        if (activeRef && activeRef.discard) {
+          activeRef.discard();
+        }
+        setIsFormDirty(false);
+        performCloseTab(tabId);
+      }
+      return;
+    }
+
+    performCloseTab(tabId);
+  };
+
+  const performCloseTab = (tabId) => {
     const newTabs = openTabs.filter(tab => tab.id !== tabId);
     setOpenTabs(newTabs);
     if (activeMenu === tabId) {
       const index = openTabs.findIndex(tab => tab.id === tabId);
       const fallbackTab = newTabs[index - 1] || newTabs[0];
       if (fallbackTab) {
-        handleMenuClick(fallbackTab.id);
+        performNavigation(fallbackTab.id);
       }
     }
   };
@@ -431,9 +536,9 @@ function App() {
 
           <main className="main-content">
             {activeMenu === 'company' ? (
-              <CompanyMaster />
+              <CompanyMaster ref={companyMasterRef} onEditStateChange={handleEditStateChange} />
             ) : activeMenu === 'contact' ? (
-              <ContactMaster />
+              <ContactMaster ref={contactMasterRef} onEditStateChange={handleEditStateChange} />
             ) : activeMenu === 'company-search' ? (
               <CompanySearch />
             ) : activeMenu === 'contact-search' ? (

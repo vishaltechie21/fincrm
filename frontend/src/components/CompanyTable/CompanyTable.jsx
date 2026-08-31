@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import './CompanyTable.css';
 
 const COLUMN_LABEL_MAP = {
-  details:"Details",
   mascom_id: 'ID',
   company_name: 'Company Name',
   industry_type: 'Industry',
@@ -16,7 +14,6 @@ const COLUMN_LABEL_MAP = {
 };
 
 const DEFAULT_ORDER = [
-  'details',
   'mascom_id',
   'company_name',
   'industry_type',
@@ -32,7 +29,8 @@ const DEFAULT_ORDER = [
 const CompanyTable = ({ companies, onEdit, activeId, onRowDoubleClick, onLoadMore, sortField, sortAsc, onSort }) => {
   const [columnOrder, setColumnOrder] = useState(() => {
     const saved = localStorage.getItem('company_table_column_order');
-    return saved ? JSON.parse(saved) : DEFAULT_ORDER;
+    const baseOrder = saved ? JSON.parse(saved) : DEFAULT_ORDER;
+    return baseOrder.filter(colKey => COLUMN_LABEL_MAP[colKey] !== undefined);
   });
 
   const [columnWidths, setColumnWidths] = useState(() => {
@@ -142,8 +140,8 @@ const CompanyTable = ({ companies, onEdit, activeId, onRowDoubleClick, onLoadMor
   };
 
   return (
-    <div className="company-table-container" onScroll={handleScroll}>
-      <table className="company-table">
+    <div className="data-table-container" onScroll={handleScroll}>
+      <table className="data-table">
         <thead>
           <tr>
             {columnOrder.map((colKey) => renderHeader(colKey, COLUMN_LABEL_MAP[colKey]))}

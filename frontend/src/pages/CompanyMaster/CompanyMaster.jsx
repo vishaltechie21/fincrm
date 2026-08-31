@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { Building2 } from 'lucide-react';
 import CompanyForm from '../../components/CompanyForm/CompanyForm';
 import CompanyTable from '../../components/CompanyTable/CompanyTable';
@@ -13,7 +13,7 @@ import Swal from 'sweetalert2';
 import { validateCompany } from '../../utils/validation';
 
 
-const CompanyMaster = () => {
+const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
   const [companies, setCompanies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: 'success' });
@@ -153,7 +153,7 @@ const CompanyMaster = () => {
         background: 'var(--panel)',
         color: 'var(--text-h)'
       });
-      return;
+      return false;
     }
     try {
       let res;
@@ -177,6 +177,7 @@ const CompanyMaster = () => {
         loadCompany(savedCompany);
         setEditState('idle');
         fetchCompanies();
+        return true;
       } else {
         Swal.fire({
           icon: 'error',
@@ -187,6 +188,7 @@ const CompanyMaster = () => {
           color: 'var(--text-h)'
         });
         if (res.errors) setErrors(res.errors);
+        return false;
       }
     } catch (err) {
       console.error(err);
@@ -200,8 +202,24 @@ const CompanyMaster = () => {
         color: 'var(--text-h)'
       });
       if (err.response?.data?.errors) setErrors(err.response.data.errors);
+      return false;
     }
   };
+
+  useEffect(() => {
+    if (onEditStateChange) {
+      onEditStateChange(editState !== 'idle');
+    }
+  }, [editState, onEditStateChange]);
+
+  useImperativeHandle(ref, () => ({
+    save: async () => {
+      return await handleSave();
+    },
+    discard: () => {
+      handleCancelEdit();
+    }
+  }));
 
   const handleDelete = (idToDelete) => {
     const targetId = idToDelete || formData.mascom_id;
@@ -419,6 +437,6 @@ const CompanyMaster = () => {
       />
     </div>
   );
-};
+});
 
 export default CompanyMaster;
