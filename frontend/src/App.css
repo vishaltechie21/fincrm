@@ -148,7 +148,8 @@
 }
 
 .bell-icon {
-  font-size: 11px; /* Reduced from 13.5px */
+  font-size: 11px; 
+  color: #ffffff;/* Reduced from 13.5px */
 }
 
 .bell-badge {

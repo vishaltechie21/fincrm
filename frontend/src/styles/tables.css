@@ -19,7 +19,7 @@
   white-space: nowrap;
 }
 
-.data-table th {
+.data-table > thead > tr > th {
   position: sticky;
   top: 0;
   background-color: var(--panel2);
@@ -36,11 +36,11 @@
   user-select: none;
 }
 
-.data-table th:last-child {
+.data-table > thead > tr > th:last-child {
   border-right: none;
 }
 
-.data-table td {
+.data-table > tbody > tr > td {
   padding: 5px 8px;
   border-bottom: 1px solid var(--border);
   border-right: 1px solid var(--border);
@@ -49,30 +49,30 @@
   vertical-align: middle;
 }
 
-.data-table td:last-child {
+.data-table > tbody > tr > td:last-child {
   border-right: none;
 }
 
-.data-table tr:not(.open-row):not(.detail):hover td {
+.data-table > tbody > tr:not(.open-row):not(.detail):hover > td {
   background-color: #d1dce8 !important;
 }
 
-.data-table tr:nth-child(even) td {
+.data-table > tbody > tr:nth-child(even) > td {
   background-color: #7fb1ee59;
 }
 
-.data-table tr.active-row td {
+.data-table > tbody > tr.active-row > td {
   background-color: #c9973c !important;
   color: #ffffff !important;
   font-weight: 700;
 }
 
-.data-table tr.active-row td a,
-.data-table tr.active-row td span,
-.data-table tr.active-row td b,
-.data-table tr.active-row td strong,
-.data-table tr.active-row .contact-id,
-.data-table tr.active-row .company-id {
+.data-table > tbody > tr.active-row > td a,
+.data-table > tbody > tr.active-row > td span,
+.data-table > tbody > tr.active-row > td b,
+.data-table > tbody > tr.active-row > td strong,
+.data-table > tbody > tr.active-row > td .contact-id,
+.data-table > tbody > tr.active-row > td .company-id {
   color: #ffffff !important;
 }
 
