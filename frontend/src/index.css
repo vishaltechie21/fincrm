@@ -1,5 +1,11 @@
+/* ── Google Fonts & Shared Stylesheets (must come before @tailwind) ────────── */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
 @import './styles/tables.css';
+
+/* ── Tailwind CSS v3 ──────────────────────────────────────────────────────── */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   /* HSL Color Palette - High Contrast Elderly-Friendly Light Theme */
