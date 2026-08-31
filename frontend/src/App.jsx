@@ -518,7 +518,7 @@ function App() {
                 className={`tab-item ${activeMenu === tab.id ? 'active' : ''}`}
                 onClick={() => handleMenuClick(tab.id)}
               >
-                <span>{tab.icon} {tab.label}</span>
+                <span>{tab.icon}{tab.label}</span>
                 {openTabs.length > 1 && (
                   <button
                     type="button"
