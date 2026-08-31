@@ -10,6 +10,7 @@ import Swal from 'sweetalert2';
 import * as companyService from '../../services/companyService';
 import * as contactService from '../../services/contactService';
 import { MASCOM_SEED, MASCON_SEED, TRACOM_SEED } from '../../utils/activityData';
+import { filterDataset } from '../../utils/filterUtils';
 
 
 const COLUMN_LABEL_MAP = {
@@ -42,6 +43,10 @@ const CompanySearch = () => {
   const [visibleColumns, setVisibleColumns] = useState(Object.keys(COLUMN_LABEL_MAP));
   const [activeFilters, setActiveFilters] = useState([]);
   const [hasSavedSettings, setHasSavedSettings] = useState(false);
+  const [columnWidths, setColumnWidths] = useState(() => {
+    const saved = localStorage.getItem('company_search_column_widths');
+    return saved ? JSON.parse(saved) : {};
+  });
 
   // Selection Checkbox State (Set of mascom_id keys)
   const [selectedRowIds, setSelectedRowIds] = useState(new Set());
@@ -138,8 +143,63 @@ const CompanySearch = () => {
   };
 
   const handleSort = (field) => {
-    setSortField(field);
-    setSortAsc(true);
+    if (sortField === field) {
+      setSortField('mascom_id');
+      setSortAsc(true);
+    } else {
+      setSortField(field);
+      setSortAsc(true);
+    }
+  };
+
+  const handleDragStart = (e, colKey) => {
+    e.dataTransfer.setData('text/plain', colKey);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e, targetColKey) => {
+    e.preventDefault();
+    const draggedColKey = e.dataTransfer.getData('text/plain');
+    if (draggedColKey === targetColKey) return;
+
+    setVisibleColumns((prev) => {
+      const next = [...prev];
+      const draggedIdx = next.indexOf(draggedColKey);
+      const targetIdx = next.indexOf(targetColKey);
+      if (draggedIdx !== -1 && targetIdx !== -1) {
+        next.splice(draggedIdx, 1);
+        next.splice(targetIdx, 0, draggedColKey);
+      }
+      return next;
+    });
+  };
+
+  const handleResizeStart = (e, colKey) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const startX = e.clientX;
+    const startWidth = e.target.parentElement.getBoundingClientRect().width;
+
+    const handleMouseMove = (moveEvent) => {
+      const deltaX = moveEvent.clientX - startX;
+      const newWidth = Math.max(50, startWidth + deltaX);
+      setColumnWidths((prev) => {
+        const next = { ...prev, [colKey]: newWidth };
+        localStorage.setItem('company_search_column_widths', JSON.stringify(next));
+        return next;
+      });
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
   };
 
   const renderSortableHeader = (field, label) => {
@@ -150,6 +210,15 @@ const CompanySearch = () => {
         className={`clickable-header ${isSearchActive ? 'active-search-header' : ''}`}
         onClick={() => handleHeaderClick(field)}
         title="Click to toggle Specific Column Search"
+        style={{ 
+          width: columnWidths[field] ? `${columnWidths[field]}px` : undefined,
+          position: 'relative',
+          userSelect: 'none'
+        }}
+        draggable={true}
+        onDragStart={(e) => handleDragStart(e, field)}
+        onDragOver={handleDragOver}
+        onDrop={(e) => handleDrop(e, field)}
       >
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', width: '100%', justifyContent: 'space-between' }}>
           <span>{label}</span>
@@ -162,6 +231,11 @@ const CompanySearch = () => {
             {isSorted ? '▲' : '⇅'}
           </span>
         </div>
+        <div 
+          className="column-resizer" 
+          onMouseDown={(e) => handleResizeStart(e, field)} 
+          onClick={(e) => e.stopPropagation()} 
+        />
       </th>
     );
   };
@@ -245,44 +319,16 @@ const CompanySearch = () => {
   }, [activeFilters]);
 
   // Apply filters
-  const filteredRows = fullRows.filter((r) => {
-    // 1. Array filters (new condition-based filters)
-    if (Array.isArray(activeFilters)) {
-      for (const filter of activeFilters) {
-        if (filter.f && filter.v) {
-          const val = getPropValue(r, filter.f) || '—';
-          if (String(val) !== filter.v) {
-            return false;
-          }
-        }
-      }
-    } else {
-      // Legacy object filters fallback
-      for (const field of Object.keys(COLUMN_LABEL_MAP)) {
-        const checkedVals = activeFilters[field];
-        if (checkedVals !== undefined) {
-          const val = getPropValue(r, field) || '—';
-          if (!checkedVals.includes(val)) {
-            return false;
-          }
-        }
-      }
-    }
-
-    // 2. Search Box (General or Column Generic)
-    let matchesSearch = true;
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      if (searchModeColumn) {
-        const val = getPropValue(r, searchModeColumn);
-        matchesSearch = String(val).toLowerCase().includes(q);
-      } else {
-        matchesSearch = r.hayContent.includes(q);
-      }
-    }
-
-    return matchesSearch;
-  });
+  const filteredRows = useMemo(() => {
+    return filterDataset(
+      fullRows,
+      activeFilters,
+      searchQuery,
+      searchModeColumn,
+      getPropValue,
+      (r) => r.hayContent
+    );
+  }, [fullRows, activeFilters, searchQuery, searchModeColumn, getPropValue]);
 
   const handleRowClick = (co) => {
     setExpandedRowIds(prev => {
@@ -633,8 +679,13 @@ const CompanySearch = () => {
                         <span 
                           className="sort-trigger-icon"
                           onClick={() => {
-                            setSortField('selection');
-                            setSortAsc(true);
+                            if (sortField === 'selection') {
+                              setSortField('mascom_id');
+                              setSortAsc(true);
+                            } else {
+                              setSortField('selection');
+                              setSortAsc(true);
+                            }
                           }}
                           style={{ cursor: 'pointer', opacity: sortField === 'selection' ? 1 : 0.4, fontSize: '10px' }}
                           title="Sort selected first/last"
@@ -644,16 +695,7 @@ const CompanySearch = () => {
                       </div>
                     </th>
                     <th style={{ width: '30px' }}></th>
-                    {visibleColumns.includes('mascom_id') && renderSortableHeader('mascom_id', 'Code')}
-                    {visibleColumns.includes('company_name') && renderSortableHeader('company_name', 'Company Name')}
-                    {visibleColumns.includes('industry_type') && renderSortableHeader('industry_type', 'Industry')}
-                    {visibleColumns.includes('city') && renderSortableHeader('city', 'City')}
-                    {visibleColumns.includes('state') && renderSortableHeader('state', 'State')}
-                    {visibleColumns.includes('data_source') && renderSortableHeader('data_source', 'Source')}
-                    {visibleColumns.includes('erp_using') && renderSortableHeader('erp_using', 'ERP Used')}
-                    {visibleColumns.includes('key_person') && renderSortableHeader('key_person', 'Key Person')}
-                    {visibleColumns.includes('stage') && renderSortableHeader('stage', 'Stage')}
-                    {visibleColumns.includes('mascom_remarks') && renderSortableHeader('mascom_remarks', 'Remarks')}
+                    {visibleColumns.map((colKey) => renderSortableHeader(colKey, COLUMN_LABEL_MAP[colKey]))}
                   </tr>
                 </thead>
                 <tbody>
@@ -695,96 +737,79 @@ const CompanySearch = () => {
                           <td style={{ textAlign: 'center' }}>
                             <span className="twisty-icon" style={{ fontWeight: 'bold', fontSize: '12px' }}>{isExpanded ? '−' : '＋'}</span>
                           </td>
-                           {visibleColumns.includes('mascom_id') && (
-                            <td 
-                              className="company-id hit" 
-                              onClick={(e) => handleCellClick(e, 'mascom_id')}
-                              title="Click to search in Code"
-                            >
-                              {renderCellText(r.co.mascom_id, 'mascom_id')}
-                            </td>
-                          )}
-                          {visibleColumns.includes('company_name') && (
-                            <td 
-                              className="company-name hit" 
-                              onClick={(e) => handleCellClick(e, 'company_name')}
-                              title="Click to search in Company Name"
-                            >
-                              {renderCellText(r.co.company_name, 'company_name')}
-                            </td>
-                          )}
-                          {visibleColumns.includes('industry_type') && (
-                            <td 
-                              className="hit" 
-                              onClick={(e) => handleCellClick(e, 'industry_type')}
-                              title="Click to search in Industry"
-                            >
-                              {renderCellText(r.co.industry_type, 'industry_type')}
-                            </td>
-                          )}
-                          {visibleColumns.includes('city') && (
-                            <td 
-                              className="hit" 
-                              onClick={(e) => handleCellClick(e, 'city')}
-                              title="Click to search in City"
-                            >
-                              {renderCellText(r.co.city, 'city')}
-                            </td>
-                          )}
-                          {visibleColumns.includes('state') && (
-                            <td 
-                              className="hit" 
-                              onClick={(e) => handleCellClick(e, 'state')}
-                              title="Click to search in State"
-                            >
-                              {renderCellText(r.co.state, 'state')}
-                            </td>
-                          )}
-                          {visibleColumns.includes('data_source') && (
-                            <td 
-                              className="hit" 
-                              onClick={(e) => handleCellClick(e, 'data_source')}
-                              title="Click to search in Source"
-                            >
-                              {renderCellText(r.co.data_source, 'data_source')}
-                            </td>
-                          )}
-                          {visibleColumns.includes('erp_using') && (
-                            <td 
-                              className="hit" 
-                              onClick={(e) => handleCellClick(e, 'erp_using')}
-                              title="Click to search in ERP Used"
-                            >
-                              {renderCellText(r.co.erp_using || '—', 'erp_using')}
-                            </td>
-                          )}
-                          {visibleColumns.includes('key_person') && (
-                            <td 
-                              className="hit" 
-                              onClick={(e) => handleCellClick(e, 'key_person')}
-                              title="Click to search in Key Person"
-                            >
-                              {renderCellText(r.key.contact_name || '—', 'key_person')}
-                            </td>
-                          )}
-                          {visibleColumns.includes('stage') && (
-                            <td 
-                              className="hit" 
-                              onClick={(e) => handleCellClick(e, 'stage')}
-                              title="Click to search in Stage"
-                            >
-                              <span className={`stage ${STAGE_CLASS[r.stage]}`}>{r.stage}</span>
-                            </td>
-                          )}
-                          {visibleColumns.includes('mascom_remarks') && (
-                            <td 
-                              className="company-remarks hit" 
-                              title={r.co.mascom_remarks}
-                              onClick={(e) => handleCellClick(e, 'mascom_remarks')}
-                            >
-                              {renderCellText(r.co.mascom_remarks || '—', 'mascom_remarks')}
-                            </td>
-                          )}
+                          {visibleColumns.map((colKey) => {
+                             if (colKey === 'mascom_id') {
+                               return (
+                                 <td 
+                                   key={colKey} 
+                                   className="company-id hit" 
+                                   onClick={(e) => handleCellClick(e, 'mascom_id')}
+                                   title="Click to search in Code"
+                                 >
+                                   {renderCellText(r.co.mascom_id, 'mascom_id')}
+                                 </td>
+                               );
+                             }
+                             if (colKey === 'company_name') {
+                               return (
+                                 <td 
+                                   key={colKey} 
+                                   className="company-name hit" 
+                                   onClick={(e) => handleCellClick(e, 'company_name')}
+                                   title="Click to search in Company Name"
+                                 >
+                                   {renderCellText(r.co.company_name, 'company_name')}
+                                 </td>
+                               );
+                             }
+                             if (colKey === 'key_person') {
+                               return (
+                                 <td 
+                                   key={colKey} 
+                                   className="hit" 
+                                   onClick={(e) => handleCellClick(e, 'key_person')}
+                                   title="Click to search in Key Person"
+                                 >
+                                   {renderCellText(r.key.contact_name || '—', 'key_person')}
+                                 </td>
+                               );
+                             }
+                             if (colKey === 'stage') {
+                               return (
+                                 <td 
+                                   key={colKey} 
+                                   className="hit" 
+                                   onClick={(e) => handleCellClick(e, 'stage')}
+                                   title="Click to search in Stage"
+                                 >
+                                   <span className={`stage ${STAGE_CLASS[r.stage]}`}>{r.stage}</span>
+                                 </td>
+                               );
+                             }
+                             if (colKey === 'mascom_remarks') {
+                               return (
+                                 <td 
+                                   key={colKey} 
+                                   className="company-remarks hit" 
+                                   title={r.co.mascom_remarks}
+                                   onClick={(e) => handleCellClick(e, 'mascom_remarks')}
+                                 >
+                                   {renderCellText(r.co.mascom_remarks || '—', 'mascom_remarks')}
+                                 </td>
+                               );
+                             }
+                             // Default cell rendering for industry_type, city, state, data_source, erp_using
+                             return (
+                               <td 
+                                 key={colKey} 
+                                 className="hit" 
+                                 onClick={(e) => handleCellClick(e, colKey)}
+                                 title={`Click to search in ${COLUMN_LABEL_MAP[colKey]}`}
+                               >
+                                 {renderCellText(r.co[colKey] || '—', colKey)}
+                                </td>
+                             );
+                           })}
                         </tr>
 
                         {isExpanded && (

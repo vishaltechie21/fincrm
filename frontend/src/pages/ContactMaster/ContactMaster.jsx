@@ -85,7 +85,8 @@ const ContactMaster = () => {
 
   const handleSort = (field) => {
     if (sortField === field) {
-      setSortAsc((prev) => !prev);
+      setSortField('mascon_id');
+      setSortAsc(true);
     } else {
       setSortField(field);
       setSortAsc(true);

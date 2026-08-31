@@ -70,7 +70,8 @@ const CompanyMaster = () => {
 
   const handleSort = (field) => {
     if (sortField === field) {
-      setSortAsc((prev) => !prev);
+      setSortField('mascom_id');
+      setSortAsc(true);
     } else {
       setSortField(field);
       setSortAsc(true);
