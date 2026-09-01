@@ -15,6 +15,18 @@ const COMPANY_INITIAL_STATE = {
   erp_using: '',
   user_name: '',
   mascom_remarks: '',
+  ho: '',
+  plant: '',
+  web: '',
+  units: '',
+  users: '',
+  client: '',
+  follow: '',
+  want: '',
+  seen: '',
+  budget: '',
+  quoted: '',
+  turnover: ''
 };
 
 export const useCompanyForm = () => {

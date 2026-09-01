@@ -39,8 +39,9 @@ async function createCompany(data) {
 
     const sql = `
       INSERT INTO MASCOM (
-        mascom_id, company_name, industry_type, city, state, data_source, erp_using, user_name, mascom_remarks
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        mascom_id, company_name, industry_type, city, state, data_source, erp_using, user_name, mascom_remarks,
+        ho, plant, web, units, users, client, follow, want, seen, budget, quoted, turnover
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const params = [
       newId,
@@ -51,7 +52,19 @@ async function createCompany(data) {
       data.data_source,
       data.erp_using ? data.erp_using.trim() : null,
       data.user_name.trim(),
-      data.mascom_remarks ? data.mascom_remarks.trim() : null
+      data.mascom_remarks ? data.mascom_remarks.trim() : null,
+      data.ho ? data.ho.trim() : null,
+      data.plant ? data.plant.trim() : null,
+      data.web ? data.web.trim() : null,
+      data.units ? String(data.units).trim() : null,
+      data.users ? String(data.users).trim() : null,
+      data.client ? data.client.trim() : null,
+      data.follow ? data.follow.trim() : null,
+      data.want ? data.want.trim() : null,
+      data.seen ? data.seen.trim() : null,
+      data.budget ? String(data.budget).trim() : null,
+      data.quoted ? String(data.quoted).trim() : null,
+      data.turnover ? String(data.turnover).trim() : null
     ];
 
     await connection.query(sql, params);
@@ -79,7 +92,19 @@ async function updateCompany(id, data) {
       data_source = ?,
       erp_using = ?,
       user_name = ?,
-      mascom_remarks = ?
+      mascom_remarks = ?,
+      ho = ?,
+      plant = ?,
+      web = ?,
+      units = ?,
+      users = ?,
+      client = ?,
+      follow = ?,
+      want = ?,
+      seen = ?,
+      budget = ?,
+      quoted = ?,
+      turnover = ?
     WHERE mascom_id = ?
   `;
   const params = [
@@ -91,6 +116,18 @@ async function updateCompany(id, data) {
     data.erp_using ? data.erp_using.trim() : null,
     data.user_name.trim(),
     data.mascom_remarks ? data.mascom_remarks.trim() : null,
+    data.ho ? data.ho.trim() : null,
+    data.plant ? data.plant.trim() : null,
+    data.web ? data.web.trim() : null,
+    data.units ? String(data.units).trim() : null,
+    data.users ? String(data.users).trim() : null,
+    data.client ? data.client.trim() : null,
+    data.follow ? data.follow.trim() : null,
+    data.want ? data.want.trim() : null,
+    data.seen ? data.seen.trim() : null,
+    data.budget ? String(data.budget).trim() : null,
+    data.quoted ? String(data.quoted).trim() : null,
+    data.turnover ? String(data.turnover).trim() : null,
     id
   ];
 

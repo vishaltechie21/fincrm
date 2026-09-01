@@ -1,5 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { useState, useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Building2 } from 'lucide-react';
 import CompanyForm from '../../components/CompanyForm/CompanyForm';
 import CompanyTable from '../../components/CompanyTable/CompanyTable';
@@ -21,7 +20,8 @@ const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
   const [notification, setNotification] = useState({ message: '', type: 'success' });
   const [industryOptions, setIndustryOptions] = useState([]);
   const [sourceOptions, setSourceOptions] = useState([]);
-  
+  const hasAutoLoadedRef = useRef(false);
+
   // Infinite Scroll & Sorting state
   const [visibleCount, setVisibleCount] = useState(50);
   const [sortField, setSortField] = useState('mascom_id');
@@ -92,10 +92,36 @@ const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
     }
   }, []);
 
+  const handleReturnNavigation = useCallback(() => {
+    const params = new URLSearchParams(window.location.search);
+    const returnTo = params.get('returnTo');
+    const expandId = params.get('expandId');
+    if (returnTo) {
+      const targetUrl = expandId ? `${returnTo}?expandId=${expandId}` : returnTo;
+      window.history.pushState({}, '', targetUrl);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+  }, []);
+
   useEffect(() => {
     fetchCompanies();
     fetchDropdownOptions();
   }, [fetchCompanies, fetchDropdownOptions]);
+
+  // Auto-load company in modifying mode if editId is in query params
+  useEffect(() => {
+    if (hasAutoLoadedRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const editId = params.get('editId');
+    if (editId && companies.length > 0) {
+      const comp = companies.find(c => c.mascom_id === editId);
+      if (comp) {
+        hasAutoLoadedRef.current = true;
+        loadCompany(comp);
+        setEditState('modifying');
+      }
+    }
+  }, [companies, loadCompany]);
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -141,11 +167,15 @@ const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
   const handleNew = () => {
     resetForm();
     setErrors({});
-    const nextId = predictNextId();
-    setFormData((prev) => ({ ...prev, mascom_id: nextId }));
+    const newId = predictNextId();
+    setFormData(prev => ({
+      ...prev,
+      mascom_id: newId
+    }));
     setEditState('adding');
-    showNotification('Creating new record. Form inputs unlocked.', 'info');
+    showNotification(`Added new form entry with ID: ${newId}. Inputs unlocked.`, 'info');
   };
+  const handleAddMode = handleNew;
 
   const handleModifyMode = () => {
     if (!formData.mascom_id) {
@@ -165,7 +195,9 @@ const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
     }
     setErrors({});
     setEditState('idle');
+    if (onEditStateChange) onEditStateChange(false);
     showNotification('Edit cancelled. Form inputs locked.', 'info');
+    setTimeout(() => handleReturnNavigation(), 50);
   };
 
   const handleSave = async () => {
@@ -205,7 +237,9 @@ const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
         });
         loadCompany(savedCompany);
         setEditState('idle');
+        if (onEditStateChange) onEditStateChange(false);
         fetchCompanies();
+        setTimeout(() => handleReturnNavigation(), 50);
         return true;
       } else {
         Swal.fire({

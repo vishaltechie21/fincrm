@@ -12,54 +12,98 @@ GO
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MASCOM]') AND type in (N'U'))
 BEGIN
   CREATE TABLE MASCOM (
-    mascom_id NVARCHAR(20) PRIMARY KEY,
-    company_name NVARCHAR(150) NOT NULL,
-    industry_type NVARCHAR(100) NOT NULL,
-    city NVARCHAR(100) NOT NULL,
-    state NVARCHAR(100) NOT NULL,
-    data_source NVARCHAR(100) NOT NULL,
-    erp_using NVARCHAR(100),
-    user_name NVARCHAR(100) NOT NULL,
+    mascom_id NVARCHAR(50) PRIMARY KEY,
+    company_name NVARCHAR(255) NOT NULL,
+    industry_type NVARCHAR(255) NOT NULL,
+    city NVARCHAR(255) NOT NULL,
+    state NVARCHAR(255) NOT NULL,
+    data_source NVARCHAR(255) NOT NULL,
+    erp_using NVARCHAR(255),
+    user_name NVARCHAR(255) NOT NULL,
     mascom_remarks NVARCHAR(MAX),
+    ho NVARCHAR(255),
+    plant NVARCHAR(255),
+    web NVARCHAR(255),
+    units NVARCHAR(50),
+    users NVARCHAR(50),
+    client NVARCHAR(50),
+    follow NVARCHAR(50),
+    want NVARCHAR(MAX),
+    seen NVARCHAR(MAX),
+    budget NVARCHAR(100),
+    quoted NVARCHAR(100),
+    turnover NVARCHAR(100),
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE()
   );
 END;
+GO
+
+-- Migration commands for existing MASCOM table in MSSQL
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MASCOM]') AND type in (N'U'))
+BEGIN
+  IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'MASCOM' AND COLUMN_NAME = 'ho')
+    ALTER TABLE MASCOM ADD ho NVARCHAR(255);
+  IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'MASCOM' AND COLUMN_NAME = 'plant')
+    ALTER TABLE MASCOM ADD plant NVARCHAR(255);
+  IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'MASCOM' AND COLUMN_NAME = 'web')
+    ALTER TABLE MASCOM ADD web NVARCHAR(255);
+  IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'MASCOM' AND COLUMN_NAME = 'units')
+    ALTER TABLE MASCOM ADD units NVARCHAR(50);
+  IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'MASCOM' AND COLUMN_NAME = 'users')
+    ALTER TABLE MASCOM ADD users NVARCHAR(50);
+  IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'MASCOM' AND COLUMN_NAME = 'client')
+    ALTER TABLE MASCOM ADD client NVARCHAR(50);
+  IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'MASCOM' AND COLUMN_NAME = 'follow')
+    ALTER TABLE MASCOM ADD follow NVARCHAR(50);
+  IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'MASCOM' AND COLUMN_NAME = 'want')
+    ALTER TABLE MASCOM ADD want NVARCHAR(MAX);
+  IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'MASCOM' AND COLUMN_NAME = 'seen')
+    ALTER TABLE MASCOM ADD seen NVARCHAR(MAX);
+  IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'MASCOM' AND COLUMN_NAME = 'budget')
+    ALTER TABLE MASCOM ADD budget NVARCHAR(100);
+  IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'MASCOM' AND COLUMN_NAME = 'quoted')
+    ALTER TABLE MASCOM ADD quoted NVARCHAR(100);
+  IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'MASCOM' AND COLUMN_NAME = 'turnover')
+    ALTER TABLE MASCOM ADD turnover NVARCHAR(100);
+END;
+GO
 
 -- Contact Master
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[MASCON]') AND type in (N'U'))
 BEGIN
   CREATE TABLE MASCON (
-    mascon_id NVARCHAR(20) PRIMARY KEY,
-    mascom_id NVARCHAR(20) NOT NULL,
-    contact_name NVARCHAR(150) NOT NULL,
-    designation NVARCHAR(100),
-    mobile NVARCHAR(20),
-    email NVARCHAR(150),
-    key_person NVARCHAR(5) DEFAULT 'N',
-    user_name NVARCHAR(100) NOT NULL,
+    mascon_id NVARCHAR(50) PRIMARY KEY,
+    mascom_id NVARCHAR(50) NOT NULL,
+    contact_name NVARCHAR(255) NOT NULL,
+    designation NVARCHAR(255),
+    mobile NVARCHAR(100),
+    email NVARCHAR(255),
+    key_person NVARCHAR(255) DEFAULT 'N',
+    user_name NVARCHAR(255) NOT NULL,
     mascon_remarks NVARCHAR(MAX),
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE(),
     CONSTRAINT fk_mascon_mascom FOREIGN KEY (mascom_id) REFERENCES MASCOM(mascom_id) ON DELETE CASCADE
   );
 END;
+GO
 
 -- Transaction / Demo / Follow-up Master
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[TRACOM]') AND type in (N'U'))
 BEGIN
   CREATE TABLE TRACOM (
-    tracom_id NVARCHAR(20) PRIMARY KEY,
-    mascom_id NVARCHAR(20) NOT NULL,
-    mascon_id NVARCHAR(20) NOT NULL,
+    tracom_id NVARCHAR(50) PRIMARY KEY,
+    mascom_id NVARCHAR(50) NOT NULL,
+    mascon_id NVARCHAR(50) NOT NULL,
     tracom_date DATE,
     demo_date DATE,
     demo_time TIME,
-    demo_mode NVARCHAR(50),
+    demo_mode NVARCHAR(100),
     price_quoted DECIMAL(15, 2),
     amc_quoted DECIMAL(15, 2),
-    mode NVARCHAR(50),
-    user_name NVARCHAR(100) NOT NULL,
+    mode NVARCHAR(100),
+    user_name NVARCHAR(255) NOT NULL,
     remarks NVARCHAR(MAX),
     followup_date DATE,
     followup_time TIME,
@@ -69,19 +113,21 @@ BEGIN
     CONSTRAINT fk_tracom_mascon FOREIGN KEY (mascon_id) REFERENCES MASCON(mascon_id)
   );
 END;
+GO
 
 -- User Settings / Page Layout preferences
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[USER_SETTINGS]') AND type in (N'U'))
 BEGIN
   CREATE TABLE USER_SETTINGS (
-    page_name NVARCHAR(100) NOT NULL,
-    user_key NVARCHAR(100) NOT NULL,
+    page_name NVARCHAR(255) NOT NULL,
+    user_key NVARCHAR(255) NOT NULL,
     setting_data NVARCHAR(MAX) NOT NULL,
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE(),
     PRIMARY KEY (page_name, user_key)
   );
 END;
+GO
 
 -- Optimization Indexes
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = N'idx_mascom_name' AND object_id = OBJECT_ID(N'[dbo].[MASCOM]'))
@@ -104,9 +150,10 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[SU
 BEGIN
   CREATE TABLE SUB_MASTERS (
     id INT IDENTITY(1,1) PRIMARY KEY,
-    master_type NVARCHAR(50) NOT NULL,
-    value_name NVARCHAR(100) NOT NULL,
+    master_type NVARCHAR(100) NOT NULL,
+    value_name NVARCHAR(255) NOT NULL,
     created_at DATETIME2 DEFAULT GETDATE(),
     CONSTRAINT unique_type_value UNIQUE (master_type, value_name)
   );
 END;
+GO

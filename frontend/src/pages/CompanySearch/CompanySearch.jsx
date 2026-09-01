@@ -12,6 +12,9 @@ import * as companyService from '../../services/companyService';
 import * as contactService from '../../services/contactService';
 import { MASCOM_SEED, MASCON_SEED, TRACOM_SEED } from '../../utils/activityData';
 import { filterDataset } from '../../utils/filterUtils';
+import ActivityModal from '../../components/Modals/ActivityModal';
+import DashboardModal from '../../components/Modals/DashboardModal';
+import ChecklistModal from '../../components/Modals/ChecklistModal';
 
 
 const COLUMN_LABEL_MAP = {
@@ -59,6 +62,26 @@ const CompanySearch = () => {
   const [visibleCount, setVisibleCount] = useState(50);
   const [sortField, setSortField] = useState('mascom_id');
   const [sortAsc, setSortAsc] = useState(true);
+
+  // Active Modal States
+  const [activeActivityCompany, setActiveActivityCompany] = useState(null);
+  const [activeDashboardCompany, setActiveDashboardCompany] = useState(null);
+  const [activeChecklistCompany, setActiveChecklistCompany] = useState(null);
+
+  // Auto-expand row if expandId is passed in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const expandId = params.get('expandId');
+    if (expandId) {
+      setExpandedRowIds(new Set([expandId]));
+      setTimeout(() => {
+        const el = document.querySelector(`[data-code="${expandId}"]`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 350);
+    }
+  }, []);
   const [selectedFirst, setSelectedFirst] = useState(false);
 
   const fetchAllData = useCallback(async () => {
@@ -814,9 +837,74 @@ const CompanySearch = () => {
                         </tr>
 
                         <SmoothDetailRow isExpanded={isExpanded} colSpan={visibleColumns.length + 2}>
-                              <div className="detail-box">
-                                {/* Company Info Facts */}
-                                <div className="sec">
+                               <div className="detail-box">
+                                 {/* Row Action Buttons Toolbar */}
+                                 <div className="arow">
+                                   <button 
+                                     type="button" 
+                                     className="abtn go" 
+                                     onClick={() => {
+                                       window.history.pushState({}, '', `/company?editId=${r.co.mascom_id}&returnTo=/company-search&expandId=${r.co.mascom_id}`);
+                                       window.dispatchEvent(new PopStateEvent('popstate'));
+                                     }}
+                                   >
+                                     Company Info
+                                   </button>
+                                   <button 
+                                     type="button" 
+                                     className="abtn go" 
+                                     onClick={() => {
+                                       const firstContact = r.contacts[0] || {};
+                                       const cnId = firstContact.mascon_id || '';
+                                       window.history.pushState({}, '', `/contact?editId=${cnId}&companyId=${r.co.mascom_id}&returnTo=/company-search&expandId=${r.co.mascom_id}`);
+                                       window.dispatchEvent(new PopStateEvent('popstate'));
+                                     }}
+                                   >
+                                     Contact Info
+                                   </button>
+                                   <button 
+                                     type="button" 
+                                     className="abtn go" 
+                                     onClick={() => setActiveActivityCompany(r.co)}
+                                   >
+                                     Activity Info
+                                   </button>
+                                   <button 
+                                     type="button" 
+                                     className="abtn go" 
+                                     onClick={() => setActiveDashboardCompany(r.co)}
+                                   >
+                                     Dashboard
+                                   </button>
+                                   <button 
+                                     type="button" 
+                                     className="abtn go" 
+                                     onClick={() => setActiveChecklistCompany(r.co)}
+                                   >
+                                     Checklist (0/128)
+                                   </button>
+
+                                   {r.key.mobile ? (
+                                     <a className="abtn" href={`tel:+91${r.key.mobile.replace(/\D/g, '')}`}>Calling</a>
+                                   ) : (
+                                     <span className="abtn off">Calling</span>
+                                   )}
+
+                                   {r.key.mobile ? (
+                                     <a className="abtn" href={`https://wa.me/91${r.key.mobile.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+                                   ) : (
+                                     <span className="abtn off">WhatsApp</span>
+                                   )}
+
+                                   {r.key.email ? (
+                                     <a className="abtn" href={`mailto:${r.key.email}`}>E-Mail</a>
+                                   ) : (
+                                     <span className="abtn off">E-Mail</span>
+                                   )}
+                                 </div>
+
+                                 {/* Company Info Facts */}
+                                 <div className="sec">
                                   <div className="sec-h">
                                     <span className="t">Company Details</span>
                                     <span className="src">MASCOM · {r.co.mascom_id}</span>
@@ -948,6 +1036,23 @@ const CompanySearch = () => {
           </>
         )}
       </div>
+
+      {/* Modals */}
+      <ActivityModal 
+        isOpen={!!activeActivityCompany} 
+        onClose={() => setActiveActivityCompany(null)} 
+        company={activeActivityCompany}
+      />
+      <DashboardModal 
+        isOpen={!!activeDashboardCompany} 
+        onClose={() => setActiveDashboardCompany(null)} 
+        company={activeDashboardCompany}
+      />
+      <ChecklistModal 
+        isOpen={!!activeChecklistCompany} 
+        onClose={() => setActiveChecklistCompany(null)} 
+        company={activeChecklistCompany}
+      />
 
       {/* Checklist Filter Modal */}
       <FilterModal

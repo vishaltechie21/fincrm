@@ -1,5 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { useState, useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
 import { User } from 'lucide-react';
 import ContactForm from '../../components/ContactForm/ContactForm';
 import ContactTable from '../../components/ContactTable/ContactTable';
@@ -20,7 +19,8 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
   const [companies, setCompanies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: 'success' });
-  
+  const hasAutoLoadedRef = useRef(false);
+
   // Infinite Scroll & Sorting state
   const [visibleCount, setVisibleCount] = useState(50);
   const [sortField, setSortField] = useState('mascon_id');
@@ -86,10 +86,44 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
     }
   }, []);
 
+  const handleReturnNavigation = useCallback(() => {
+    const params = new URLSearchParams(window.location.search);
+    const returnTo = params.get('returnTo');
+    const expandId = params.get('expandId');
+    if (returnTo) {
+      const targetUrl = expandId ? `${returnTo}?expandId=${expandId}` : returnTo;
+      window.history.pushState({}, '', targetUrl);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+  }, []);
+
   useEffect(() => {
     fetchContacts();
     fetchCompaniesList();
   }, [fetchContacts, fetchCompaniesList]);
+
+  // Auto-load contact in modifying mode if editId is in query params
+  useEffect(() => {
+    if (hasAutoLoadedRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const editId = params.get('editId');
+    const companyId = params.get('companyId');
+    if (editId && contacts.length > 0) {
+      const cont = contacts.find(c => c.mascon_id === editId);
+      if (cont) {
+        hasAutoLoadedRef.current = true;
+        loadContact(cont);
+        setEditState('modifying');
+      }
+    } else if (companyId && contacts.length > 0) {
+      const compCont = contacts.find(c => c.mascom_id === companyId);
+      if (compCont) {
+        hasAutoLoadedRef.current = true;
+        loadContact(compCont);
+        setEditState('modifying');
+      }
+    }
+  }, [contacts, loadContact]);
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -122,15 +156,11 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
     return `${timestampPrefix}-${paddedSeq}`;
   };
 
-  // Button toolbar event handlers
+  // Actions row toolbar handlers
   const handleRefresh = () => {
     resetForm();
     setErrors({});
     setEditState('idle');
-    fetchContacts();
-    fetchCompaniesList();
-    setVisibleCount(50);
-    showNotification('Form refreshed', 'info');
   };
 
   const handleNew = () => {
@@ -160,7 +190,9 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
     }
     setErrors({});
     setEditState('idle');
+    if (onEditStateChange) onEditStateChange(false);
     showNotification('Edit cancelled. Form inputs locked.', 'info');
+    setTimeout(() => handleReturnNavigation(), 50);
   };
 
   const handleSave = async () => {
@@ -200,7 +232,9 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
         });
         loadContact(savedContact);
         setEditState('idle');
+        if (onEditStateChange) onEditStateChange(false);
         fetchContacts();
+        setTimeout(() => handleReturnNavigation(), 50);
         return true;
       } else {
         Swal.fire({

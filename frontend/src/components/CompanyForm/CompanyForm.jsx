@@ -1,8 +1,6 @@
-import { Plus, Edit, Trash2, Save } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, RefreshCw } from 'lucide-react';
 import FormField from '../FormField';
 import SelectField from '../SelectField';
-import { RefreshCw } from 'lucide-react';
-
 
 const INDUSTRY_DEFAULT_OPTIONS = [
   'Pharma Manufacturing',
@@ -45,8 +43,8 @@ const CompanyForm = ({
   return (
     <form className="company-form" onSubmit={(e) => e.preventDefault()}>
       <div className="form-grid">
-        {/* Column 1 */}
-        <div className="col-4 form-column">
+        {/* Row 1: 4 Inputs Aligned */}
+        <div className="col-3">
           <FormField
             label="Company ID"
             name="mascom_id"
@@ -54,6 +52,21 @@ const CompanyForm = ({
             placeholder="[Auto-generated]"
             disabled={true}
           />
+        </div>
+        <div className="col-3">
+          <FormField
+            label="Company Name"
+            name="company_name"
+            value={formData.company_name}
+            onChange={handleChange}
+            placeholder="Enter company name"
+            required={true}
+            error={errors.company_name}
+            maxLength={150}
+            disabled={isIdle}
+          />
+        </div>
+        <div className="col-3">
           <SelectField
             label="Industry Type"
             name="industry_type"
@@ -64,6 +77,8 @@ const CompanyForm = ({
             error={errors.industry_type}
             disabled={isIdle}
           />
+        </div>
+        <div className="col-3">
           <SelectField
             label="Enquiry/Data Source"
             name="data_source"
@@ -76,19 +91,8 @@ const CompanyForm = ({
           />
         </div>
 
-        {/* Column 2 */}
-        <div className="col-4 form-column">
-          <FormField
-            label="Company Name"
-            name="company_name"
-            value={formData.company_name}
-            onChange={handleChange}
-            placeholder="Enter company name"
-            required={true}
-            error={errors.company_name}
-            maxLength={150}
-            disabled={isIdle}
-          />
+        {/* Row 2: 4 Inputs Aligned */}
+        <div className="col-3">
           <FormField
             label="City"
             name="city"
@@ -100,6 +104,31 @@ const CompanyForm = ({
             maxLength={100}
             disabled={isIdle}
           />
+        </div>
+        <div className="col-3">
+          <FormField
+            label="State"
+            name="state"
+            value={formData.state}
+            onChange={handleChange}
+            placeholder="Enter state"
+            required={true}
+            error={errors.state}
+            maxLength={100}
+            disabled={isIdle}
+          />
+        </div>
+        <div className="col-3">
+          <FormField
+            label="Website"
+            name="web"
+            value={formData.web || ''}
+            onChange={handleChange}
+            placeholder="e.g. www.company.com"
+            disabled={isIdle}
+          />
+        </div>
+        <div className="col-3">
           <FormField
             label="ERP Used"
             name="erp_using"
@@ -112,19 +141,50 @@ const CompanyForm = ({
           />
         </div>
 
-        {/* Column 3 */}
-        <div className="col-4 form-column">
+        {/* Row 3: 4 Inputs Aligned */}
+        <div className="col-3">
           <FormField
-            label="State"
-            name="state"
-            value={formData.state}
+            label="Head Office"
+            name="ho"
+            value={formData.ho || ''}
             onChange={handleChange}
-            placeholder="Enter state"
-            required={true}
-            error={errors.state}
-            maxLength={100}
+            placeholder="Enter head office"
             disabled={isIdle}
           />
+        </div>
+        <div className="col-3">
+          <FormField
+            label="Plant Location"
+            name="plant"
+            value={formData.plant || ''}
+            onChange={handleChange}
+            placeholder="Enter plant location"
+            disabled={isIdle}
+          />
+        </div>
+        <div className="col-3">
+          <FormField
+            label="No. Of Units"
+            name="units"
+            value={formData.units || ''}
+            onChange={handleChange}
+            placeholder="e.g. 2"
+            disabled={isIdle}
+          />
+        </div>
+        <div className="col-3">
+          <FormField
+            label="No. Of Users"
+            name="users"
+            value={formData.users || ''}
+            onChange={handleChange}
+            placeholder="e.g. 30"
+            disabled={isIdle}
+          />
+        </div>
+
+        {/* Row 4: 4 Inputs Aligned */}
+        <div className="col-3">
           <FormField
             label="User Name"
             name="user_name"
@@ -136,8 +196,84 @@ const CompanyForm = ({
             maxLength={100}
             disabled={isIdle}
           />
+        </div>
+        <div className="col-3">
+          <SelectField
+            label="Client Status"
+            name="client"
+            value={formData.client || ''}
+            onChange={(e) => handleSelectChange('client', e.target.value)}
+            options={['Yes', 'No']}
+            disabled={isIdle}
+          />
+        </div>
+        <div className="col-3">
           <FormField
-            label="Remarks"
+            label="Next Follow-Up Date"
+            name="follow"
+            value={formData.follow || ''}
+            onChange={handleChange}
+            placeholder="dd/mm/yyyy"
+            disabled={isIdle}
+          />
+        </div>
+        <div className="col-3">
+          <FormField
+            label="Budget"
+            name="budget"
+            value={formData.budget || ''}
+            onChange={handleChange}
+            placeholder="Enter budget"
+            disabled={isIdle}
+          />
+        </div>
+
+        {/* Row 5: 4 Inputs Aligned */}
+        <div className="col-3">
+          <FormField
+            label="Requirement"
+            name="want"
+            value={formData.want || ''}
+            onChange={handleChange}
+            placeholder="Enter requirement"
+            disabled={isIdle}
+          />
+        </div>
+        <div className="col-3">
+          <FormField
+            label="Competitors Seen"
+            name="seen"
+            value={formData.seen || ''}
+            onChange={handleChange}
+            placeholder="Enter competitors"
+            disabled={isIdle}
+          />
+        </div>
+        <div className="col-3">
+          <FormField
+            label="Quoted Value"
+            name="quoted"
+            value={formData.quoted || ''}
+            onChange={handleChange}
+            placeholder="Enter quoted value"
+            disabled={isIdle}
+          />
+        </div>
+        <div className="col-3">
+          <FormField
+            label="Annual Turnover"
+            name="turnover"
+            value={formData.turnover || ''}
+            onChange={handleChange}
+            placeholder="Enter turnover"
+            disabled={isIdle}
+          />
+        </div>
+
+        {/* Row 6: Company Remarks (Full Width) */}
+        <div className="col-12">
+          <FormField
+            label="Company Remarks"
             name="mascom_remarks"
             value={formData.mascom_remarks}
             onChange={handleChange}

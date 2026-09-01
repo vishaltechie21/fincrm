@@ -1,0 +1,143 @@
+.activity-modal {
+  max-width: 680px;
+}
+
+.activity-modal .activity-form {
+  margin-bottom: 16px;
+}
+
+.activity-modal .activity-form-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.activity-modal .activity-mode-select {
+  padding: 8px 10px;
+  font-size: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.activity-modal .activity-input {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.activity-modal .activity-input:focus {
+  outline: 2px solid #0f2544;
+  outline-offset: -1px;
+}
+
+.activity-modal .activity-add-btn {
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid #0f6e56;
+  background: #0f6e56;
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.activity-modal .activity-add-btn:hover {
+  background: #0b5a46;
+}
+
+.activity-modal .activity-table-wrap {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.activity-modal .activity-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.activity-modal .activity-table th {
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.activity-modal .activity-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.activity-modal .activity-table tr:last-child td {
+  border-bottom: none;
+}
+
+.activity-modal .mode-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.activity-modal .mode-badge.call { background: #e0f2fe; color: #0369a1; }
+.activity-modal .mode-badge.demo { background: #fef3c7; color: #b45309; }
+.activity-modal .mode-badge.visit { background: #dcfce7; color: #15803d; }
+.activity-modal .mode-badge.email { background: #f3e8ff; color: #7e22ce; }
+.activity-modal .mode-badge.quotation { background: #ffedd5; color: #c2410c; }
+
+.activity-modal .rem-cell {
+  line-height: 1.4;
+}
+
+.activity-modal .no-data {
+  text-align: center;
+  color: #64748b;
+  padding: 24px;
+}
+
+.activity-modal .initial-remark {
+  background: #fff7e8;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: left;
+}
+
+.activity-modal .modal-footer {
+  padding: 12px 18px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.activity-modal .modal-foot-info {
+  font-size: 11.5px;
+  color: #64748b;
+  font-weight: 500;
+}
