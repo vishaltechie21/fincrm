@@ -76,10 +76,9 @@
 
 :root {
   /* Fonts */
-  --sans: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  --sans: "Open Sans",  'Inter', system-ui, -apple-system, sans-serif;
   --heading: 'Outfit', var(--sans);
   --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-
   font-family: var(--sans);
   font-size: 13.5px; /* Compact base font size matching screenshot layout */
   line-height: 1.55;
