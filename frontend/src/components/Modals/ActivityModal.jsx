@@ -72,14 +72,17 @@ export default function ActivityModal({ isOpen, onClose, company, onAddRemark })
               </thead>
               <tbody>
                 {remarksList.length > 0 ? (
-                  remarksList.map((item, idx) => (
-                    <tr key={idx}>
-                      <td className="mono"><Calendar size={12} /> {item.date || '—'}</td>
-                      <td><span className={`mode-badge ${item.mode?.toLowerCase()}`}>{item.mode || 'Remark'}</span></td>
-                      <td className="rem-cell"><MessageSquare size={12} /> {item.remarks || item.text}</td>
-                      <td className="muted"><User size={12} /> {item.user_name || item.user || 'Suman'}</td>
-                    </tr>
-                  ))
+                  remarksList.map((item, idx) => {
+                    const displayDate = item.date || item.tracom_date || new Date().toISOString().slice(0, 10);
+                    return (
+                      <tr key={idx}>
+                        <td className="mono"><Calendar size={12} /> {displayDate}</td>
+                        <td><span className={`mode-badge ${item.mode?.toLowerCase()}`}>{item.mode || 'Remark'}</span></td>
+                        <td className="rem-cell"><MessageSquare size={12} /> {item.remarks || item.text}</td>
+                        <td className="muted"><User size={12} /> {item.user_name || item.user || 'admin_fincrm'}</td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan={4} className="no-data">

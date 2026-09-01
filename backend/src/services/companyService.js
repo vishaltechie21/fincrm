@@ -16,7 +16,30 @@ async function getAllCompanies(searchQuery) {
 
   sql += ' ORDER BY created_at DESC';
   const [rows] = await pool.query(sql, params);
-  return rows;
+  return rows.map(r => parseCompanyData(r));
+}
+
+function parseCompanyData(r) {
+  let acts = [];
+  if (r.activity_data) {
+    try {
+      const parsed = JSON.parse(r.activity_data);
+      if (Array.isArray(parsed)) acts = parsed;
+    } catch (e) { acts = []; }
+  }
+  if (!acts.length && r.remarks_data) {
+    try {
+      const parsed = JSON.parse(r.remarks_data);
+      if (Array.isArray(parsed)) acts = parsed;
+    } catch (e) { acts = []; }
+  }
+  if (!acts.length && r.acts_json) {
+    try { acts = JSON.parse(r.acts_json); } catch (e) { acts = []; }
+  }
+  return {
+    ...r,
+    acts
+  };
 }
 
 /**
@@ -24,7 +47,8 @@ async function getAllCompanies(searchQuery) {
  */
 async function getCompanyById(id) {
   const [rows] = await pool.query('SELECT * FROM MASCOM WHERE mascom_id = ?', [id]);
-  return rows[0] || null;
+  if (!rows[0]) return null;
+  return parseCompanyData(rows[0]);
 }
 
 /**
@@ -40,9 +64,10 @@ async function createCompany(data) {
     const sql = `
       INSERT INTO MASCOM (
         mascom_id, company_name, industry_type, city, state, data_source, erp_using, user_name, mascom_remarks,
-        ho, plant, web, units, users, client, follow, want, seen, budget, quoted, turnover
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ho, plant, web, units, users, client, follow, want, seen, budget, quoted, turnover, acts_json, activity_data, remarks_data
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
+    const actsJson = data.acts ? JSON.stringify(data.acts) : null;
     const params = [
       newId,
       data.company_name.trim(),
@@ -64,7 +89,10 @@ async function createCompany(data) {
       data.seen ? data.seen.trim() : null,
       data.budget ? String(data.budget).trim() : null,
       data.quoted ? String(data.quoted).trim() : null,
-      data.turnover ? String(data.turnover).trim() : null
+      data.turnover ? String(data.turnover).trim() : null,
+      actsJson,
+      actsJson,
+      actsJson
     ];
 
     await connection.query(sql, params);
@@ -83,6 +111,7 @@ async function createCompany(data) {
  * Service to update an existing company.
  */
 async function updateCompany(id, data) {
+  const actsJson = data.acts ? JSON.stringify(data.acts) : null;
   const sql = `
     UPDATE MASCOM SET
       company_name = ?,
@@ -104,7 +133,10 @@ async function updateCompany(id, data) {
       seen = ?,
       budget = ?,
       quoted = ?,
-      turnover = ?
+      turnover = ?,
+      acts_json = COALESCE(?, acts_json),
+      activity_data = COALESCE(?, activity_data),
+      remarks_data = COALESCE(?, remarks_data)
     WHERE mascom_id = ?
   `;
   const params = [
@@ -128,6 +160,9 @@ async function updateCompany(id, data) {
     data.budget ? String(data.budget).trim() : null,
     data.quoted ? String(data.quoted).trim() : null,
     data.turnover ? String(data.turnover).trim() : null,
+    actsJson,
+    actsJson,
+    actsJson,
     id
   ];
 

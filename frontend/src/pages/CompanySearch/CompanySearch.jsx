@@ -279,7 +279,13 @@ const CompanySearch = () => {
   // Pre-calculate full company rows
   const fullRows = companies.map((co) => {
     const companyContacts = contacts.filter((c) => c.mascom_id === co.mascom_id);
-    const companyActs = TRACOM_SEED.filter((t) => t.mascom_id === co.mascom_id)
+    const companyActs = [...(co.acts || []), ...TRACOM_SEED.filter((t) => t.mascom_id === co.mascom_id)]
+      .reduce((acc, curr) => {
+        if (!acc.some(a => (a.tracom_id && a.tracom_id === curr.tracom_id) || (a.remarks === curr.remarks && a.tracom_date === curr.tracom_date))) {
+          acc.push(curr);
+        }
+        return acc;
+      }, [])
       .sort((a, b) => (a.tracom_date < b.tracom_date ? -1 : 1));
 
     const counts = {};
@@ -1030,10 +1036,12 @@ const CompanySearch = () => {
         onClose={() => setActiveActivityCompany(null)} 
         company={activeActivityCompany}
         onAddRemark={(companyId, remarkText, mode) => {
+          const todayStr = new Date().toISOString().slice(0, 10);
           const newAct = {
             tracom_id: `TR-${Date.now()}`,
             mascom_id: companyId,
-            tracom_date: new Date().toISOString().slice(0, 10),
+            tracom_date: todayStr,
+            date: todayStr,
             mode: mode || 'Call',
             remarks: remarkText,
             user_name: 'admin_fincrm'
