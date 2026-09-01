@@ -324,12 +324,13 @@ const FilterModal = ({
                   <div key={tblName} className="col-group-column">
                     <div className="col-group-title-row">
                       <span className="col-group-title">{tblName}</span>
-                      <label className="group-select-all-label">
+                      <label className="checkbox-container group-select-all-label">
                         <input 
                           type="checkbox"
                           checked={isGroupAllChecked}
                           onChange={(e) => handleGroupToggle(e.target.checked)}
                         />
+                        <span className="checkmark"></span>
                         <span className="select-all-text">Select All</span>
                       </label>
                     </div>
@@ -344,6 +345,7 @@ const FilterModal = ({
                               checked={isChecked}
                               onChange={(e) => handleColumnToggle(col.k, e.target.checked)}
                             />
+                            <span className="checkmark"></span>
                             <span className="label-text">{col.lab}</span>
                           </label>
                         );

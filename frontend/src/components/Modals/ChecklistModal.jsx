@@ -192,8 +192,8 @@ export default function ChecklistModal({ isOpen, onClose, company }) {
                                   )}
                                 </div>
                                 <div className="add-form-btns">
-                                  <button type="button" className="btn-secondary" onClick={() => setAddingIndex(null)}>Cancel</button>
-                                  <button type="button" className="btn-primary" onClick={() => handleAddLog(globalIdx)}>Save Log</button>
+                                  <button type="button" className="chk-cancel-btn" onClick={() => setAddingIndex(null)}>Cancel</button>
+                                  <button type="button" className="chk-save-btn" onClick={() => handleAddLog(globalIdx)}>Save Log</button>
                                 </div>
                               </div>
                             )}

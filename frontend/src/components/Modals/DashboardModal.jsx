@@ -7,6 +7,7 @@ export default function DashboardModal({ isOpen, onClose, company }) {
   const [stepsData, setStepsData] = useState({});
   const [editingStep, setEditingStep] = useState(null);
   const [formDate, setFormDate] = useState('');
+  const [formNextFollowupDate, setFormNextFollowupDate] = useState('');
   const [formStatus, setFormStatus] = useState('Pending');
   const [formRemarks, setFormRemarks] = useState('');
   const [formDoc, setFormDoc] = useState('');
@@ -23,6 +24,7 @@ export default function DashboardModal({ isOpen, onClose, company }) {
     const cur = getStepVal(k);
     setEditingStep(k);
     setFormDate(cur.date || new Date().toISOString().split('T')[0]);
+    setFormNextFollowupDate(cur.nextFollowupDate || '');
     setFormStatus(cur.status || 'Pending');
     setFormRemarks(cur.remarks || '');
     setFormDoc(cur.doc || '');
@@ -33,6 +35,7 @@ export default function DashboardModal({ isOpen, onClose, company }) {
       ...prev,
       [k]: {
         date: formDate,
+        nextFollowupDate: formNextFollowupDate,
         status: formStatus,
         remarks: formRemarks,
         doc: formDoc
@@ -122,6 +125,14 @@ export default function DashboardModal({ isOpen, onClose, company }) {
                           />
                         </label>
                         <label>
+                          Next Follow Up Date:
+                          <input 
+                            type="date" 
+                            value={formNextFollowupDate} 
+                            onChange={(e) => setFormNextFollowupDate(e.target.value)} 
+                          />
+                        </label>
+                        <label>
                           Status:
                           <select 
                             value={formStatus} 
@@ -155,8 +166,8 @@ export default function DashboardModal({ isOpen, onClose, company }) {
                         )}
                       </div>
                       <div className="dash-form-actions">
-                        <button type="button" className="btn-secondary" onClick={() => setEditingStep(null)}>Cancel</button>
-                        <button type="button" className="dash-btn-primary" onClick={() => handleSaveStep(step.k)}>Save Step</button>
+                        <button type="button" className="dash-cancel-btn" onClick={() => setEditingStep(null)}>Cancel</button>
+                        <button type="button" className="dash-save-btn" onClick={() => handleSaveStep(step.k)}>Save Step</button>
                       </div>
                     </div>
                   )}
