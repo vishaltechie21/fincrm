@@ -105,7 +105,7 @@ export default function ContactInfoModal({
           <div className="contact-modal-add-row">
             <button
               type="button"
-              className="abtn go contact-add-btn"
+              className="btn btn-success contact-add-btn"
               onClick={() => onAddContact && onAddContact(company)}
             >
               <Plus size={13} /> Add Contact

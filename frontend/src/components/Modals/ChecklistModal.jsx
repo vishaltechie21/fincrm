@@ -7,6 +7,9 @@ export default function ChecklistModal({ isOpen, onClose, company }) {
   const [openStage, setOpenStage] = useState(CHECKLIST_STAGES[0]);
   const [recordedItems, setRecordedItems] = useState({});
   const [addingIndex, setAddingIndex] = useState(null);
+  const [newDate, setNewDate] = useState(new Date().toISOString().split('T')[0]);
+  const [newRecordedBy, setNewRecordedBy] = useState('Suman');
+  const [newNextFollowup, setNewNextFollowup] = useState('');
   const [newRemark, setNewRemark] = useState('');
   const [newEvidence, setNewEvidence] = useState('');
 
@@ -32,6 +35,19 @@ export default function ChecklistModal({ isOpen, onClose, company }) {
     setAddingIndex(null);
   };
 
+  const handleOpenAddForm = (globalIdx) => {
+    if (addingIndex === globalIdx) {
+      setAddingIndex(null);
+    } else {
+      setAddingIndex(globalIdx);
+      setNewDate(new Date().toISOString().split('T')[0]);
+      setNewRecordedBy('Suman');
+      setNewNextFollowup('');
+      setNewRemark('');
+      setNewEvidence('');
+    }
+  };
+
   const handleAddLog = (idx) => {
     if (!newRemark.trim()) return;
     setRecordedItems(prev => ({
@@ -39,15 +55,18 @@ export default function ChecklistModal({ isOpen, onClose, company }) {
       [idx]: [
         ...(prev[idx] || []),
         {
-          date: new Date().toISOString().split('T')[0],
+          date: newDate || new Date().toISOString().split('T')[0],
+          recordedBy: newRecordedBy || 'Suman',
+          nextFollowup: newNextFollowup,
           remark: newRemark.trim(),
           evidence: newEvidence.trim(),
-          user: 'Suman'
+          user: newRecordedBy || 'Suman'
         }
       ]
     }));
     setNewRemark('');
     setNewEvidence('');
+    setNewNextFollowup('');
     setAddingIndex(null);
   };
 
@@ -136,17 +155,17 @@ export default function ChecklistModal({ isOpen, onClose, company }) {
                                 <span className="item-resp">{item.r}</span>
                                 {itemDone ? (
                                   <span className="item-recorded-tag">
-                                    <CheckCircle2 size={12} /> {logs.length} Recorded
+                                    <CheckCircle2 size={11} /> {logs.length} recorded
                                   </span>
                                 ) : (
-                                  <span className="item-pending-tag">Pending</span>
+                                  <span className="item-pending-tag">0 recorded</span>
                                 )}
                                 <button 
                                   type="button" 
-                                  className="chk-add-mini-btn"
-                                  onClick={() => setAddingIndex(isAdding ? null : globalIdx)}
+                                  className="btn btn-success btn-sm"
+                                  onClick={() => handleOpenAddForm(globalIdx)}
                                 >
-                                  <Plus size={12} /> Log
+                                  Add
                                 </button>
                               </div>
                             </div>
@@ -158,14 +177,15 @@ export default function ChecklistModal({ isOpen, onClose, company }) {
                                   <div key={lIdx} className="chk-log-entry">
                                     <span className="mono">{log.date}</span>
                                     <span className="log-text">{log.remark}</span>
+                                    {log.nextFollowup && <span className="log-ev">Next: {log.nextFollowup}</span>}
                                     {log.evidence && <span className="log-ev">Ref: {log.evidence}</span>}
-                                    <span className="muted">by {log.user}</span>
+                                    <span className="muted">by {log.user || log.recordedBy}</span>
                                     <button 
                                       type="button" 
                                       className="log-del-btn"
                                       onClick={() => handleRemoveLog(globalIdx, lIdx)}
                                     >
-                                      <Trash2 size={12} />
+                                      <Trash2 size={11} />
                                     </button>
                                   </div>
                                 ))}
@@ -175,25 +195,63 @@ export default function ChecklistModal({ isOpen, onClose, company }) {
                             {/* Inline Add Log Form */}
                             {isAdding && (
                               <div className="chk-add-form">
-                                <div className="add-form-inputs">
-                                  <input 
-                                    type="text" 
-                                    placeholder="Enter remark or observation..." 
-                                    value={newRemark}
-                                    onChange={(e) => setNewRemark(e.target.value)}
-                                  />
-                                  {item.e && (
+                                <div className="add-form-row-top">
+                                  <label>
+                                    DATE
+                                    <input 
+                                      type="date" 
+                                      value={newDate}
+                                      onChange={(e) => setNewDate(e.target.value)}
+                                    />
+                                  </label>
+                                  <label>
+                                    RECORDED BY
                                     <input 
                                       type="text" 
-                                      placeholder={`Evidence / ${item.e} reference...`} 
-                                      value={newEvidence}
-                                      onChange={(e) => setNewEvidence(e.target.value)}
+                                      value={newRecordedBy}
+                                      onChange={(e) => setNewRecordedBy(e.target.value)}
                                     />
-                                  )}
+                                  </label>
+                                  <label>
+                                    NEXT FOLLOW-UP
+                                    <input 
+                                      type="date" 
+                                      placeholder="dd/mm/yyyy"
+                                      value={newNextFollowup}
+                                      onChange={(e) => setNewNextFollowup(e.target.value)}
+                                    />
+                                  </label>
                                 </div>
+
+                                <div className="add-form-row-remarks">
+                                  <label>
+                                    REMARKS
+                                    <textarea 
+                                      rows={2}
+                                      placeholder="Enter remark or observation..." 
+                                      value={newRemark}
+                                      onChange={(e) => setNewRemark(e.target.value)}
+                                    />
+                                  </label>
+                                </div>
+
+                                {item.e && (
+                                  <div className="add-form-row-evidence">
+                                    <label>
+                                      EVIDENCE REFERENCE
+                                      <input 
+                                        type="text" 
+                                        placeholder={`Evidence / ${item.e} reference...`} 
+                                        value={newEvidence}
+                                        onChange={(e) => setNewEvidence(e.target.value)}
+                                      />
+                                    </label>
+                                  </div>
+                                )}
+
                                 <div className="add-form-btns">
-                                  <button type="button" className="chk-cancel-btn" onClick={() => setAddingIndex(null)}>Cancel</button>
-                                  <button type="button" className="chk-save-btn" onClick={() => handleAddLog(globalIdx)}>Save Log</button>
+                                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => setAddingIndex(null)}>Cancel</button>
+                                  <button type="button" className="btn btn-success btn-sm" onClick={() => handleAddLog(globalIdx)}>Save</button>
                                 </div>
                               </div>
                             )}

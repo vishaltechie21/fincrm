@@ -166,8 +166,8 @@ export default function DashboardModal({ isOpen, onClose, company }) {
                         )}
                       </div>
                       <div className="dash-form-actions">
-                        <button type="button" className="dash-cancel-btn" onClick={() => setEditingStep(null)}>Cancel</button>
-                        <button type="button" className="dash-save-btn" onClick={() => handleSaveStep(step.k)}>Save Step</button>
+                        <button type="button" className="btn btn-secondary dash-cancel-btn" onClick={() => setEditingStep(null)}>Cancel</button>
+                        <button type="button" className="btn btn-success dash-save-btn" onClick={() => handleSaveStep(step.k)}>Save Step</button>
                       </div>
                     </div>
                   )}
