@@ -51,6 +51,50 @@ export const validateCompany = (data) => {
     errors.mascom_remarks = 'Remarks cannot exceed 1000 characters.';
   }
 
+  // Validations for new fields
+  if (data.web && data.web.trim() !== '') {
+    if (!/^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/.*)?$/i.test(data.web.trim())) {
+      errors.web = 'Invalid website format (e.g. company.com).';
+    }
+  }
+
+  if (data.units && data.units.toString().trim() !== '') {
+    if (!/^\d+$/.test(data.units.toString().trim())) {
+      errors.units = 'No. Of Units must be a valid number.';
+    }
+  }
+
+  if (data.users && data.users.toString().trim() !== '') {
+    if (!/^\d+$/.test(data.users.toString().trim())) {
+      errors.users = 'No. Of Users must be a valid number.';
+    }
+  }
+
+  if (data.budget && data.budget.toString().trim() !== '') {
+    if (!/^[0-9.,\s$₹€£]+$/.test(data.budget.toString().trim())) {
+      errors.budget = 'Budget must be a valid numeric amount.';
+    }
+  }
+
+  if (data.quoted && data.quoted.toString().trim() !== '') {
+    if (!/^[0-9.,\s$₹€£]+$/.test(data.quoted.toString().trim())) {
+      errors.quoted = 'Quoted Value must be a valid numeric amount.';
+    }
+  }
+
+  if (data.turnover && data.turnover.toString().trim() !== '') {
+    if (!/^[0-9.,\s$₹€£a-zA-Z]+$/.test(data.turnover.toString().trim())) {
+      errors.turnover = 'Turnover must be a valid numeric value.';
+    }
+  }
+
+  if (data.follow && data.follow.trim() !== '') {
+    const d = new Date(data.follow);
+    if (isNaN(d.getTime())) {
+      errors.follow = 'Invalid date format.';
+    }
+  }
+
   return errors;
 };
 

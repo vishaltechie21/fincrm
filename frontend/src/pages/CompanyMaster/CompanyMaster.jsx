@@ -58,10 +58,10 @@ const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
       if (res && res.success) {
         dbCompanies = res.data;
       }
-      const mergedCompanies = [...MASCOM_SEED];
-      dbCompanies.forEach((dbComp) => {
-        if (!mergedCompanies.some(c => c.mascom_id === dbComp.mascom_id)) {
-          mergedCompanies.push(dbComp);
+      const mergedCompanies = [...dbCompanies];
+      MASCOM_SEED.forEach((seedComp) => {
+        if (!mergedCompanies.some(c => c.mascom_id === seedComp.mascom_id)) {
+          mergedCompanies.push(seedComp);
         }
       });
       setCompanies(mergedCompanies);

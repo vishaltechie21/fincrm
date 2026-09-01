@@ -15,20 +15,14 @@ import { filterDataset } from '../../utils/filterUtils';
 import ActivityModal from '../../components/Modals/ActivityModal';
 import DashboardModal from '../../components/Modals/DashboardModal';
 import ChecklistModal from '../../components/Modals/ChecklistModal';
+import ContactInfoModal from '../../components/Modals/ContactInfoModal';
+import { SEARCH_COLUMNS, DEFAULT_VISIBLE_KEYS } from '../../utils/searchColumns';
 
 
-const COLUMN_LABEL_MAP = {
-  mascom_id: 'Code',
-  company_name: 'Company Name',
-  industry_type: 'Industry',
-  city: 'City',
-  state: 'State',
-  data_source: 'Source',
-  erp_using: 'ERP Used',
-  key_person: 'Key Person',
-  stage: 'Stage',
-  mascom_remarks: 'Remarks'
-};
+const COLUMN_LABEL_MAP = {};
+SEARCH_COLUMNS.forEach((c) => {
+  COLUMN_LABEL_MAP[c.k] = c.lab;
+});
 
 const STAGE_CLASS = { "Lead": "lead", "Demo Done": "demo", "Quoted": "quoted", "Negotiation": "nego", "Won": "won", "Lost": "lost" };
 
@@ -44,7 +38,7 @@ const CompanySearch = () => {
   // Layout & Persistent Settings State
   const [isFixedHeader, setIsFixedHeader] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [visibleColumns, setVisibleColumns] = useState(Object.keys(COLUMN_LABEL_MAP));
+  const [visibleColumns, setVisibleColumns] = useState(DEFAULT_VISIBLE_KEYS);
   const [activeFilters, setActiveFilters] = useState([]);
   const [hasSavedSettings, setHasSavedSettings] = useState(false);
   const [columnWidths, setColumnWidths] = useState(() => {
@@ -67,6 +61,7 @@ const CompanySearch = () => {
   const [activeActivityCompany, setActiveActivityCompany] = useState(null);
   const [activeDashboardCompany, setActiveDashboardCompany] = useState(null);
   const [activeChecklistCompany, setActiveChecklistCompany] = useState(null);
+  const [activeContactInfoCompany, setActiveContactInfoCompany] = useState(null);
 
   // Auto-expand row if expandId is passed in URL
   useEffect(() => {
@@ -104,17 +99,17 @@ const CompanySearch = () => {
         dbContacts = contRes.data;
       }
 
-      const mergedCompanies = [...MASCOM_SEED];
-      dbCompanies.forEach((dbComp) => {
-        if (!mergedCompanies.some(c => c.mascom_id === dbComp.mascom_id)) {
-          mergedCompanies.push(dbComp);
+      const mergedCompanies = [...dbCompanies];
+      MASCOM_SEED.forEach((seedComp) => {
+        if (!mergedCompanies.some(c => c.mascom_id === seedComp.mascom_id)) {
+          mergedCompanies.push(seedComp);
         }
       });
 
-      const mergedContacts = [...MASCON_SEED];
-      dbContacts.forEach((dbCont) => {
-        if (!mergedContacts.some(c => c.mascon_id === dbCont.mascon_id)) {
-          mergedContacts.push(dbCont);
+      const mergedContacts = [...dbContacts];
+      MASCON_SEED.forEach((seedCont) => {
+        if (!mergedContacts.some(c => c.mascon_id === seedCont.mascon_id)) {
+          mergedContacts.push(seedCont);
         }
       });
 
@@ -156,15 +151,19 @@ const CompanySearch = () => {
     loadSavedSettings();
   }, []);
 
-  // Resolve values helper
-  const getPropValue = (row, field) => {
+  // Resolve values helper for 68 MASCOM, MASCON, TRACOM columns
+  const getPropValue = useCallback((row, field) => {
     if (!row) return '';
+    const colDef = SEARCH_COLUMNS.find((c) => c.k === field);
+    if (colDef) {
+      const val = colDef.get(row);
+      return val === null || val === undefined ? '' : String(val);
+    }
     if (field === 'key_person') return row.key?.contact_name || '';
     if (field === 'stage') return row.stage || '';
-    if (row.co && row.co[field] !== undefined) return row.co[field];
-    if (row[field] !== undefined) return row[field];
-    return '';
-  };
+    if (row.co && row.co[field] !== undefined) return String(row.co[field]);
+    return row[field] !== undefined ? String(row[field]) : '';
+  }, []);
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -443,7 +442,7 @@ const CompanySearch = () => {
       await settingsService.clearSettings('company_search');
       setHasSavedSettings(false);
       setIsFixedHeader(false);
-      setVisibleColumns(Object.keys(COLUMN_LABEL_MAP));
+      setVisibleColumns(DEFAULT_VISIBLE_KEYS);
       setActiveFilters([]);
       setSortField('mascom_id');
       setSortAsc(true);
@@ -762,39 +761,32 @@ const CompanySearch = () => {
                             <span className="twisty-icon" style={{ fontWeight: 'bold', fontSize: '12px' }}>{isExpanded ? '−' : '＋'}</span>
                           </td>
                           {visibleColumns.map((colKey) => {
-                             if (colKey === 'mascom_id') {
+                             const colDef = SEARCH_COLUMNS.find(c => c.k === colKey);
+                             const colLabel = colDef ? colDef.lab : (COLUMN_LABEL_MAP[colKey] || colKey);
+                             const cellVal = colDef ? colDef.get(r) : (r.co[colKey] || '—');
+                             const clsName = colDef ? colDef.cls : 'muted';
+
+                             if (colKey === 'code' || colKey === 'mascom_id') {
                                return (
                                  <td 
                                    key={colKey} 
                                    className="company-id hit" 
-                                   onClick={(e) => handleCellClick(e, 'mascom_id')}
+                                   onClick={(e) => handleCellClick(e, colKey)}
                                    title="Click to search in Code"
                                  >
-                                   {renderCellText(r.co.mascom_id, 'mascom_id')}
+                                   {renderCellText(r.co.mascom_id, colKey)}
                                  </td>
                                );
                              }
-                             if (colKey === 'company_name') {
+                             if (colKey === 'name' || colKey === 'company_name') {
                                return (
                                  <td 
                                    key={colKey} 
                                    className="company-name hit" 
-                                   onClick={(e) => handleCellClick(e, 'company_name')}
+                                   onClick={(e) => handleCellClick(e, colKey)}
                                    title="Click to search in Company Name"
                                  >
-                                   {renderCellText(r.co.company_name, 'company_name')}
-                                 </td>
-                               );
-                             }
-                             if (colKey === 'key_person') {
-                               return (
-                                 <td 
-                                   key={colKey} 
-                                   className="hit" 
-                                   onClick={(e) => handleCellClick(e, 'key_person')}
-                                   title="Click to search in Key Person"
-                                 >
-                                   {renderCellText(r.key.contact_name || '—', 'key_person')}
+                                   {renderCellText(r.co.company_name, colKey)}
                                  </td>
                                );
                              }
@@ -810,28 +802,28 @@ const CompanySearch = () => {
                                  </td>
                                );
                              }
-                             if (colKey === 'mascom_remarks') {
+                             if (colKey === 'rem' || colKey === 'mascom_remarks') {
                                return (
                                  <td 
                                    key={colKey} 
                                    className="company-remarks hit" 
                                    title={r.co.mascom_remarks}
-                                   onClick={(e) => handleCellClick(e, 'mascom_remarks')}
+                                   onClick={(e) => handleCellClick(e, colKey)}
                                  >
-                                   {renderCellText(r.co.mascom_remarks || '—', 'mascom_remarks')}
+                                   {renderCellText(r.co.mascom_remarks || '—', colKey)}
                                  </td>
                                );
                              }
-                             // Default cell rendering for industry_type, city, state, data_source, erp_using
+
                              return (
                                <td 
                                  key={colKey} 
-                                 className="hit" 
+                                 className={`${clsName} hit`} 
                                  onClick={(e) => handleCellClick(e, colKey)}
-                                 title={`Click to search in ${COLUMN_LABEL_MAP[colKey]}`}
+                                 title={`Click to search in ${colLabel}`}
                                >
-                                 {renderCellText(r.co[colKey] || '—', colKey)}
-                                </td>
+                                 {renderCellText(cellVal === null || cellVal === undefined || cellVal === '' ? '—' : String(cellVal), colKey)}
+                               </td>
                              );
                            })}
                         </tr>
@@ -853,12 +845,7 @@ const CompanySearch = () => {
                                    <button 
                                      type="button" 
                                      className="abtn go" 
-                                     onClick={() => {
-                                       const firstContact = r.contacts[0] || {};
-                                       const cnId = firstContact.mascon_id || '';
-                                       window.history.pushState({}, '', `/contact?editId=${cnId}&companyId=${r.co.mascom_id}&returnTo=/company-search&expandId=${r.co.mascom_id}`);
-                                       window.dispatchEvent(new PopStateEvent('popstate'));
-                                     }}
+                                     onClick={() => setActiveContactInfoCompany(r.co)}
                                    >
                                      Contact Info
                                    </button>
@@ -1052,6 +1039,50 @@ const CompanySearch = () => {
         isOpen={!!activeChecklistCompany} 
         onClose={() => setActiveChecklistCompany(null)} 
         company={activeChecklistCompany}
+      />
+      <ContactInfoModal
+        isOpen={!!activeContactInfoCompany}
+        onClose={() => setActiveContactInfoCompany(null)}
+        company={activeContactInfoCompany}
+        contacts={contacts}
+        onAddContact={(comp) => {
+          setActiveContactInfoCompany(null);
+          window.history.pushState({}, '', `/contact?companyId=${comp.mascom_id}&mode=add&returnTo=/company-search&expandId=${comp.mascom_id}`);
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        }}
+        onEditContact={(cont) => {
+          setActiveContactInfoCompany(null);
+          window.history.pushState({}, '', `/contact?editId=${cont.mascon_id}&companyId=${cont.mascom_id}&returnTo=/company-search&expandId=${cont.mascom_id}`);
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        }}
+        onDeleteContact={async (cont) => {
+          const confirm = await Swal.fire({
+            title: 'Delete Contact?',
+            text: `Delete contact ${cont.contact_name}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--btn-danger)',
+            cancelButtonColor: 'var(--border)',
+            background: 'var(--panel)',
+            color: 'var(--text-h)'
+          });
+          if (confirm.isConfirmed) {
+            try {
+              await contactService.deleteContact(cont.mascon_id);
+              setContacts(prev => prev.filter(c => c.mascon_id !== cont.mascon_id));
+              Swal.fire({
+                icon: 'success',
+                title: 'Deleted!',
+                text: 'Contact deleted successfully.',
+                confirmButtonColor: 'var(--accent)',
+                background: 'var(--panel)',
+                color: 'var(--text-h)'
+              });
+            } catch (err) {
+              console.error(err);
+            }
+          }
+        }}
       />
 
       {/* Checklist Filter Modal */}

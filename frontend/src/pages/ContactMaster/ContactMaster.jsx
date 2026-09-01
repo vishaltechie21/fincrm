@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
-import { User } from 'lucide-react';
+import { User, Building2 } from 'lucide-react';
 import ContactForm from '../../components/ContactForm/ContactForm';
 import ContactTable from '../../components/ContactTable/ContactTable';
 import Notification from '../../components/Notification/Notification';
@@ -102,12 +102,14 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
     fetchCompaniesList();
   }, [fetchContacts, fetchCompaniesList]);
 
-  // Auto-load contact in modifying mode if editId is in query params
+  // Auto-load contact in modifying or adding mode if params in URL
   useEffect(() => {
     if (hasAutoLoadedRef.current) return;
     const params = new URLSearchParams(window.location.search);
     const editId = params.get('editId');
     const companyId = params.get('companyId');
+    const mode = params.get('mode');
+
     if (editId && contacts.length > 0) {
       const cont = contacts.find(c => c.mascon_id === editId);
       if (cont) {
@@ -115,15 +117,32 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
         loadContact(cont);
         setEditState('modifying');
       }
-    } else if (companyId && contacts.length > 0) {
-      const compCont = contacts.find(c => c.mascom_id === companyId);
-      if (compCont) {
-        hasAutoLoadedRef.current = true;
-        loadContact(compCont);
-        setEditState('modifying');
+    } else if (companyId) {
+      hasAutoLoadedRef.current = true;
+      if (mode === 'add') {
+        const timestampPrefix = String(Math.floor(Date.now() / 1000)).slice(-3);
+        let nextSeq = 1;
+        if (contacts.length > 0) {
+          const seqs = contacts.map(c => c.mascon_id ? parseInt(c.mascon_id.split('-')[1], 10) : 0).filter(n => !isNaN(n));
+          if (seqs.length > 0) nextSeq = Math.max(...seqs) + 1;
+        }
+        const newId = `${timestampPrefix}-${String(nextSeq).padStart(5, '0')}`;
+        resetForm();
+        setFormData(prev => ({
+          ...prev,
+          mascon_id: newId,
+          mascom_id: companyId
+        }));
+        setEditState('adding');
+      } else if (contacts.length > 0) {
+        const compCont = contacts.find(c => c.mascom_id === companyId);
+        if (compCont) {
+          loadContact(compCont);
+          setEditState('modifying');
+        }
       }
     }
-  }, [contacts, loadContact]);
+  }, [contacts, loadContact, resetForm, setFormData]);
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -381,6 +400,8 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
   });
 
   const visibleContacts = sortedContacts.slice(0, visibleCount);
+  const matchedComp = companies.find(c => c.mascom_id === formData.mascom_id);
+  const targetCompanyName = matchedComp ? matchedComp.company_name : formData.mascom_id;
 
   return (
     <div className="master-page">
@@ -400,6 +421,24 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
         <div className="entry-layout-split">
           {/* Top Form Panel */}
           <div className="form-panel">
+            {formData.mascom_id && editState === 'adding' && (
+              <div className="new-contact-heading-banner" style={{
+                background: '#e1f5ee',
+                border: '1px solid #0f6e56',
+                color: '#0f6e56',
+                padding: '10px 14px',
+                borderRadius: '4px',
+                marginBottom: '12px',
+                fontSize: '13px',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <Building2 size={16} />
+                <span>New contact under company: <strong>{targetCompanyName}</strong> ({formData.mascom_id})</span>
+              </div>
+            )}
             <ContactForm
               formData={formData}
               errors={errors}

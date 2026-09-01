@@ -1,0 +1,163 @@
+.contact-info-modal {
+  max-width: 780px;
+}
+
+.contact-info-modal .modal-company-sub {
+  font-size: 13px;
+  font-weight: 500;
+  color: #93a7c2;
+  margin-left: 8px;
+}
+
+.contact-info-modal .contact-table-wrap {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  background: #ffffff;
+}
+
+.contact-info-modal .contact-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.contact-info-modal .contact-table th {
+  background: #e2e8f0;
+  color: #0f2544;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #cbd5e1;
+  border-right: 1px solid #cbd5e1;
+}
+
+.contact-info-modal .contact-table th:last-child {
+  border-right: none;
+}
+
+.contact-info-modal .contact-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
+}
+
+.contact-info-modal .contact-table tr {
+  background: #fffdf7;
+}
+
+.contact-info-modal .contact-table tr:hover {
+  background: #fff7e8;
+}
+
+.contact-info-modal .key-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.contact-info-modal .normal-user-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+}
+
+.contact-info-modal .cname-cell {
+  font-weight: 700;
+  font-size: 13px;
+  color: #0f2544;
+}
+
+.contact-info-modal .desig-cell {
+  color: #475569;
+}
+
+.contact-info-modal .mobile-cell {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.contact-info-modal .active-pill-yes {
+  color: #15803d;
+  font-weight: 600;
+}
+
+.contact-info-modal .contact-row-actions {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.contact-info-modal .mini-edit-btn,
+.contact-info-modal .mini-delete-btn {
+  padding: 3px 8px;
+  font-size: 11px;
+  border-radius: 4px;
+}
+
+.contact-info-modal .mini-edit-btn {
+  border-color: #0f6e56;
+  color: #0f6e56;
+  background: #e1f5ee;
+}
+
+.contact-info-modal .mini-edit-btn:hover {
+  background: #0f6e56;
+  color: #ffffff;
+}
+
+.contact-info-modal .mini-delete-btn {
+  border-color: #fca5a5;
+  color: #991b1b;
+  background: #fef2f2;
+}
+
+.contact-info-modal .mini-delete-btn:hover {
+  background: #991b1b;
+  color: #ffffff;
+}
+
+.contact-info-modal .contact-modal-add-row {
+  display: flex;
+  margin-top: 8px;
+}
+
+.contact-info-modal .contact-add-btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 5px;
+}
+
+.contact-info-modal .no-data {
+  text-align: center;
+  color: #64748b;
+  padding: 24px;
+}
+
+.contact-info-modal .modal-footer {
+  padding: 12px 18px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.contact-info-modal .modal-foot-info {
+  font-size: 11.5px;
+  color: #64748b;
+  font-weight: 500;
+}

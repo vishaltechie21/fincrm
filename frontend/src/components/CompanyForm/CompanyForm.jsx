@@ -1,6 +1,7 @@
 import { Plus, Edit, Trash2, Save, RefreshCw } from 'lucide-react';
 import FormField from '../FormField';
 import SelectField from '../SelectField';
+import { ALL_STATES, getCitiesForState } from '../../utils/locationData';
 
 const INDUSTRY_DEFAULT_OPTIONS = [
   'Pharma Manufacturing',
@@ -25,7 +26,7 @@ const SOURCE_DEFAULT_OPTIONS = [
 
 const CompanyForm = ({
   formData,
-  errors,
+  errors = {},
   handleChange,
   handleSelectChange,
   onNew,
@@ -39,6 +40,11 @@ const CompanyForm = ({
   sourceOptions = SOURCE_DEFAULT_OPTIONS
 }) => {
   const isIdle = editState === 'idle';
+
+  const availableCities = getCitiesForState(formData.state);
+  const cityOptions = formData.city && !availableCities.includes(formData.city)
+    ? [formData.city, ...availableCities]
+    : availableCities;
 
   return (
     <form className="company-form" onSubmit={(e) => e.preventDefault()}>
@@ -91,30 +97,35 @@ const CompanyForm = ({
           />
         </div>
 
-        {/* Row 2: 4 Inputs Aligned */}
+        {/* Row 2: 4 Inputs Aligned - State & City Dropdowns */}
         <div className="col-3">
-          <FormField
-            label="City"
-            name="city"
-            value={formData.city}
-            onChange={handleChange}
-            placeholder="Enter city"
+          <SelectField
+            label="State"
+            name="state"
+            value={formData.state || ''}
+            onChange={(e) => {
+              const newState = e.target.value;
+              handleSelectChange('state', newState);
+              const cities = getCitiesForState(newState);
+              if (cities.length > 0) {
+                handleSelectChange('city', cities[0]);
+              }
+            }}
+            options={ALL_STATES}
             required={true}
-            error={errors.city}
-            maxLength={100}
+            error={errors.state}
             disabled={isIdle}
           />
         </div>
         <div className="col-3">
-          <FormField
-            label="State"
-            name="state"
-            value={formData.state}
-            onChange={handleChange}
-            placeholder="Enter state"
+          <SelectField
+            label="City"
+            name="city"
+            value={formData.city || ''}
+            onChange={(e) => handleSelectChange('city', e.target.value)}
+            options={cityOptions.length > 0 ? cityOptions : ['Noida', 'Delhi', 'Gurugram', 'Mumbai']}
             required={true}
-            error={errors.state}
-            maxLength={100}
+            error={errors.city}
             disabled={isIdle}
           />
         </div>
@@ -125,6 +136,7 @@ const CompanyForm = ({
             value={formData.web || ''}
             onChange={handleChange}
             placeholder="e.g. www.company.com"
+            error={errors.web}
             disabled={isIdle}
           />
         </div>
@@ -169,6 +181,7 @@ const CompanyForm = ({
             value={formData.units || ''}
             onChange={handleChange}
             placeholder="e.g. 2"
+            error={errors.units}
             disabled={isIdle}
           />
         </div>
@@ -179,6 +192,7 @@ const CompanyForm = ({
             value={formData.users || ''}
             onChange={handleChange}
             placeholder="e.g. 30"
+            error={errors.users}
             disabled={isIdle}
           />
         </div>
@@ -211,9 +225,10 @@ const CompanyForm = ({
           <FormField
             label="Next Follow-Up Date"
             name="follow"
+            type="date"
             value={formData.follow || ''}
             onChange={handleChange}
-            placeholder="dd/mm/yyyy"
+            error={errors.follow}
             disabled={isIdle}
           />
         </div>
@@ -224,6 +239,7 @@ const CompanyForm = ({
             value={formData.budget || ''}
             onChange={handleChange}
             placeholder="Enter budget"
+            error={errors.budget}
             disabled={isIdle}
           />
         </div>
@@ -256,6 +272,7 @@ const CompanyForm = ({
             value={formData.quoted || ''}
             onChange={handleChange}
             placeholder="Enter quoted value"
+            error={errors.quoted}
             disabled={isIdle}
           />
         </div>
@@ -266,6 +283,7 @@ const CompanyForm = ({
             value={formData.turnover || ''}
             onChange={handleChange}
             placeholder="Enter turnover"
+            error={errors.turnover}
             disabled={isIdle}
           />
         </div>

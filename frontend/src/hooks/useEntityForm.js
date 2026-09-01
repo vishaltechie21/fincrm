@@ -62,9 +62,18 @@ export const useEntityForm = ({ initialState = {}, validationFn = () => ({}) }) 
    * Maps all keys in initialState from the entity object.
    */
   const loadEntity = useCallback((entity) => {
+    if (!entity) return;
     const next = {};
     Object.keys(initialState).forEach(key => {
-      next[key] = entity[key] ?? '';
+      let val = entity[key] ?? '';
+      if (key === 'follow' && val) {
+        if (typeof val === 'string' && val.includes('T')) {
+          val = val.split('T')[0];
+        } else if (val instanceof Date) {
+          val = val.toISOString().split('T')[0];
+        }
+      }
+      next[key] = val;
     });
     setFormData(next);
     setErrors({});

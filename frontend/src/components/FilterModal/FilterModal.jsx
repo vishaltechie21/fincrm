@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { SEARCH_COLUMNS } from '../../utils/searchColumns';
 import './FilterModal.css';
 
 // Custom Popover Multi-Select Dropdown Component
@@ -101,10 +102,10 @@ const ValueMultiSelect = ({ field, selectedValues = [], options = [], onChange, 
 const FilterModal = ({
   isOpen,
   onClose,
-  columns = {}, // { field: label }
+  columns = {}, // { key: label } or SEARCH_COLUMNS
   dataset = [], // raw rows
-  getPropValue, // (row, field) => string
-  visibleColumns = [], // array of visible fields
+  getPropValue, // (row, fieldKey) => string
+  visibleColumns = [], // array of visible field keys
   onVisibleColumnsChange,
   activeFilters = [], // array of [{ f: field, v: [val1, val2] }]
   onFiltersChange
@@ -115,18 +116,18 @@ const FilterModal = ({
   // Extract unique values for each column from the loaded dataset
   const uniqueValuesMap = useMemo(() => {
     const map = {};
-    Object.keys(columns).forEach((field) => {
+    SEARCH_COLUMNS.forEach((col) => {
       const vals = dataset.map((row) => {
-        const val = getPropValue(row, field);
+        const val = getPropValue ? getPropValue(row, col.k) : col.get(row);
         return val === null || val === undefined ? '' : String(val).trim();
       });
       // Normalize empty/falsy to '—' and get unique sorted list
-      map[field] = Array.from(new Set(vals))
+      map[col.k] = Array.from(new Set(vals))
         .map(v => v || '—')
         .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
     });
     return map;
-  }, [columns, dataset, getPropValue]);
+  }, [dataset, getPropValue]);
 
   // Sync draft states when modal opens
   useEffect(() => {
@@ -148,8 +149,6 @@ const FilterModal = ({
   }, [isOpen, activeFilters, visibleColumns]);
 
   if (!isOpen) return null;
-
-  const columnKeys = Object.keys(columns);
 
   // Condition Handlers
   const handleFieldChange = (index, field) => {
@@ -192,16 +191,16 @@ const FilterModal = ({
   };
 
   // Visible Column Toggle
-  const handleColumnToggle = (field, checked) => {
+  const handleColumnToggle = (fieldKey, checked) => {
     setDraftVisibleColumns((prev) => {
       if (checked) {
-        if (!prev.includes(field)) {
-          return [...prev, field];
+        if (!prev.includes(fieldKey)) {
+          return [...prev, fieldKey];
         }
         return prev;
       } else {
         if (prev.length <= 1) return prev; // Keep at least one column visible
-        return prev.filter((c) => c !== field);
+        return prev.filter((c) => c !== fieldKey);
       }
     });
   };
@@ -252,9 +251,9 @@ const FilterModal = ({
                         className="modal-select"
                       >
                         <option value="">Select Field</option>
-                        {columnKeys.map((k) => (
-                          <option key={k} value={k}>
-                            {columns[k]}
+                        {SEARCH_COLUMNS.map((c) => (
+                          <option key={c.k} value={c.k}>
+                            {c.lab} ({c.table})
                           </option>
                         ))}
                       </select>
@@ -299,23 +298,32 @@ const FilterModal = ({
           <div className="filter-section selection-section">
             <div className="sech">Selection Field</div>
             <div className="col-info-text">
-              columns shown in grid — {draftVisibleColumns.length} of {columnKeys.length}
+              columns shown in grid — {draftVisibleColumns.length} of {SEARCH_COLUMNS.length}, drawn from MASCOM, MASCON and TRACOM against the one company record
             </div>
             
             <div className="cols-grid">
-              {columnKeys.map((field) => {
-                const label = columns[field];
-                const isChecked = draftVisibleColumns.includes(field);
+              {['MASCOM', 'MASCON', 'TRACOM'].map((tblName) => {
+                const groupCols = SEARCH_COLUMNS.filter(c => c.table === tblName)
+                  .sort((a, b) => a.lab.localeCompare(b.lab));
+
                 return (
-                  <label key={field} className="checkbox-container col-item">
-                    <input 
-                      type="checkbox" 
-                      checked={isChecked}
-                      onChange={(e) => handleColumnToggle(field, e.target.checked)}
-                    />
-                    <span className="checkmark"></span>
-                    <span className="label-text">{label}</span>
-                  </label>
+                  <div key={tblName} className="col-group-column">
+                    <div className="col-group-title">{tblName}</div>
+                    {groupCols.map((col) => {
+                      const isChecked = draftVisibleColumns.includes(col.k);
+                      return (
+                        <label key={col.k} className="checkbox-container col-item">
+                          <input 
+                            type="checkbox" 
+                            checked={isChecked}
+                            onChange={(e) => handleColumnToggle(col.k, e.target.checked)}
+                          />
+                          <span className="checkmark"></span>
+                          <span className="label-text">{col.lab}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
                 );
               })}
             </div>

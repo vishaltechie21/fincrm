@@ -1,291 +1,213 @@
-/* Redesigned Filter Modal styling */
 .filter-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(9, 18, 42, 0.45);
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 37, 68, 0.6);
   backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
-  animation: fadeIn 0.15s ease-out;
+  padding: 16px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Modal Content Box */
 .filter-modal-box {
-  width: 620px;
-  max-width: 90vw;
-  max-height: 90vh;
-  background-color: var(--panel);
+  width: 100%;
+  max-width: 900px;
+  max-height: 92vh;
+  background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: slideUp 0.18s ease-out;
+  color: var(--fg);
 }
 
-@keyframes slideUp {
-  from { transform: translateY(12px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-/* Header */
 .filter-modal-header {
-  padding: 8px 12px;
+  background: var(--panel2);
   border-bottom: 1px solid var(--border);
+  padding: 12px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--panel2);
 }
 
 .filter-modal-header h3 {
   margin: 0;
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--text-h);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .close-x-btn {
   background: none;
   border: none;
-  font-size: 18px;
-  font-weight: 600;
   color: var(--muted);
+  font-size: 16px;
   cursor: pointer;
-  padding: 0;
+  padding: 2px 6px;
+  border-radius: 4px;
   line-height: 1;
 }
 
 .close-x-btn:hover {
-  color: var(--red);
+  background: var(--hover);
+  color: var(--text-h);
 }
 
-/* Modal Body */
 .filter-modal-body {
-  flex: 1;
-  padding: 14px 16px;
+  padding: 16px 18px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  background-color: var(--panel);
+  gap: 16px;
 }
 
-/* Sections */
 .filter-section {
   display: flex;
   flex-direction: column;
+  gap: 8px;
 }
 
 .sech {
-  font-size: 10.5px;
-  letter-spacing: 0.08em;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-h);
   text-transform: uppercase;
-  color: var(--accent);
-  font-weight: 800;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 4px;
-  margin-bottom: 8px;
+  letter-spacing: 0.05em;
 }
 
-/* Filter Grid (fgrid) */
+.col-info-text {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: -4px;
+}
+
 .fgrid {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) minmax(0, 1fr) 28px;
-  gap: 6px;
+  grid-template-columns: 28px 1fr 1fr 28px;
+  gap: 8px;
   align-items: center;
 }
 
-.fgrid .lab {
-  font-size: 9.5px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--muted);
+.fg-head {
+  font-size: 11px;
   font-weight: 700;
-  padding-bottom: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
 }
 
-.conditions-list-container {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 200px;
-  overflow-y: visible; /* Let dropdown absolute popovers flow outwards */
-  padding-right: 4px;
-  margin-bottom: 10px;
+.fg-row {
+  padding: 4px 0;
 }
 
 .cond-index {
-  font-family: var(--mono);
   font-size: 11px;
+  font-weight: 600;
   color: var(--muted);
   text-align: center;
 }
 
-/* Select Form Inputs */
 .modal-select {
   width: 100%;
-  font-family: var(--sans);
-  font-size: 11px;
-  padding: 4px 6px;
+  padding: 6px 10px;
+  font-size: 12px;
   border: 1px solid var(--border);
   border-radius: 4px;
-  background-color: var(--panel);
-  color: var(--text-h);
-  height: 28px;
-  outline: none;
-  cursor: pointer;
+  background: var(--panel);
+  color: var(--fg);
 }
 
-.modal-select:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-bg);
-}
-
-.modal-select:disabled {
-  background-color: var(--panel2);
-  color: var(--muted);
-  cursor: not-allowed;
-}
-
-/* Delete Condition Button */
 .del-cond-btn {
   background: none;
-  border: none;
-  color: var(--red);
-  font-size: 13px;
+  border: 1px solid transparent;
+  color: #ef4444;
   cursor: pointer;
-  padding: 4px;
+  font-size: 12px;
+  padding: 3px 6px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
-  transition: opacity 0.1s ease;
 }
 
 .del-cond-btn:hover {
-  opacity: 0.8;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
 }
 
-/* Buttons in Actions Row */
 .conditions-actions {
   display: flex;
-  gap: 6px;
-  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
 }
 
-.btn-sm {
-  padding: 3px 8px;
-  font-size: 10px;
-  height: 24px;
-  line-height: 1;
-}
-
-/* Selection Field columns grid */
-.cols-grid {
+/* 3-Column Selection Field Layout */
+.filter-modal-box .cols-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px 12px;
+  gap: 16px;
   border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 8px 12px;
+  border-radius: 6px;
+  padding: 14px 16px;
   background-color: var(--panel2);
+  max-height: 420px;
+  overflow-y: auto;
 }
 
-.col-info-text {
-  font-size: 10px;
-  color: var(--muted);
-  margin: -4px 0 6px;
-  font-weight: 500;
+.col-group-column {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
-/* Checkbox container override - Align columns checklist left */
-.cols-grid .checkbox-container {
-  justify-content: flex-start !important;
-  width: 100%;
+.col-group-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-h);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 6px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .checkbox-container.col-item {
   display: flex;
   align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--fg);
   cursor: pointer;
   user-select: none;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text);
-  line-height: 1.2;
   padding: 2px 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.checkbox-container.col-item input {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  height: 0;
-  width: 0;
+.filter-modal-footer {
+  padding: 12px 18px;
+  background: var(--panel2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.checkmark {
-  position: relative;
-  display: inline-block;
-  height: 12px;
-  width: 12px;
-  background-color: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  margin-right: 6px;
-  flex-shrink: 0;
+.footer-left-info {
+  font-size: 11.5px;
+  color: var(--muted);
+  font-weight: 500;
 }
 
-.checkbox-container.col-item:hover input ~ .checkmark {
-  border-color: var(--accent);
+.footer-actions {
+  display: flex;
+  gap: 8px;
 }
 
-.checkbox-container.col-item input:checked ~ .checkmark {
-  background-color: var(--accent);
-  border-color: var(--accent);
-}
-
-.checkmark::after {
-  content: "";
-  position: absolute;
-  display: none;
-  left: 3.5px;
-  top: 1px;
-  width: 3px;
-  height: 6px;
-  border: solid white;
-  border-width: 0 1.5px 1.5px 0;
-  transform: rotate(45deg);
-}
-
-.checkbox-container.col-item input:checked ~ .checkmark::after {
-  display: block;
-}
-
-.label-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Custom value multi-select dropdown styling */
+/* Custom Popover MultiSelect for Filter Conditions */
 .val-multiselect-container {
   position: relative;
   width: 100%;
@@ -293,135 +215,63 @@
 
 .val-multiselect-trigger {
   width: 100%;
-  font-family: var(--sans);
-  font-size: 11px;
-  padding: 4px 8px;
+  padding: 6px 10px;
+  font-size: 12px;
   border: 1px solid var(--border);
   border-radius: 4px;
-  background-color: var(--panel);
-  color: var(--text-h);
-  height: 28px;
+  background: var(--panel);
+  color: var(--fg);
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  cursor: pointer;
-  user-select: none;
-  box-sizing: border-box;
 }
 
-.val-multiselect-trigger:hover {
+.val-multiselect-trigger.active {
   border-color: var(--accent);
 }
 
 .val-multiselect-trigger.disabled {
-  background-color: var(--panel2);
-  color: var(--muted);
+  opacity: 0.6;
   cursor: not-allowed;
-  border-color: var(--border);
+  background: var(--panel2);
 }
 
 .trigger-label {
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-right: 4px;
-  flex: 1;
-  text-align: left;
+  white-space: nowrap;
 }
 
 .trigger-arrow {
-  font-size: 8px;
+  font-size: 9px;
   color: var(--muted);
-  flex-shrink: 0;
 }
 
 .val-multiselect-dropdown {
   position: absolute;
-  top: calc(100% + 2px);
+  top: 100%;
   left: 0;
   right: 0;
-  background-color: var(--panel);
+  z-index: 100;
+  margin-top: 4px;
+  background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  max-height: 180px;
-  overflow: hidden;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  max-height: 220px;
+  overflow-y: auto;
 }
 
 .multiselect-option {
-  padding: 6px 8px;
-  display: flex;
-  align-items: center;
-  transition: background-color 0.1s ease;
+  padding: 6px 10px;
 }
 
 .multiselect-option:hover {
-  background-color: var(--panel2);
+  background: var(--hover);
 }
 
 .select-all-option {
-  border-bottom: 1px dashed var(--border);
-  background-color: var(--panel);
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-
-.multiselect-options-list {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Force left-alignment for checkboxes inside custom dropdown */
-.val-multiselect-dropdown .checkbox-container {
-  justify-content: flex-start !important;
-  width: 100%;
-}
-
-/* Footer styling */
-.filter-modal-footer {
-  padding: 8px 12px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: var(--panel2);
-}
-
-.footer-left-info {
-  font-size: 10px;
-  color: var(--muted);
-  font-weight: 600;
-}
-
-.footer-actions {
-  display: flex;
-  gap: 6px;
-}
-
-/* Scrollbars inside containers */
-.conditions-list-container::-webkit-scrollbar,
-.multiselect-options-list::-webkit-scrollbar {
-  width: 5px;
-}
-
-.conditions-list-container::-webkit-scrollbar-track,
-.multiselect-options-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.conditions-list-container::-webkit-scrollbar-thumb,
-.multiselect-options-list::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
-
-.conditions-list-container::-webkit-scrollbar-thumb:hover,
-.multiselect-options-list::-webkit-scrollbar-thumb:hover {
-  background: var(--muted);
+  border-bottom: 1px solid var(--border);
+  background: var(--panel2);
 }
