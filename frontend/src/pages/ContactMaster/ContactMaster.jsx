@@ -12,6 +12,7 @@ import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import ImportModal from '../../components/ImportModal/ImportModal';
 import Swal from 'sweetalert2';
 import { validateContact } from '../../utils/validation';
+import { MASCON_SEED } from '../../utils/activityData';
 
 
 const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
@@ -52,14 +53,21 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
     setIsLoading(true);
     try {
       const res = await contactService.getContacts('');
-      if (res.success) {
-        setContacts(res.data);
-        setVisibleCount(50);
-      } else {
-        showNotification(res.message || 'Failed to fetch contacts', 'error');
+      let dbContacts = [];
+      if (res && res.success) {
+        dbContacts = res.data;
       }
+      const mergedContacts = [...MASCON_SEED];
+      dbContacts.forEach((dbCont) => {
+        if (!mergedContacts.some(c => c.mascon_id === dbCont.mascon_id)) {
+          mergedContacts.push(dbCont);
+        }
+      });
+      setContacts(mergedContacts);
+      setVisibleCount(50);
     } catch (err) {
       console.error(err);
+      setContacts([...MASCON_SEED]);
       showNotification('Network error occurred while fetching contacts', 'error');
     } finally {
       setIsLoading(false);

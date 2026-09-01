@@ -58,9 +58,6 @@
   --red: #ef4444;         /* Vibrant red */
   --yellow: #f59e0b;      /* Vibrant yellow */
   --muted: #a1a1aa;       /* Readable zinc gray */
-  
-
-
   --btn-success: #10b981;        /* Vibrant Emerald Green */
   --btn-success-hover: #059669;
   --btn-primary: #3b82f6;        /* Vibrant Royal Blue */
@@ -70,7 +67,6 @@
   --btn-shadow-success: rgba(16, 185, 129, 0.4);
   --btn-shadow-primary: rgba(59, 130, 246, 0.4);
   --btn-shadow-danger: rgba(239, 68, 68, 0.4);
-
   --shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.02), 0 2px 4px -2px rgba(255, 255, 255, 0.02);
 }
 

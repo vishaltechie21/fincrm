@@ -12,6 +12,7 @@ import ImportModal from '../../components/ImportModal/ImportModal';
 import Swal from 'sweetalert2';
 import { validateCompany } from '../../utils/validation';
 import * as subMasterService from '../../services/subMasterService';
+import { MASCOM_SEED } from '../../utils/activityData';
 
 
 const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
@@ -53,14 +54,21 @@ const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
     setIsLoading(true);
     try {
       const res = await companyService.getCompanies('');
-      if (res.success) {
-        setCompanies(res.data);
-        setVisibleCount(50);
-      } else {
-        showNotification(res.message || 'Failed to fetch companies', 'error');
+      let dbCompanies = [];
+      if (res && res.success) {
+        dbCompanies = res.data;
       }
+      const mergedCompanies = [...MASCOM_SEED];
+      dbCompanies.forEach((dbComp) => {
+        if (!mergedCompanies.some(c => c.mascom_id === dbComp.mascom_id)) {
+          mergedCompanies.push(dbComp);
+        }
+      });
+      setCompanies(mergedCompanies);
+      setVisibleCount(50);
     } catch (err) {
       console.error(err);
+      setCompanies([...MASCOM_SEED]);
       showNotification('Network error occurred while fetching companies', 'error');
     } finally {
       setIsLoading(false);

@@ -1,44 +1,55 @@
-const mysql = require('mysql2/promise');
+const sql = require('mssql');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
+async function executeSqlScript(connection, filePath) {
+  if (!fs.existsSync(filePath)) {
+    console.warn(`File not found: ${filePath}`);
+    return;
+  }
+
+  const sqlText = fs.readFileSync(filePath, 'utf8');
+  // Split script by GO batch commands (case-insensitive, on its own line)
+  const batches = sqlText.split(/^\s*GO\s*$/im).filter(b => b.trim().length > 0);
+
+  for (const batch of batches) {
+    const request = connection.request();
+    await request.query(batch);
+  }
+}
+
 async function initDb() {
-  const connectionConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '3306', 10),
-    user: process.env.DB_USER || 'root',
+  const masterConfig = {
+    user: process.env.DB_USER || 'sa',
     password: process.env.DB_PASSWORD || '0000',
-    multipleStatements: true
+    server: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '1433', 10),
+    database: 'master',
+    options: {
+      encrypt: process.env.DB_ENCRYPT === 'true',
+      trustServerCertificate: process.env.DB_TRUST_SERVER_CERTIFICATE !== 'false',
+      enableArithAbort: true
+    }
   };
 
-  console.log('Connecting to MySQL to initialize database...');
+  console.log('Connecting to MSSQL server to initialize database...');
   let connection;
   try {
-    connection = await mysql.createConnection(connectionConfig);
-    console.log('Connected to MySQL server.');
+    connection = await new sql.ConnectionPool(masterConfig).connect();
+    console.log('Connected to MSSQL master server.');
 
-    // Read and execute schema.sql
+    // Execute schema.sql
     const schemaPath = path.join(__dirname, 'schema.sql');
-    if (fs.existsSync(schemaPath)) {
-      console.log('Executing schema.sql...');
-      const schemaSql = fs.readFileSync(schemaPath, 'utf8');
-      await connection.query(schemaSql);
-      console.log('Schema created successfully.');
-    } else {
-      console.warn('schema.sql not found at', schemaPath);
-    }
+    console.log('Executing schema.sql...');
+    await executeSqlScript(connection, schemaPath);
+    console.log('Schema created successfully.');
 
-    // Read and execute seed.sql
+    // Execute seed.sql
     const seedPath = path.join(__dirname, 'seed.sql');
-    if (fs.existsSync(seedPath)) {
-      console.log('Executing seed.sql...');
-      const seedSql = fs.readFileSync(seedPath, 'utf8');
-      await connection.query(seedSql);
-      console.log('Database seeded successfully.');
-    } else {
-      console.warn('seed.sql not found at', seedPath);
-    }
+    console.log('Executing seed.sql...');
+    await executeSqlScript(connection, seedPath);
+    console.log('Database seeded successfully.');
 
     console.log('Database initialization completed successfully.');
   } catch (error) {
@@ -46,7 +57,7 @@ async function initDb() {
     process.exit(1);
   } finally {
     if (connection) {
-      await connection.end();
+      await connection.close();
     }
   }
 }
