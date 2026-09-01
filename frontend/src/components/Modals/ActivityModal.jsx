@@ -15,7 +15,7 @@ export default function ActivityModal({ isOpen, onClose, company, onAddRemark })
     setNewRemark('');
   };
 
-  const remarksList = company.remarksList || [];
+  const remarksList = company.remarksList || company.acts || [];
 
   return (
     <div className="modal-overlay" onClick={onClose}>

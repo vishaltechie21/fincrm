@@ -110,16 +110,18 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
     const companyId = params.get('companyId');
     const mode = params.get('mode');
 
-    if (editId && contacts.length > 0) {
-      const cont = contacts.find(c => c.mascon_id === editId);
-      if (cont) {
-        hasAutoLoadedRef.current = true;
-        loadContact(cont);
-        setEditState('modifying');
+    if (editId) {
+      if (contacts.length > 0) {
+        const cont = contacts.find(c => c.mascon_id === editId);
+        if (cont) {
+          hasAutoLoadedRef.current = true;
+          loadContact(cont);
+          setEditState('modifying');
+        }
       }
     } else if (companyId) {
-      hasAutoLoadedRef.current = true;
       if (mode === 'add') {
+        hasAutoLoadedRef.current = true;
         const timestampPrefix = String(Math.floor(Date.now() / 1000)).slice(-3);
         let nextSeq = 1;
         if (contacts.length > 0) {
@@ -137,6 +139,7 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
       } else if (contacts.length > 0) {
         const compCont = contacts.find(c => c.mascom_id === companyId);
         if (compCont) {
+          hasAutoLoadedRef.current = true;
           loadContact(compCont);
           setEditState('modifying');
         }

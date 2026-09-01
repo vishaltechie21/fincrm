@@ -305,24 +305,50 @@ const FilterModal = ({
               {['MASCOM', 'MASCON', 'TRACOM'].map((tblName) => {
                 const groupCols = SEARCH_COLUMNS.filter(c => c.table === tblName)
                   .sort((a, b) => a.lab.localeCompare(b.lab));
+                
+                const groupKeys = groupCols.map(c => c.k);
+                const isGroupAllChecked = groupKeys.length > 0 && groupKeys.every(k => draftVisibleColumns.includes(k));
+
+                const handleGroupToggle = (checked) => {
+                  setDraftVisibleColumns(prev => {
+                    if (checked) {
+                      return Array.from(new Set([...prev, ...groupKeys]));
+                    } else {
+                      const remaining = prev.filter(k => !groupKeys.includes(k));
+                      return remaining.length > 0 ? remaining : [groupKeys[0]];
+                    }
+                  });
+                };
 
                 return (
                   <div key={tblName} className="col-group-column">
-                    <div className="col-group-title">{tblName}</div>
-                    {groupCols.map((col) => {
-                      const isChecked = draftVisibleColumns.includes(col.k);
-                      return (
-                        <label key={col.k} className="checkbox-container col-item">
-                          <input 
-                            type="checkbox" 
-                            checked={isChecked}
-                            onChange={(e) => handleColumnToggle(col.k, e.target.checked)}
-                          />
-                          <span className="checkmark"></span>
-                          <span className="label-text">{col.lab}</span>
-                        </label>
-                      );
-                    })}
+                    <div className="col-group-title-row">
+                      <span className="col-group-title">{tblName}</span>
+                      <label className="group-select-all-label">
+                        <input 
+                          type="checkbox"
+                          checked={isGroupAllChecked}
+                          onChange={(e) => handleGroupToggle(e.target.checked)}
+                        />
+                        <span className="select-all-text">Select All</span>
+                      </label>
+                    </div>
+
+                    <div className="group-cols-list">
+                      {groupCols.map((col) => {
+                        const isChecked = draftVisibleColumns.includes(col.k);
+                        return (
+                          <label key={col.k} className="checkbox-container col-item">
+                            <input 
+                              type="checkbox" 
+                              checked={isChecked}
+                              onChange={(e) => handleColumnToggle(col.k, e.target.checked)}
+                            />
+                            <span className="label-text">{col.lab}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
                   </div>
                 );
               })}

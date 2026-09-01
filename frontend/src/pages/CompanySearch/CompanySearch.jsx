@@ -1029,6 +1029,34 @@ const CompanySearch = () => {
         isOpen={!!activeActivityCompany} 
         onClose={() => setActiveActivityCompany(null)} 
         company={activeActivityCompany}
+        onAddRemark={(companyId, remarkText, mode) => {
+          const newAct = {
+            tracom_id: `TR-${Date.now()}`,
+            mascom_id: companyId,
+            tracom_date: new Date().toISOString().slice(0, 10),
+            mode: mode || 'Call',
+            remarks: remarkText,
+            user_name: 'admin_fincrm'
+          };
+          setActiveActivityCompany(prev => {
+            if (!prev) return null;
+            const currentList = prev.remarksList || prev.acts || [];
+            return {
+              ...prev,
+              remarksList: [newAct, ...currentList]
+            };
+          });
+          setCompanies(prev => prev.map(c => {
+            if (c.mascom_id === companyId) {
+              const acts = c.acts || [];
+              return {
+                ...c,
+                acts: [newAct, ...acts]
+              };
+            }
+            return c;
+          }));
+        }}
       />
       <DashboardModal 
         isOpen={!!activeDashboardCompany} 
