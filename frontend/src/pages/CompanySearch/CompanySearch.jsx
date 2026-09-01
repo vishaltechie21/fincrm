@@ -516,6 +516,26 @@ const CompanySearch = () => {
     return `₹ ${Number(n).toLocaleString("en-IN")}`;
   };
 
+  const getChecklistDoneCount = (co) => {
+    if (!co) return 0;
+    let data = co.checklistData || co.checklist_data;
+    if (typeof data === 'string') {
+      try { data = JSON.parse(data); } catch (e) { data = {}; }
+    }
+    if (!data || typeof data !== 'object') return 0;
+    return Object.keys(data).filter(k => Array.isArray(data[k]) && data[k].length > 0).length;
+  };
+
+  const getDashboardDoneCount = (co) => {
+    if (!co) return 0;
+    let data = co.dashboardData || co.dashboard_data;
+    if (typeof data === 'string') {
+      try { data = JSON.parse(data); } catch (e) { data = {}; }
+    }
+    if (!data || typeof data !== 'object') return 0;
+    return Object.keys(data).filter(k => data[k] && data[k].status === 'Done').length;
+  };
+
   return (
     <div className="search-page">
       {/* Header */}
@@ -867,14 +887,14 @@ const CompanySearch = () => {
                                      className="abtn go" 
                                      onClick={() => setActiveDashboardCompany(r.co)}
                                    >
-                                     Dashboard
+                                     Dashboard ({getDashboardDoneCount(r.co)}/15)
                                    </button>
                                    <button 
                                      type="button" 
                                      className="abtn go" 
                                      onClick={() => setActiveChecklistCompany(r.co)}
                                    >
-                                     Checklist (0/128)
+                                     Checklist ({getChecklistDoneCount(r.co)}/128)
                                    </button>
 
                                    {r.key.mobile ? (
@@ -1070,11 +1090,45 @@ const CompanySearch = () => {
         isOpen={!!activeDashboardCompany} 
         onClose={() => setActiveDashboardCompany(null)} 
         company={activeDashboardCompany}
+        onSaveDashboard={async (companyId, updatedDashboard) => {
+          try {
+            await companyService.updateCompany(companyId, { dashboard_data: updatedDashboard });
+            setActiveDashboardCompany(prev => {
+              if (!prev) return null;
+              return { ...prev, dashboard_data: updatedDashboard, dashboardData: updatedDashboard };
+            });
+            setCompanies(prev => prev.map(c => {
+              if (c.mascom_id === companyId) {
+                return { ...c, dashboard_data: updatedDashboard, dashboardData: updatedDashboard };
+              }
+              return c;
+            }));
+          } catch (err) {
+            console.error('Failed to save dashboard step progress to database:', err);
+          }
+        }}
       />
       <ChecklistModal 
         isOpen={!!activeChecklistCompany} 
         onClose={() => setActiveChecklistCompany(null)} 
         company={activeChecklistCompany}
+        onSaveChecklist={async (companyId, updatedChecklist) => {
+          try {
+            await companyService.updateCompany(companyId, { checklist_data: updatedChecklist });
+            setActiveChecklistCompany(prev => {
+              if (!prev) return null;
+              return { ...prev, checklist_data: updatedChecklist, checklistData: updatedChecklist };
+            });
+            setCompanies(prev => prev.map(c => {
+              if (c.mascom_id === companyId) {
+                return { ...c, checklist_data: updatedChecklist, checklistData: updatedChecklist };
+              }
+              return c;
+            }));
+          } catch (err) {
+            console.error('Failed to save checklist to database:', err);
+          }
+        }}
       />
       <ContactInfoModal
         isOpen={!!activeContactInfoCompany}

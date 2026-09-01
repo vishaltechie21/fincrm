@@ -3,31 +3,43 @@ const companyService = require('../services/companyService');
 /**
  * Basic validator for company input schema constraints.
  */
-function validateCompanyData(data) {
+function validateCompanyData(data, isUpdate = false) {
   const errors = {};
 
-  if (!data.company_name || data.company_name.trim().length < 2 || data.company_name.trim().length > 150) {
-    errors.company_name = 'Company Name is required (2-150 characters).';
+  if (!isUpdate || data.company_name !== undefined) {
+    if (!data.company_name || data.company_name.trim().length < 2 || data.company_name.trim().length > 150) {
+      errors.company_name = 'Company Name is required (2-150 characters).';
+    }
   }
 
-  if (!data.industry_type || data.industry_type.trim() === '') {
-    errors.industry_type = 'Industry Type is required.';
+  if (!isUpdate || data.industry_type !== undefined) {
+    if (!data.industry_type || data.industry_type.trim() === '') {
+      errors.industry_type = 'Industry Type is required.';
+    }
   }
 
-  if (!data.city || data.city.trim() === '') {
-    errors.city = 'City is required.';
+  if (!isUpdate || data.city !== undefined) {
+    if (!data.city || data.city.trim() === '') {
+      errors.city = 'City is required.';
+    }
   }
 
-  if (!data.state || data.state.trim() === '') {
-    errors.state = 'State is required.';
+  if (!isUpdate || data.state !== undefined) {
+    if (!data.state || data.state.trim() === '') {
+      errors.state = 'State is required.';
+    }
   }
 
-  if (!data.data_source || data.data_source.trim() === '') {
-    errors.data_source = 'Data Source is required.';
+  if (!isUpdate || data.data_source !== undefined) {
+    if (!data.data_source || data.data_source.trim() === '') {
+      errors.data_source = 'Data Source is required.';
+    }
   }
 
-  if (!data.user_name || data.user_name.trim() === '') {
-    errors.user_name = 'User Name is required.';
+  if (!isUpdate || data.user_name !== undefined) {
+    if (!data.user_name || data.user_name.trim() === '') {
+      errors.user_name = 'User Name is required.';
+    }
   }
 
   return {
@@ -70,7 +82,7 @@ async function getCompany(req, res, next) {
 
 async function createCompany(req, res, next) {
   try {
-    const validation = validateCompanyData(req.body);
+    const validation = validateCompanyData(req.body, false);
     if (!validation.isValid) {
       return res.status(400).json({
         success: false,
@@ -92,7 +104,7 @@ async function createCompany(req, res, next) {
 async function updateCompany(req, res, next) {
   try {
     const { id } = req.params;
-    const validation = validateCompanyData(req.body);
+    const validation = validateCompanyData(req.body, true);
     if (!validation.isValid) {
       return res.status(400).json({
         success: false,

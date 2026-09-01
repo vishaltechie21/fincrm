@@ -70,7 +70,7 @@ export default function ContactInfoModal({
                           <div className="contact-row-actions">
                             <button
                               type="button"
-                              className="abtn mini-edit-btn"
+                              className="btn btn-secondary btn-sm"
                               onClick={() => onEditContact && onEditContact(cont)}
                               title="Edit Contact"
                             >
@@ -79,7 +79,7 @@ export default function ContactInfoModal({
                             {onDeleteContact && (
                               <button
                                 type="button"
-                                className="abtn mini-delete-btn"
+                                className="btn btn-danger btn-sm"
                                 onClick={() => onDeleteContact(cont)}
                                 title="Delete Contact"
                               >
@@ -105,7 +105,7 @@ export default function ContactInfoModal({
           <div className="contact-modal-add-row">
             <button
               type="button"
-              className="btn btn-success contact-add-btn"
+              className="btn btn-success btn-sm"
               onClick={() => onAddContact && onAddContact(company)}
             >
               <Plus size={13} /> Add Contact
@@ -118,7 +118,7 @@ export default function ContactInfoModal({
           <span className="modal-foot-info">
             {companyContacts.length} contact(s) · {activeCount} active
           </span>
-          <button type="button" className="btn-secondary" onClick={onClose}>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={onClose}>
             Close
           </button>
         </div>

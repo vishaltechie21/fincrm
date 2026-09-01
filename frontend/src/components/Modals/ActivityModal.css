@@ -1,60 +1,53 @@
 .activity-modal {
-  max-width: 680px;
+  max-width: 580px;
 }
 
 .activity-modal .activity-form {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .activity-modal .activity-form-row {
   display: flex;
   gap: 8px;
-  align-items: center;
+  align-items: stretch;
+}
+
+.activity-modal .activity-mode-select,
+.activity-modal .activity-input,
+.activity-modal .activity-form-row .btn {
+  height: 32px;
+  box-sizing: border-box;
 }
 
 .activity-modal .activity-mode-select {
-  padding: 8px 10px;
+  padding: 0 10px;
   font-size: 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  background: #f8fafc;
-  color: #1e293b;
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 4px;
+  background: var(--panel, #ffffff);
+  color: var(--fg, #1e293b);
   font-weight: 500;
 }
 
 .activity-modal .activity-input {
   flex: 1;
-  padding: 8px 12px;
-  font-size: 12.5px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #0f172a;
+  padding: 0 10px;
+  font-size: 12px;
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 4px;
+  background: var(--panel, #ffffff);
+  color: var(--fg, #0f172a);
 }
 
 .activity-modal .activity-input:focus {
-  outline: 2px solid #0f2544;
+  outline: 2px solid var(--accent, #10b981);
   outline-offset: -1px;
 }
 
-.activity-modal .activity-add-btn {
-  padding: 7px 14px;
+.activity-modal .activity-form-row .btn {
+  padding: 0 14px;
   font-size: 12px;
-  font-weight: 600;
-  border-radius: 6px;
-  border: 1px solid #0f2544;
-  background: #0f2544;
-  color: #ffffff;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  transition: all 0.15s ease;
-}
-
-.activity-modal .activity-add-btn:hover {
-  background: #1c3d6e;
-  border-color: #1c3d6e;
+  border-radius: 4px;
 }
 
 .activity-modal .activity-table-wrap {

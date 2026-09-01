@@ -53,7 +53,7 @@ export default function ActivityModal({ isOpen, onClose, company, onAddRemark })
                 onChange={(e) => setNewRemark(e.target.value)}
                 className="activity-input"
               />
-              <button type="submit" className="btn btn-success activity-add-btn">
+              <button type="submit" className="btn btn-success">
                 <Plus size={15} /> Add Remark
               </button>
             </div>

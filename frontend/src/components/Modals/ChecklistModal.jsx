@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, ChevronDown, ChevronRight, CheckCircle2, AlertCircle, Plus, Trash2, FileCheck } from 'lucide-react';
 import { CHECKLIST_ITEMS, CHECKLIST_STAGES } from '../../utils/checklistData';
 import './ChecklistModal.css';
 
-export default function ChecklistModal({ isOpen, onClose, company }) {
+export default function ChecklistModal({ isOpen, onClose, company, onSaveChecklist }) {
   const [openStage, setOpenStage] = useState(CHECKLIST_STAGES[0]);
   const [recordedItems, setRecordedItems] = useState({});
   const [addingIndex, setAddingIndex] = useState(null);
@@ -12,6 +12,22 @@ export default function ChecklistModal({ isOpen, onClose, company }) {
   const [newNextFollowup, setNewNextFollowup] = useState('');
   const [newRemark, setNewRemark] = useState('');
   const [newEvidence, setNewEvidence] = useState('');
+
+  useEffect(() => {
+    if (company) {
+      let initialData = {};
+      if (company.checklistData && typeof company.checklistData === 'object') {
+        initialData = company.checklistData;
+      } else if (company.checklist_data) {
+        try {
+          initialData = typeof company.checklist_data === 'string' ? JSON.parse(company.checklist_data) : company.checklist_data;
+        } catch (e) {
+          initialData = {};
+        }
+      }
+      setRecordedItems(initialData || {});
+    }
+  }, [company]);
 
   if (!isOpen || !company) return null;
 
@@ -50,10 +66,10 @@ export default function ChecklistModal({ isOpen, onClose, company }) {
 
   const handleAddLog = (idx) => {
     if (!newRemark.trim()) return;
-    setRecordedItems(prev => ({
-      ...prev,
+    const updated = {
+      ...recordedItems,
       [idx]: [
-        ...(prev[idx] || []),
+        ...(recordedItems[idx] || []),
         {
           date: newDate || new Date().toISOString().split('T')[0],
           recordedBy: newRecordedBy || 'Suman',
@@ -63,7 +79,11 @@ export default function ChecklistModal({ isOpen, onClose, company }) {
           user: newRecordedBy || 'Suman'
         }
       ]
-    }));
+    };
+    setRecordedItems(updated);
+    if (onSaveChecklist) {
+      onSaveChecklist(company.mascom_id, updated);
+    }
     setNewRemark('');
     setNewEvidence('');
     setNewNextFollowup('');
@@ -71,10 +91,14 @@ export default function ChecklistModal({ isOpen, onClose, company }) {
   };
 
   const handleRemoveLog = (idx, logIdx) => {
-    setRecordedItems(prev => ({
-      ...prev,
-      [idx]: (prev[idx] || []).filter((_, i) => i !== logIdx)
-    }));
+    const updated = {
+      ...recordedItems,
+      [idx]: (recordedItems[idx] || []).filter((_, i) => i !== logIdx)
+    };
+    setRecordedItems(updated);
+    if (onSaveChecklist) {
+      onSaveChecklist(company.mascom_id, updated);
+    }
   };
 
   return (

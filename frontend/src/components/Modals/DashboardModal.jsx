@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, CheckCircle, Clock, FileText, AlertCircle } from 'lucide-react';
 import { SALES_STEPS } from '../../utils/dashboardData';
 import './DashboardModal.css';
 
-export default function DashboardModal({ isOpen, onClose, company }) {
+export default function DashboardModal({ isOpen, onClose, company, onSaveDashboard }) {
   const [stepsData, setStepsData] = useState({});
   const [editingStep, setEditingStep] = useState(null);
   const [formDate, setFormDate] = useState('');
@@ -11,6 +11,22 @@ export default function DashboardModal({ isOpen, onClose, company }) {
   const [formStatus, setFormStatus] = useState('Pending');
   const [formRemarks, setFormRemarks] = useState('');
   const [formDoc, setFormDoc] = useState('');
+
+  useEffect(() => {
+    if (company) {
+      let initialData = {};
+      if (company.dashboardData && typeof company.dashboardData === 'object') {
+        initialData = company.dashboardData;
+      } else if (company.dashboard_data) {
+        try {
+          initialData = typeof company.dashboard_data === 'string' ? JSON.parse(company.dashboard_data) : company.dashboard_data;
+        } catch (e) {
+          initialData = {};
+        }
+      }
+      setStepsData(initialData || {});
+    }
+  }, [company]);
 
   if (!isOpen || !company) return null;
 
@@ -31,8 +47,8 @@ export default function DashboardModal({ isOpen, onClose, company }) {
   };
 
   const handleSaveStep = (k) => {
-    setStepsData(prev => ({
-      ...prev,
+    const updated = {
+      ...stepsData,
       [k]: {
         date: formDate,
         nextFollowupDate: formNextFollowupDate,
@@ -40,7 +56,11 @@ export default function DashboardModal({ isOpen, onClose, company }) {
         remarks: formRemarks,
         doc: formDoc
       }
-    }));
+    };
+    setStepsData(updated);
+    if (onSaveDashboard) {
+      onSaveDashboard(company.mascom_id, updated);
+    }
     setEditingStep(null);
   };
 
@@ -77,18 +97,19 @@ export default function DashboardModal({ isOpen, onClose, company }) {
           {/* Steps Table */}
           <div className="steps-table-wrap">
             <div className="steps-head">
-              <div style={{ width: '40px' }}>#</div>
-              <div style={{ flex: 1 }}>Step Name</div>
-              <div style={{ width: '110px' }}>Date</div>
-              <div style={{ width: '160px' }}>Responsibility</div>
-              <div style={{ width: '110px' }}>Status</div>
+              <div className="step-col-num">#</div>
+              <div className="step-col-name">STEP NAME</div>
+              <div className="step-col-date">DATE</div>
+              <div className="step-col-resp">RESPONSIBILITY</div>
+              <div className="step-col-status">STATUS</div>
             </div>
 
-            {SALES_STEPS.map((step) => {
+            {SALES_STEPS.map((step, idx) => {
               const val = getStepVal(step.k);
               const isDone = val.status === 'Done';
               const isEdit = editingStep === step.k;
               const statusClass = isDone ? 'done' : val.status === 'In Progress' ? 'in-progress' : 'pending';
+              const stepNumStr = step.n !== '—' ? step.n : `${idx}b`;
 
               return (
                 <div key={step.k} className="step-row-wrap">
@@ -96,15 +117,17 @@ export default function DashboardModal({ isOpen, onClose, company }) {
                     className={`step-row ${statusClass} ${isEdit ? 'active-edit' : ''}`}
                     onClick={() => handleRowClick(step.k)}
                   >
-                    <div className="step-num">{step.n}</div>
-                    <div className="step-name">
-                      {step.lab}
-                      {step.note && <span className="step-note">({step.note})</span>}
-                      {step.doc && <span className="step-doc-tag"><FileText size={10} /> signed doc</span>}
+                    <div className="step-col-num">{stepNumStr}</div>
+                    <div className="step-col-name">
+                      <div className="step-title-line">
+                        <span>{step.lab}</span>
+                        {step.note && <span className="step-note">({step.note})</span>}
+                        {step.doc && <span className="step-doc-tag"><FileText size={10} /> signed doc</span>}
+                      </div>
                     </div>
-                    <div className="step-date mono">{val.date || '—'}</div>
-                    <div className="step-resp">{step.resp}</div>
-                    <div className="step-status">
+                    <div className="step-col-date mono">{val.date || '—'}</div>
+                    <div className="step-col-resp">{step.resp}</div>
+                    <div className="step-col-status">
                       <span className={`status-pill ${statusClass}`}>
                         {isDone ? <CheckCircle size={11} /> : <Clock size={11} />}
                         {val.status || 'Pending'}
@@ -166,8 +189,8 @@ export default function DashboardModal({ isOpen, onClose, company }) {
                         )}
                       </div>
                       <div className="dash-form-actions">
-                        <button type="button" className="btn btn-secondary dash-cancel-btn" onClick={() => setEditingStep(null)}>Cancel</button>
-                        <button type="button" className="btn btn-success dash-save-btn" onClick={() => handleSaveStep(step.k)}>Save Step</button>
+                        <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditingStep(null)}>Cancel</button>
+                        <button type="button" className="btn btn-success btn-sm" onClick={() => handleSaveStep(step.k)}>Save Step</button>
                       </div>
                     </div>
                   )}
