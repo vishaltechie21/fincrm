@@ -22,6 +22,7 @@
  */
 
 import React, { useState, useRef, useCallback } from 'react';
+import SmoothDetailRow from './SmoothDetailRow';
 
 // ─── Skeleton Row ─────────────────────────────────────────────────────────────
 const SkeletonRow = ({ columnCount }) => (
@@ -313,12 +314,10 @@ const DataTable = ({
                   </tr>
 
                   {/* Expanded detail row */}
-                  {isExpanded && renderExpandedRow && (
-                    <tr className="detail">
-                      <td colSpan={totalCols} className="detail-cell">
-                        {renderExpandedRow(row)}
-                      </td>
-                    </tr>
+                  {renderExpandedRow && (
+                    <SmoothDetailRow isExpanded={isExpanded} colSpan={totalCols}>
+                      {renderExpandedRow(row)}
+                    </SmoothDetailRow>
                   )}
                 </React.Fragment>
               );

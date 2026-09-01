@@ -945,6 +945,22 @@ mark.highlight-search {
   padding: 0 !important;
   background-color: var(--bg);
 }
+.detail-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+.detail-wrapper.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.detail-inner {
+  min-height: 0;
+  overflow: hidden;
+}
 .detail-box {
   padding: 16px 20px;
   border-left: 3px solid #c9973c;
@@ -952,7 +968,7 @@ mark.highlight-search {
   background-color: var(--panel2);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 12px;
 }
 .sec {
   background-color: var(--panel);
@@ -1099,12 +1115,22 @@ table.sub td:last-child, table.sub th:last-child {
   font-size: 11px;
   line-height: 1;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease;
+}
+tr.master-row {
+  transition: background-color 0.2s ease;
+}
+tr.master-row td {
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 tr.master-row.open-row .twisty-icon {
   background-color: #c9973c !important;
   border-color: #a87c26 !important;
   color: #412402 !important;
+  transform: rotate(180deg);
 }
 tr.master-row.open-row td {
   background-color: #0f2544 !important;

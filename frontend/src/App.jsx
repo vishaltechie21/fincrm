@@ -84,6 +84,7 @@ function App() {
   };
 
   const [openTabs, setOpenTabs] = useState(getInitialTabs);
+  const [closingTabIds, setClosingTabIds] = useState(new Set());
   const [globalSearch, setGlobalSearch] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
@@ -254,7 +255,7 @@ function App() {
 
   const handleCloseTab = async (e, tabId) => {
     e.stopPropagation();
-    if (openTabs.length === 1) return;
+    if (openTabs.length === 1 || closingTabIds.has(tabId)) return;
 
     if (tabId === activeMenu && isFormDirty) {
       const result = await Swal.fire({
@@ -279,7 +280,7 @@ function App() {
           const saveSuccess = await activeRef.save();
           if (saveSuccess) {
             setIsFormDirty(false);
-            performCloseTab(tabId);
+            startClosingTab(tabId);
           }
         }
       } else if (result.isDenied) {
@@ -288,12 +289,24 @@ function App() {
           activeRef.discard();
         }
         setIsFormDirty(false);
-        performCloseTab(tabId);
+        startClosingTab(tabId);
       }
       return;
     }
 
-    performCloseTab(tabId);
+    startClosingTab(tabId);
+  };
+
+  const startClosingTab = (tabId) => {
+    setClosingTabIds(prev => new Set(prev).add(tabId));
+    setTimeout(() => {
+      performCloseTab(tabId);
+      setClosingTabIds(prev => {
+        const next = new Set(prev);
+        next.delete(tabId);
+        return next;
+      });
+    }, 220);
   };
 
   const performCloseTab = (tabId) => {
@@ -520,26 +533,29 @@ function App() {
         <div className="content-container">
           {/* Navigation Tabs Bar inside Main Content */}
           <div className="content-tabs-bar">
-            {openTabs.map((tab) => (
-              <div
-                key={tab.id}
-                className={`tab-item ${activeMenu === tab.id ? 'active' : ''}`}
-                onClick={() => handleMenuClick(tab.id)}
-              >
-                <span>{tab.icon}{tab.label}</span>
-                {openTabs.length > 1 && (
-                  <button
-                    type="button"
-                    className="tab-close-btn"
-                    onClick={(e) => handleCloseTab(e, tab.id)}
-                    title="Close tab"
-                  >
-                    &times;
-                  </button>
-                )}
-                {activeMenu === tab.id && <span className="tab-indicator-dot"></span>}
-              </div>
-            ))}
+            {openTabs.map((tab) => {
+              const isClosing = closingTabIds.has(tab.id);
+              return (
+                <div
+                  key={tab.id}
+                  className={`tab-item ${activeMenu === tab.id ? 'active' : ''} ${isClosing ? 'tab-exit' : ''}`}
+                  onClick={() => !isClosing && handleMenuClick(tab.id)}
+                >
+                  <span>{tab.icon}{tab.label}</span>
+                  {openTabs.length > 1 && (
+                    <button
+                      type="button"
+                      className="tab-close-btn"
+                      onClick={(e) => handleCloseTab(e, tab.id)}
+                      title="Close tab"
+                    >
+                      &times;
+                    </button>
+                  )}
+                  {activeMenu === tab.id && <span className="tab-indicator-dot"></span>}
+                </div>
+              );
+            })}
           </div>
 
           <main className="main-content">

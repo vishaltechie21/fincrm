@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx';
 import Loading from '../../components/Loading/Loading';
 import FilterModal from '../../components/FilterModal/FilterModal';
 import HighlightText from '../../components/HighlightText';
+import SmoothDetailRow from '../../components/DataTable/SmoothDetailRow';
 import * as settingsService from '../../services/settingsService';
 import Swal from 'sweetalert2';
 import * as companyService from '../../services/companyService';
@@ -812,9 +813,7 @@ const CompanySearch = () => {
                            })}
                         </tr>
 
-                        {isExpanded && (
-                          <tr className="detail">
-                            <td colSpan={visibleColumns.length + 2} className="detail-cell">
+                        <SmoothDetailRow isExpanded={isExpanded} colSpan={visibleColumns.length + 2}>
                               <div className="detail-box">
                                 {/* Company Info Facts */}
                                 <div className="sec">
@@ -930,9 +929,7 @@ const CompanySearch = () => {
                                   </table>
                                 </div>
                               </div>
-                            </td>
-                          </tr>
-                        )}
+                        </SmoothDetailRow>
                       </React.Fragment>
                     );
                   })}
