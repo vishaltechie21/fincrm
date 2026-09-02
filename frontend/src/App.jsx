@@ -65,7 +65,8 @@ function App() {
 
   const getInitialTabs = () => {
     const path = window.location.pathname;
-    if (path === '/contact' || path === '/contact-master') {
+    const search = window.location.search;
+    if (path === '/contact' || path === '/contact-master' || (path === '/company' && search.includes('tab=contacts_info'))) {
       return [{ id: 'contact', label: 'Contact Master Entry', icon: <User size={12} /> }];
     }
     if (path === '/' || path === '/company' || path === '/company-master') {
@@ -103,7 +104,7 @@ function App() {
 
   useEffect(() => {
     const handlePopState = () => {
-      setPathname(window.location.pathname);
+      setPathname(window.location.pathname + window.location.search);
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -135,11 +136,20 @@ function App() {
   };
 
   const getActiveMenu = () => {
-    if (pathname === '/contact' || pathname === '/contact-master') return 'contact';
-    if (pathname === '/company' || pathname === '/company-master' || pathname === '/') return 'company';
-    if (pathname === '/company-search') return 'company-search';
-    if (pathname === '/contact-search') return 'contact-search';
-    return pathname.replace(/^\//, '') || 'company';
+    const raw = pathname || (window.location.pathname + window.location.search);
+    const [pathOnly, searchPart] = raw.split('?');
+    const params = new URLSearchParams(searchPart || window.location.search);
+    const tabParam = params.get('tab');
+
+    if (pathOnly === '/contact' || pathOnly === '/contact-master' || (pathOnly === '/company' && tabParam === 'contacts_info')) {
+      return 'contact';
+    }
+    if (pathOnly === '/company' || pathOnly === '/company-master' || pathOnly === '/') {
+      return 'company';
+    }
+    if (pathOnly === '/company-search') return 'company-search';
+    if (pathOnly === '/contact-search') return 'contact-search';
+    return pathOnly.replace(/^\//, '') || 'company';
   };
 
   const activeMenu = getActiveMenu();
@@ -245,7 +255,12 @@ function App() {
     if (menuId === 'company') {
       navigateTo('/company');
     } else if (menuId === 'contact') {
-      navigateTo('/contact');
+      const companyItem = allModules.find(m => m.id === 'company') || { id: 'company', label: 'Company Master Entry', icon: <Building2 size={12} /> };
+      const exists = openTabs.some(t => t.id === 'company');
+      if (!exists) {
+        setOpenTabs(prev => [...prev, { id: companyItem.id, label: companyItem.label, icon: companyItem.icon }]);
+      }
+      navigateTo('/company?tab=contacts_info');
     } else if (menuId === 'company-search') {
       navigateTo('/company-search');
     } else if (menuId === 'contact-search') {
@@ -561,10 +576,12 @@ function App() {
           </div>
 
           <main className="main-content">
-            {activeMenu === 'company' ? (
-              <CompanyMaster ref={companyMasterRef} onEditStateChange={handleEditStateChange} />
-            ) : activeMenu === 'contact' ? (
-              <ContactMaster ref={contactMasterRef} onEditStateChange={handleEditStateChange} />
+            {activeMenu === 'company' || activeMenu === 'contact' ? (
+              <CompanyMaster
+                ref={companyMasterRef}
+                onEditStateChange={handleEditStateChange}
+                defaultTab={activeMenu === 'contact' ? 'contacts_info' : 'company_info'}
+              />
             ) : activeMenu === 'company-search' ? (
               <CompanySearch />
             ) : activeMenu === 'contact-search' ? (

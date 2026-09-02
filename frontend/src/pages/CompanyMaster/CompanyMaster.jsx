@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
-import { Building2 } from 'lucide-react';
+import { Building2, User } from 'lucide-react';
 import CompanyForm from '../../components/CompanyForm/CompanyForm';
 import CompanyTable from '../../components/CompanyTable/CompanyTable';
 import Notification from '../../components/Notification/Notification';
@@ -14,7 +14,7 @@ import * as subMasterService from '../../services/subMasterService';
 import { MASCOM_SEED, deleteCompanyCascade } from '../../utils/activityData';
 
 
-const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
+const CompanyMaster = forwardRef(({ onEditStateChange, defaultTab }, ref) => {
   const [companies, setCompanies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: 'success' });
@@ -432,8 +432,12 @@ const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
         </div> */}
 
         <div className="sub-header-center">
-          <span className="sub-title-icon"><Building2 size={16} /></span>
-          <span className="sub-title-text">Company Master Entry</span>
+          <span className="sub-title-icon">
+            {defaultTab === 'contacts_info' ? <User size={16} /> : <Building2 size={16} />}
+          </span>
+          <span className="sub-title-text">
+            {defaultTab === 'contacts_info' ? 'Contact Master Entry' : 'Company Master Entry'}
+          </span>
         </div>
 
         <div className="sub-header-right">
@@ -461,6 +465,7 @@ const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
               onRefresh={handleRefresh}
               industryOptions={industryOptions}
               sourceOptions={sourceOptions}
+              defaultTab={defaultTab}
             />
           </div>
 
