@@ -208,6 +208,7 @@ const ContactSearch = () => {
     const isSorted = sortField === field;
     return (
       <th 
+        key={field}
         className={`clickable-header ${isSearchActive ? 'active-search-header' : ''}`}
         onClick={() => handleHeaderClick(field)}
         title="Click to toggle Specific Column Search"

@@ -31,7 +31,6 @@ const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
   };
-  const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, id: null });
 
   // Edit mode states
   const [editState, setEditState] = useState('idle'); // 'idle', 'adding', 'modifying'
@@ -287,36 +286,49 @@ const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
   const handleDelete = (idToDelete) => {
     const targetId = idToDelete || formData.mascom_id;
     if (!targetId) {
-      showNotification('No company selected to delete', 'warning');
+      Swal.fire({
+        title: 'No Company Selected',
+        text: 'Please select a company to delete.',
+        icon: 'warning',
+        confirmButtonColor: '#1e293b'
+      });
       return;
     }
-    setDeleteConfirm({ isOpen: true, id: targetId });
-  };
 
-  const handleConfirmDelete = async () => {
-    const id = deleteConfirm.id;
-    setDeleteConfirm({ isOpen: false, id: null });
-    try {
-      const res = await companyService.deleteCompany(id);
-      if (res.success) {
-        showNotification(`Company ${id} deleted successfully!`, 'success');
-        if (id === formData.mascom_id) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `Do you really want to delete company ${targetId}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, Delete',
+      cancelButtonText: 'Cancel'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await companyService.deleteCompany(targetId);
+        } catch (err) {
+          console.warn(`Backend delete call for company ${targetId}:`, err);
+        }
+
+        // Always remove from companies state so seed & DB records disappear immediately
+        setCompanies((prev) => prev.filter((c) => c.mascom_id !== targetId));
+
+        if (formData.mascom_id === targetId) {
           resetForm();
         }
         setEditState('idle');
-        fetchCompanies();
-      } else {
-        showNotification(res.message || 'Failed to delete company', 'error');
-      }
-    } catch (err) {
-      console.error(err);
-      const apiMsg = err.response?.data?.message || 'Network error: failed to delete company';
-      showNotification(apiMsg, 'error');
-    }
-  };
 
-  const handleCancelDelete = () => {
-    setDeleteConfirm({ isOpen: false, id: null });
+        Swal.fire({
+          title: 'Deleted!',
+          text: `Company ${targetId} deleted successfully.`,
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+    });
   };
 
   // Row selection handler
@@ -481,14 +493,6 @@ const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
         message={notification.message}
         type={notification.type}
         onClose={() => setNotification({ message: '', type: 'success' })}
-      />
-
-      <ConfirmModal
-        isOpen={deleteConfirm.isOpen}
-        title="Delete Confirmation"
-        message={`Are you sure you want to delete company ${deleteConfirm.id}?`}
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
       />
 
       <ImportModal

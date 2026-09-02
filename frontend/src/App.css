@@ -1879,8 +1879,136 @@
   text-transform: uppercase;
 }
 
+/* Layout fixes for embedded Dashboard Step Master & Checklist Master */
+.submaster-embedded-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+}
+
+.submaster-layout {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  flex: 1;
+  overflow: hidden;
+  height: 100%;
+  min-height: 0;
+}
+
+@media (max-width: 1024px) {
+  .submaster-layout {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+}
+
+.submaster-left-panel {
+  width: 380px;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.submaster-left-panel .submaster-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.submaster-right-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.submaster-right-panel .submaster-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.submaster-right-panel .table-responsive,
+.submaster-right-panel .data-table-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+  max-height: 100%;
+}
+
+.master-form,
+.submaster-card form.master-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  width: 100% !important;
+}
+
+.master-form .form-field {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.master-form .form-field label {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: var(--text-h) !important;
+  width: 130px !important;
+  min-width: 130px !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+  text-align: left !important;
+}
+
+.master-form .form-field .field-control-container {
+  flex: 1 !important;
+  width: 100% !important;
+}
+
+.master-form .form-field input,
+.master-form .form-field select {
+  width: 100% !important;
+  padding: 6px 10px !important;
+  font-size: 11.5px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  background-color: var(--panel) !important;
+  color: var(--text-h) !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+}
+
+.master-form .form-field input[type="checkbox"] {
+  width: auto !important;
+  cursor: pointer !important;
+}
+
+.master-form .form-field input:focus,
+.master-form .form-field select:focus {
+  border-color: #c9973c !important;
+  box-shadow: 0 0 0 2px rgba(201, 151, 60, 0.2) !important;
+}
+
 /* Form Fallback Styling */
-.submaster-card form {
+.submaster-card form.submaster-lookup-form {
   display: flex;
   flex-direction: row;
   align-items: flex-end;
@@ -1890,7 +2018,7 @@
 }
 
 @media (max-width: 768px) {
-  .submaster-card form {
+  .submaster-card form.submaster-lookup-form {
     flex-direction: column;
     align-items: stretch;
   }

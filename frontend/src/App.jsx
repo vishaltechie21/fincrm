@@ -569,8 +569,12 @@ function App() {
               <CompanySearch />
             ) : activeMenu === 'contact-search' ? (
               <ContactSearch />
-            ) : activeMenu === 'masters' || activeMenu === 'dashboard-master' || activeMenu === 'checklist-master' ? (
+            ) : activeMenu === 'masters' ? (
               <SubMasterConfig />
+            ) : activeMenu === 'dashboard-master' ? (
+              <DashboardStepMaster isStandalone={true} />
+            ) : activeMenu === 'checklist-master' ? (
+              <ChecklistMaster isStandalone={true} />
             ) : (
               <div className="dummy-page">
                 <div className="dummy-card">

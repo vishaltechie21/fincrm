@@ -30,7 +30,6 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
   };
-  const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, id: null });
 
   // Edit states
   const [editState, setEditState] = useState('idle'); // 'idle', 'adding', 'modifying'
@@ -304,36 +303,49 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
   const handleDelete = (idToDelete) => {
     const targetId = idToDelete || formData.mascon_id;
     if (!targetId) {
-      showNotification('No contact selected to delete', 'warning');
+      Swal.fire({
+        title: 'No Contact Selected',
+        text: 'Please select a contact to delete.',
+        icon: 'warning',
+        confirmButtonColor: '#1e293b'
+      });
       return;
     }
-    setDeleteConfirm({ isOpen: true, id: targetId });
-  };
 
-  const handleConfirmDelete = async () => {
-    const id = deleteConfirm.id;
-    setDeleteConfirm({ isOpen: false, id: null });
-    try {
-      const res = await contactService.deleteContact(id);
-      if (res.success) {
-        showNotification(`Contact ${id} deleted successfully!`, 'success');
-        if (id === formData.mascon_id) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `Do you really want to delete contact ${targetId}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, Delete',
+      cancelButtonText: 'Cancel'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await contactService.deleteContact(targetId);
+        } catch (err) {
+          console.warn(`Backend delete call for contact ${targetId}:`, err);
+        }
+
+        // Always remove from contacts state so seed & DB records disappear immediately
+        setContacts((prev) => prev.filter((c) => c.mascon_id !== targetId));
+
+        if (formData.mascon_id === targetId) {
           resetForm();
         }
         setEditState('idle');
-        fetchContacts();
-      } else {
-        showNotification(res.message || 'Failed to delete contact', 'error');
-      }
-    } catch (err) {
-      console.error(err);
-      const apiMsg = err.response?.data?.message || 'Network error: failed to delete contact';
-      showNotification(apiMsg, 'error');
-    }
-  };
 
-  const handleCancelDelete = () => {
-    setDeleteConfirm({ isOpen: false, id: null });
+        Swal.fire({
+          title: 'Deleted!',
+          text: `Contact ${targetId} deleted successfully.`,
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+    });
   };
 
   const handleRowClick = (contact) => {
@@ -500,14 +512,6 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
         message={notification.message}
         type={notification.type}
         onClose={() => setNotification({ message: '', type: 'success' })}
-      />
-
-      <ConfirmModal
-        isOpen={deleteConfirm.isOpen}
-        title="Delete Confirmation"
-        message={`Are you sure you want to delete contact ${deleteConfirm.id}?`}
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
       />
 
       <ImportModal

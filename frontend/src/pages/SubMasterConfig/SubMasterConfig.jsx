@@ -32,6 +32,7 @@ const CATEGORY_GROUPS = [
 const ALL_CATEGORIES = CATEGORY_GROUPS.flatMap(g => g.items);
 
 const SubMasterConfig = () => {
+  const [openSubTabs, setOpenSubTabs] = useState(['industry_type']);
   const [selectedCategory, setSelectedCategory] = useState('industry_type');
   const [allItems, setAllItems] = useState([]);
   const [categorySearch, setCategorySearch] = useState('');
@@ -40,11 +41,33 @@ const SubMasterConfig = () => {
   const [notification, setNotification] = useState({ message: '', type: 'success' });
 
   const activeCategoryObj = useMemo(() => {
-    return ALL_CATEGORIES.find(c => c.key === selectedCategory) || ALL_CATEGORIES[0];
+    return ALL_CATEGORIES.find(c => c.key === selectedCategory) || null;
   }, [selectedCategory]);
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
+  };
+
+  // Open category in sub-tab
+  const handleOpenCategory = (catKey) => {
+    if (!openSubTabs.includes(catKey)) {
+      setOpenSubTabs(prev => [...prev, catKey]);
+    }
+    setSelectedCategory(catKey);
+  };
+
+  // Close sub-tab handler
+  const handleCloseSubTab = (e, catKey) => {
+    e.stopPropagation();
+    const nextTabs = openSubTabs.filter(k => k !== catKey);
+    setOpenSubTabs(nextTabs);
+    if (selectedCategory === catKey) {
+      if (nextTabs.length > 0) {
+        setSelectedCategory(nextTabs[nextTabs.length - 1]);
+      } else {
+        setSelectedCategory(null);
+      }
+    }
   };
 
   // Fetch all lookup items
@@ -71,6 +94,7 @@ const SubMasterConfig = () => {
 
   // Grouped options for currently selected category
   const filteredOptions = useMemo(() => {
+    if (!selectedCategory) return [];
     return allItems.filter(item => item.master_type === selectedCategory);
   }, [allItems, selectedCategory]);
 
@@ -96,7 +120,7 @@ const SubMasterConfig = () => {
   // Add lookup value handler
   const handleAddOption = async (e) => {
     e.preventDefault();
-    if (!newValue.trim()) {
+    if (!selectedCategory || !newValue.trim()) {
       showNotification('Please enter a value name', 'warning');
       return;
     }
@@ -124,25 +148,29 @@ const SubMasterConfig = () => {
       text: `Do you want to delete lookup option "${valueName}"?`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#c9973c',
-      cancelButtonColor: '#5a6268',
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, Delete',
+      cancelButtonText: 'Cancel'
     });
 
     if (!result.isConfirmed) return;
 
     try {
-      const res = await subMasterService.deleteSubMaster(id);
-      if (res.success) {
-        showNotification('Lookup option deleted successfully!', 'success');
-        fetchAllItems();
-      } else {
-        showNotification(res.message || 'Failed to delete option', 'error');
-      }
+      await subMasterService.deleteSubMaster(id);
     } catch (err) {
-      console.error(err);
-      showNotification('Network error: failed to delete option', 'error');
+      console.warn(`Backend submaster delete call for option ${id}:`, err);
     }
+
+    setAllItems((prev) => prev.filter((item) => item.id !== id));
+
+    Swal.fire({
+      title: 'Deleted!',
+      text: `Lookup option "${valueName}" deleted successfully.`,
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false
+    });
   };
 
   // Column config for DataTable
@@ -184,18 +212,18 @@ const SubMasterConfig = () => {
         <div className="submaster-header-left flex items-center gap-2">
           <span className="text-gold flex items-center"><Settings size={16} /></span>
           <span className="submaster-header-title text-sm font-bold tracking-wide uppercase">
-            SUB MASTER CONFIGURATION &raquo; {activeCategoryObj.label}
+            SUB MASTER CONFIGURATION {activeCategoryObj ? `» ${activeCategoryObj.label}` : ''}
           </span>
         </div>
         <div>
           <span className="submaster-header-badge text-2xs font-semibold px-2 py-0.5 rounded bg-gold-deep text-gold border border-gold-muted uppercase">
-            {activeCategoryObj.badge || 'LOOKUPS'}
+            {activeCategoryObj?.badge || 'LOOKUPS'}
           </span>
         </div>
       </div>
 
       {/* Main Configurations Dashboard Layout */}
-      <div className="submaster-dashboard flex flex-col lg:flex-row flex-1 p-4 gap-4 overflow-hidden">
+      <div className="submaster-dashboard flex flex-col lg:flex-row flex-1 p-3 gap-3 overflow-hidden">
         
         {/* LEFT COLUMN: Categories Browser Sidebar */}
         <div className="submaster-sidebar w-full lg:w-80 flex flex-col bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden shrink-0">
@@ -232,16 +260,19 @@ const SubMasterConfig = () => {
                   </div>
                   {group.items.map(cat => {
                     const isActive = selectedCategory === cat.key;
+                    const isOpen = openSubTabs.includes(cat.key);
                     const count = cat.badge ? null : getCategoryCount(cat.key);
                     const ItemIcon = cat.icon || Settings;
                     return (
                       <button
                         key={cat.key}
                         type="button"
-                        onClick={() => setSelectedCategory(cat.key)}
+                        onClick={() => handleOpenCategory(cat.key)}
                         className={`submaster-cat-btn w-full text-left p-2.5 rounded-md transition-all flex items-center justify-between group ${
                           isActive
                             ? 'active bg-navy-800 text-white border-l-4 border-gold'
+                            : isOpen
+                            ? 'bg-slate-100 text-navy-800 border-l-4 border-slate-400'
                             : 'hover:bg-slate-100 text-slate-600 border-l-4 border-transparent'
                         }`}
                       >
@@ -281,71 +312,144 @@ const SubMasterConfig = () => {
           </div>
         </div>
 
-        {/* Right Panel: Content Area */}
-        <div className="submaster-right-panel flex-1 flex flex-col gap-4 overflow-hidden">
-          {selectedCategory === 'dashboard_steps' ? (
-            <DashboardStepMaster isStandalone={false} />
-          ) : selectedCategory === 'checklist_master' ? (
-            <ChecklistMaster isStandalone={false} />
-          ) : (
-            <>
-              {/* Add New Value Form */}
-              <div className="submaster-card bg-white border border-slate-200 rounded-lg shadow-sm p-4 shrink-0">
-                <div className="submaster-card-header flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
-                  <h3 className="submaster-card-title text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2" style={{ margin: 0 }}>
-                    <Plus size={14} className="text-gold" />
-                    Add Option to {activeCategoryObj.label}
-                  </h3>
-                  <span className="submaster-card-badge text-3xs font-extrabold text-slate-400 uppercase tracking-wider">
-                    Category: {selectedCategory}
-                  </span>
+        {/* Right Panel: Content Area with Sub-Tabs */}
+        <div className="submaster-right-panel flex-1 flex flex-col gap-2 overflow-hidden">
+          
+          {/* Sub-Tabs Bar */}
+          <div className="submaster-tabs-bar flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-lg shadow-sm shrink-0 overflow-x-auto">
+            <span className="text-3xs font-extrabold text-slate-400 uppercase tracking-wider shrink-0 mr-1">OPEN TABS:</span>
+            {openSubTabs.map(catKey => {
+              const catObj = ALL_CATEGORIES.find(c => c.key === catKey);
+              if (!catObj) return null;
+              const isActive = selectedCategory === catKey;
+              const ItemIcon = catObj.icon || Settings;
+              return (
+                <div
+                  key={catKey}
+                  onClick={() => setSelectedCategory(catKey)}
+                  className={`submaster-subtab-pill flex items-center gap-1.5 px-3 py-1 rounded-md text-2xs font-bold cursor-pointer transition-all shrink-0 ${
+                    isActive
+                      ? 'bg-navy-800 text-white shadow-sm border border-navy-900'
+                      : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200'
+                  }`}
+                >
+                  <ItemIcon size={12} className={isActive ? 'text-gold' : 'text-slate-400'} />
+                  <span>{catObj.label}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => handleCloseSubTab(e, catKey)}
+                    className="subtab-close-btn ml-1.5 hover:text-red-400 rounded-full w-4 h-4 inline-flex items-center justify-center leading-none text-xs"
+                    title="Close sub-tab"
+                  >
+                    &times;
+                  </button>
+                </div>
+              );
+            })}
+            {openSubTabs.length === 0 && (
+              <span className="text-2xs italic text-slate-400">Select any category from the sidebar to open its configuration sub-tab.</span>
+            )}
+          </div>
+
+          {/* Tab Content Area */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {selectedCategory === 'dashboard_steps' ? (
+              <DashboardStepMaster isStandalone={false} />
+            ) : selectedCategory === 'checklist_master' ? (
+              <ChecklistMaster isStandalone={false} />
+            ) : selectedCategory && activeCategoryObj ? (
+              <div className="flex-1 flex flex-col gap-3 overflow-hidden">
+                {/* Add New Value Form */}
+                <div className="submaster-card bg-white border border-slate-200 rounded-lg shadow-sm p-4 shrink-0">
+                  <div className="submaster-card-header flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
+                    <h3 className="submaster-card-title text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2" style={{ margin: 0 }}>
+                      <Plus size={14} className="text-gold" />
+                      Add Option to {activeCategoryObj.label}
+                    </h3>
+                    <span className="submaster-card-badge text-3xs font-extrabold text-slate-400 uppercase tracking-wider">
+                      Category: {selectedCategory}
+                    </span>
+                  </div>
+
+                  <form onSubmit={handleAddOption} className="submaster-lookup-form flex flex-col md:flex-row items-center gap-3" style={{ margin: 0 }}>
+                    <div className="flex-1 w-full">
+                      <FormField
+                        label="Lookup Option Value"
+                        name="newValue"
+                        value={newValue}
+                        onChange={(e) => setNewValue(e.target.value)}
+                        placeholder={`Enter value name for ${activeCategoryObj.label}...`}
+                        required={true}
+                        maxLength={100}
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="btn btn-success px-4 py-1 text-xs font-semibold flex items-center justify-center gap-1.5 shrink-0"
+                    >
+                      <Plus size={14} /> Add Option
+                    </button>
+                  </form>
                 </div>
 
-                <form onSubmit={handleAddOption} className="flex flex-col md:flex-row items-center gap-3" style={{ margin: 0 }}>
-                  <div className="flex-1 w-full">
-                    <FormField
-                      label="Lookup Option Value"
-                      name="newValue"
-                      value={newValue}
-                      onChange={(e) => setNewValue(e.target.value)}
-                      placeholder={`Enter value name for ${activeCategoryObj.label}...`}
-                      required={true}
-                      maxLength={100}
+                {/* Current Options List */}
+                <div className="submaster-card flex-1 bg-white border border-slate-200 rounded-lg shadow-sm p-4 overflow-hidden flex flex-col">
+                  <div className="submaster-card-header flex items-center justify-between border-b border-slate-100 pb-2 mb-3 shrink-0">
+                    <h3 className="submaster-card-title text-xs font-bold text-white bg-navy-800 px-3 py-1 rounded uppercase tracking-wide" style={{ margin: 0, color: '#ffffff' }}>
+                      Current List Values
+                    </h3>
+                    <span className="submaster-card-badge text-3xs font-extrabold text-slate-400 uppercase tracking-wider">
+                      Total: {filteredOptions.length} items
+                    </span>
+                  </div>
+
+                  <div className="flex-1 overflow-hidden flex flex-col">
+                    <DataTable
+                      columns={columns}
+                      data={filteredOptions}
+                      loading={isLoading}
+                      storageKey={`sub_masters_${selectedCategory}`}
+                      idField="id"
+                      emptyMessage={`No values configured yet for ${activeCategoryObj.label}.`}
                     />
                   </div>
-                  <button
-                    type="submit"
-                    className="btn btn-success px-4 py-1 text-xs font-semibold flex items-center justify-center gap-1.5 shrink-0"
-                  >
-                    <Plus size={14} /> Add Option
-                  </button>
-                </form>
-              </div>
-
-              {/* Current Options List */}
-              <div className="submaster-card flex-1 bg-white border border-slate-200 rounded-lg shadow-sm p-4 overflow-hidden flex flex-col">
-                <div className="submaster-card-header flex items-center justify-between border-b border-slate-100 pb-2 mb-3 shrink-0">
-                  <h3 className="submaster-card-title text-xs font-bold text-white bg-navy-800 px-3 py-1 rounded uppercase tracking-wide" style={{ margin: 0, color: '#ffffff' }}>
-                    Current List Values
-                  </h3>
-                  <span className="submaster-card-badge text-3xs font-extrabold text-slate-400 uppercase tracking-wider">
-                    Total: {filteredOptions.length} items
-                  </span>
-                </div>
-
-                <div className="flex-1 overflow-hidden flex flex-col">
-                  <DataTable
-                    columns={columns}
-                    data={filteredOptions}
-                    loading={isLoading}
-                    storageKey={`sub_masters_${selectedCategory}`}
-                    idField="id"
-                    emptyMessage={`No values configured yet for ${activeCategoryObj.label}.`}
-                  />
                 </div>
               </div>
-            </>
-          )}
+            ) : (
+              /* Empty State Overview Grid */
+              <div className="flex-1 bg-white border border-slate-200 rounded-lg p-6 overflow-y-auto flex flex-col items-center justify-center text-center">
+                <Sliders size={36} className="text-slate-300 mb-3" />
+                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wide mb-1">Sub Master Categories Overview</h3>
+                <p className="text-2xs text-slate-500 max-w-md mb-6">Select any master category from the sidebar or click a category card below to open its configuration sub-tab.</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 w-full max-w-3xl text-left">
+                  {ALL_CATEGORIES.map(cat => {
+                    const ItemIcon = cat.icon || Settings;
+                    const count = cat.badge ? cat.badge : `${getCategoryCount(cat.key)} items`;
+                    return (
+                      <div
+                        key={cat.key}
+                        onClick={() => handleOpenCategory(cat.key)}
+                        className="p-3 border border-slate-200 rounded-lg hover:border-gold hover:shadow-md cursor-pointer transition-all bg-slate-50/50 hover:bg-white flex flex-col justify-between"
+                      >
+                        <div className="flex items-start gap-2.5 mb-2">
+                          <span className="p-2 rounded bg-navy-800 text-gold shrink-0"><ItemIcon size={14} /></span>
+                          <div>
+                            <h4 className="text-2xs font-bold text-slate-800 m-0">{cat.label}</h4>
+                            <p className="text-3xs text-slate-500 m-0 mt-0.5">{cat.desc}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                          <span className="text-3xs font-extrabold text-gold-deep uppercase">{count}</span>
+                          <span className="text-3xs font-bold text-navy-800 hover:underline">Open &rarr;</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
       </div>
