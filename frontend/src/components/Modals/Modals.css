@@ -289,14 +289,21 @@
   background: var(--btn-success, #10b981);
   color: #ffffff;
   border: none;
-  padding: 0 16px;
+  padding: 4px 14px;
   border-radius: 4px;
-  font-size: 12.5px;
-  font-weight: 700;
+  font-size: 11.5px;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.15s ease;
+  line-height: 1.4;
+}
+
+.act-btn-submit-tall {
   min-height: 44px;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 0 16px;
 }
 
 .act-btn-submit:hover {
@@ -304,14 +311,20 @@
 }
 
 .act-btn-cancel {
-  background: var(--border, #cbd5e1);
+  background: var(--panel2, #f1f5f9);
+  border: 1px solid var(--border, #cbd5e1);
   color: var(--text, #334155);
-  border: none;
   padding: 4px 12px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.4;
+}
+
+.act-btn-cancel:hover {
+  background: #e2e8f0;
 }
 
 
@@ -601,6 +614,10 @@
   animation: chkFormExpand 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transform-origin: top center;
 }
+.add-form-btns{
+  display: flex;
+  gap: 5px;
+}
 
 .checklist-modal .add-form-row-top {
   display: grid;
@@ -732,146 +749,164 @@
 
 
 /* ── 4. Dashboard Modal Styles ───────────────────────────────────────────── */
+/* ── 4. Dashboard Modal Styles ───────────────────────────────────────────── */
 .dashboard-modal {
-  max-width: 760px;
+  max-width: 680px;
 }
 
-.dashboard-modal .pipeline-banner {
+.dashboard-modal .dash-summary-strip {
   display: flex;
-  gap: 24px;
+  align-items: center;
+  gap: 10px;
   background: var(--accent-bg, #fffdf7);
   border: 1px solid var(--yellow, #c9973c);
-  border-radius: 6px;
-  padding: 8px 14px;
-  margin-bottom: 12px;
-  align-items: center;
+  border-radius: 4px;
+  padding: 6px 12px;
+  margin-bottom: 10px;
+  font-size: 12px;
 }
 
-.dashboard-modal .pb-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.dashboard-modal .pb-lbl {
-  font-size: 11px;
+.dashboard-modal .dash-sum-lbl {
+  font-size: 10px;
   font-weight: 700;
-  color: var(--muted, #64748b);
+  color: var(--muted, #8a6512);
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
-.dashboard-modal .pb-val {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-h, #1e293b);
+.dashboard-modal .dash-sum-val {
+  color: var(--text-h, #0f172a);
 }
 
-.dashboard-modal .pb-val.highlight {
-  color: var(--header-bg, #0f2544);
+.dashboard-modal .dash-sum-sep {
+  color: #cbd5e1;
 }
 
-.dashboard-modal .steps-table-wrap {
+.dashboard-modal .dash-sum-resp {
+  color: var(--muted, #475569);
+  font-weight: 500;
+}
+
+.dashboard-modal .dash-table-wrap {
   border: 1px solid var(--border, #cbd5e1);
-  border-radius: 6px;
+  border-radius: 4px;
   overflow: hidden;
-  max-height: 480px;
+  max-height: 440px;
   overflow-y: auto;
 }
 
-.dashboard-modal .steps-head {
-  display: flex;
-  align-items: center;
-  background: var(--header-bg, #0f2544);
-  color: #ffffff;
+.dashboard-modal .dash-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.dashboard-modal .dash-table th {
+  background: var(--panel2, #eaf1f8);
+  color: var(--text-h, #1e293b);
   font-size: 11px;
   font-weight: 700;
-  padding: 7px 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 6px 10px;
+  text-align: left;
   border-bottom: 1px solid var(--border, #cbd5e1);
   position: sticky;
   top: 0;
   z-index: 2;
 }
 
-.dashboard-modal .step-row-outer {
+.dashboard-modal .dash-table td {
+  padding: 6px 10px;
   border-bottom: 1px solid var(--panel2, #e2e8f0);
+  color: var(--text, #1e293b);
+  vertical-align: middle;
 }
 
-.dashboard-modal .step-row {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
+.dashboard-modal .dash-table tr {
   cursor: pointer;
   transition: background 0.12s ease;
-  font-size: 12px;
 }
 
-.dashboard-modal .step-row:hover {
+.dashboard-modal .dash-table tr:hover {
   background: var(--panel2, #f8fafc);
 }
 
-.dashboard-modal .step-row.active {
+.dashboard-modal .dash-table tr.dash-row-current {
   background: var(--accent-bg, #fffdf7);
 }
 
-.dashboard-modal .step-col-num {
-  width: 32px;
-  flex-shrink: 0;
-  font-weight: 700;
+.dashboard-modal .dash-col-num {
+  font-weight: 600;
   color: var(--muted, #64748b);
+  font-size: 11.5px;
 }
 
-.dashboard-modal .step-col-name {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.dashboard-modal .dash-col-name {
+  font-weight: 500;
+}
+
+.dashboard-modal .dash-step-title {
   font-weight: 600;
   color: var(--text-h, #0f172a);
 }
 
-.dashboard-modal .step-col-date {
-  width: 110px;
-  flex-shrink: 0;
-  color: var(--muted, #475569);
+.dashboard-modal .dash-tag-note {
+  font-size: 10.5px;
+  color: var(--muted, #64748b);
+  margin-left: 6px;
+}
+
+.dashboard-modal .dash-tag-doc {
+  font-size: 10px;
+  color: var(--muted, #64748b);
+  background: var(--panel2, #f1f5f9);
+  border: 1px solid var(--border, #cbd5e1);
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+
+.dashboard-modal .dash-col-date {
   font-family: var(--font-mono, monospace);
   font-size: 11.5px;
 }
 
-.dashboard-modal .step-col-resp {
-  width: 140px;
-  flex-shrink: 0;
+.dashboard-modal .dash-col-date.active-date {
+  color: var(--yellow, #b45309);
+  font-weight: 700;
+}
+
+.dashboard-modal .dash-col-date.muted-date {
+  color: var(--muted, #94a3b8);
+}
+
+.dashboard-modal .dash-col-resp {
   color: var(--muted, #475569);
+  font-size: 11.5px;
 }
 
-.dashboard-modal .step-col-status {
-  width: 100px;
-  flex-shrink: 0;
-  text-align: right;
+.dashboard-modal .dash-status-current {
+  color: var(--yellow, #b45309);
+  font-weight: 700;
+  font-size: 11.5px;
 }
 
-.dashboard-modal .status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 10.5px;
+.dashboard-modal .dash-status-done {
+  color: var(--btn-success, #15803d);
   font-weight: 600;
+  font-size: 11.5px;
 }
 
-.dashboard-modal .status-pill.done {
-  background: #dcfce7;
-  color: #15803d;
+.dashboard-modal .dash-status-pending {
+  color: var(--muted, #64748b);
+  font-size: 11.5px;
 }
 
-.dashboard-modal .status-pill.in-progress {
-  background: #fef3c7;
-  color: #b45309;
-}
-
-.dashboard-modal .status-pill.pending {
-  background: #f1f5f9;
-  color: #64748b;
+.dashboard-modal tr.dash-edit-tr td {
+  padding: 0;
+  border-bottom: 1px solid var(--border, #cbd5e1);
+  background: var(--accent-bg, #fffdf7);
 }
 
 @keyframes dashFormExpand {
@@ -883,7 +918,7 @@
   background: var(--accent-bg, #fffdf7);
   border-top: 1px solid var(--yellow, #fde68a);
   border-bottom: 1px solid var(--yellow, #fde68a);
-  padding: 12px;
+  padding: 10px 12px;
   animation: dashFormExpand 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -917,7 +952,7 @@
 }
 
 .dashboard-modal .dash-form-actions {
-  margin-top: 10px;
+  margin-top: 8px;
   display: flex;
   justify-content: flex-end;
   gap: 8px;

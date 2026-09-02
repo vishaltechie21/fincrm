@@ -241,6 +241,7 @@ export default function ChecklistModal({ isOpen, onClose, company, onSaveCheckli
                                       placeholder="dd/mm/yyyy"
                                       value={newNextFollowup}
                                       onChange={(e) => setNewNextFollowup(e.target.value)}
+                                      min={new Date().toISOString().split('T')[0]}
                                     />
                                   </label>
                                 </div>
@@ -275,7 +276,7 @@ export default function ChecklistModal({ isOpen, onClose, company, onSaveCheckli
 
                                 <div className="add-form-btns">
                                   <button type="button" className="act-btn-cancel" onClick={() => setAddingIndex(null)}>Cancel</button>
-                                  <button type="button" className="act-btn-submit" style={{ minHeight: '30px', padding: '0 12px' }} onClick={() => handleAddLog(globalIdx)}>Save</button>
+                                  <button type="button" className="act-btn-submit" onClick={() => handleAddLog(globalIdx)}>Save</button>
                                 </div>
                               </div>
                             )}

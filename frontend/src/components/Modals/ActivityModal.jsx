@@ -145,7 +145,7 @@ export default function ActivityModal({ isOpen, onClose, company, onAddRemark, o
                   </button>
                 </div>
               ) : (
-                <button type="submit" className="act-btn-submit">
+                <button type="submit" className="act-btn-submit act-btn-submit-tall">
                   Add Remark
                 </button>
               )}

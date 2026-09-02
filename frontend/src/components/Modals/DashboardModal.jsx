@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { X, CheckCircle, Clock, Calendar, FileText, User } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { SALES_STEPS } from '../../utils/dashboardData';
 import './Modals.css';
 
@@ -64,147 +64,171 @@ export default function DashboardModal({ isOpen, onClose, company, onSaveDashboa
     setEditingStep(null);
   };
 
-  const doneCount = SALES_STEPS.filter(s => getStepVal(s.k).status === 'Done').length;
+  const completedStepsCount = SALES_STEPS.filter(s => getStepVal(s.k).status === 'Done').length;
+  const currentStepItem = SALES_STEPS.find(s => getStepVal(s.k).status !== 'Done') || SALES_STEPS[0];
+  const docCount = SALES_STEPS.filter(s => getStepVal(s.k).doc).length;
+
+  const formatDateDisplay = (rawDate) => {
+    if (!rawDate) return '---';
+    const str = String(rawDate).slice(0, 10);
+    const parts = str.split('-');
+    if (parts.length === 3 && parts[0].length === 4) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    return str;
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content dashboard-modal" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
         <div className="modal-header">
           <div className="modal-header-title">
-            <h3>Sales Closing Cycle Dashboard</h3>
-            <span className="modal-header-sub">{company.company_name} · {doneCount} of {SALES_STEPS.length} Steps Completed</span>
+            <h3>Dashboard</h3>
+            <span className="modal-header-sub">{company.company_name}</span>
           </div>
           <button type="button" className="modal-close-btn" onClick={onClose}>
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
         <div className="modal-body">
-          {/* Progress Banner */}
-          <div className="pipeline-banner">
-            <div className="pb-box">
-              <span className="pb-lbl">Completed Steps</span>
-              <span className="pb-val">{doneCount} / 15</span>
-            </div>
-            <div className="pb-box" style={{ marginLeft: 'auto' }}>
-              <span className="pb-lbl">Next Action</span>
-              <span className="pb-val highlight">
-                {SALES_STEPS.find(s => getStepVal(s.k).status !== 'Done')?.lab || 'Cycle Finished'}
-              </span>
-            </div>
+          {/* Summary Strip */}
+          <div className="dash-summary-strip">
+            <span className="dash-sum-lbl">CURRENT STEP</span>
+            <span className="dash-sum-val"><strong>{currentStepItem.n !== '—' ? currentStepItem.n : '1'} · {currentStepItem.lab}</strong></span>
+            <span className="dash-sum-sep">|</span>
+            <span className="dash-sum-resp">{currentStepItem.resp}</span>
           </div>
 
           {/* Steps Table */}
-          <div className="steps-table-wrap">
-            <div className="steps-head">
-              <div className="step-col-num">#</div>
-              <div className="step-col-name">STEP NAME</div>
-              <div className="step-col-date">DATE</div>
-              <div className="step-col-resp">RESPONSIBILITY</div>
-              <div className="step-col-status">STATUS</div>
-            </div>
+          <div className="dash-table-wrap">
+            <table className="dash-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '32px', textAlign: 'center' }}>#</th>
+                  <th>STEP NAME</th>
+                  <th style={{ width: '100px' }}>DATE</th>
+                  <th style={{ width: '140px' }}>RESPONSIBILITY</th>
+                  <th style={{ width: '80px', textAlign: 'right' }}>STATUS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {SALES_STEPS.map((step, idx) => {
+                  const val = getStepVal(step.k);
+                  const isCurrent = currentStepItem.k === step.k;
+                  const isDone = val.status === 'Done';
+                  const isEdit = editingStep === step.k;
+                  const displayDate = formatDateDisplay(val.date);
+                  const stepNum = step.n !== '—' ? step.n : '4b';
 
-            {SALES_STEPS.map((step, idx) => {
-              const val = getStepVal(step.k);
-              const isDone = val.status === 'Done';
-              const isEdit = editingStep === step.k;
-              const statusClass = isDone ? 'done' : val.status === 'In Progress' ? 'in-progress' : 'pending';
-              const stepNumStr = step.n !== '—' ? step.n : `${idx}b`;
+                  return (
+                    <React.Fragment key={step.k}>
+                      <tr 
+                        className={`${isCurrent ? 'dash-row-current' : ''} ${isEdit ? 'active-edit-row' : ''}`}
+                        onClick={() => handleRowClick(step.k)}
+                      >
+                        <td style={{ textAlign: 'center' }} className="dash-col-num">{stepNum}</td>
+                        <td className="dash-col-name">
+                          <span className="dash-step-title">{step.lab}</span>
+                          {step.note && <span className="dash-tag-note">{step.note}</span>}
+                          {step.doc && <span className="dash-tag-doc">signed doc</span>}
+                        </td>
+                        <td className={`dash-col-date ${isCurrent || isDone ? 'active-date' : 'muted-date'}`}>
+                          {displayDate}
+                        </td>
+                        <td className="dash-col-resp">{step.resp}</td>
+                        <td style={{ textAlign: 'right' }}>
+                          {isCurrent ? (
+                            <span className="dash-status-current">Current</span>
+                          ) : isDone ? (
+                            <span className="dash-status-done">Done</span>
+                          ) : (
+                            <span className="dash-status-pending">Pending</span>
+                          )}
+                        </td>
+                      </tr>
 
-              return (
-                <div key={step.k} className="step-row-wrap">
-                  <div 
-                    className={`step-row ${statusClass} ${isEdit ? 'active-edit' : ''}`}
-                    onClick={() => handleRowClick(step.k)}
-                  >
-                    <div className="step-col-num">{stepNumStr}</div>
-                    <div className="step-col-name">
-                      <div className="step-title-line">
-                        <span>{step.lab}</span>
-                        {step.note && <span className="step-note">({step.note})</span>}
-                        {step.doc && <span className="step-doc-tag"><FileText size={10} /> signed doc</span>}
-                      </div>
-                    </div>
-                    <div className="step-col-date mono">{val.date || '—'}</div>
-                    <div className="step-col-resp">{step.resp}</div>
-                    <div className="step-col-status">
-                      <span className={`status-pill ${statusClass}`}>
-                        {isDone ? <CheckCircle size={11} /> : <Clock size={11} />}
-                        {val.status || 'Pending'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Inline Step Form */}
-                  {isEdit && (
-                    <div className="dash-step-edit-form">
-                      <div className="dash-form-grid">
-                        <label>
-                          Date:
-                          <input 
-                            type="date" 
-                            value={formDate} 
-                            onChange={(e) => setFormDate(e.target.value)} 
-                          />
-                        </label>
-                        <label>
-                          Next Follow Up Date:
-                          <input 
-                            type="date" 
-                            value={formNextFollowupDate} 
-                            onChange={(e) => setFormNextFollowupDate(e.target.value)} 
-                          />
-                        </label>
-                        <label>
-                          Status:
-                          <select 
-                            value={formStatus} 
-                            onChange={(e) => setFormStatus(e.target.value)}
-                          >
-                            <option value="Pending">Pending</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Done">Done</option>
-                            <option value="Not Applicable">Not Applicable</option>
-                          </select>
-                        </label>
-                        <label className="full-w">
-                          Remarks / Notes:
-                          <input 
-                            type="text" 
-                            placeholder="Add notes for this step..."
-                            value={formRemarks} 
-                            onChange={(e) => setFormRemarks(e.target.value)} 
-                            maxLength={300}
-                          />
-                        </label>
-                        {step.doc && (
-                          <label className="full-w">
-                            Signed Document Reference:
-                            <input 
-                              type="text" 
-                              placeholder="Enter document filename or link..."
-                              value={formDoc} 
-                              onChange={(e) => setFormDoc(e.target.value)} 
-                              maxLength={255}
-                            />
-                          </label>
-                        )}
-                      </div>
-                      <div className="dash-form-actions">
-                        <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditingStep(null)}>Cancel</button>
-                        <button type="button" className="btn btn-success btn-sm" onClick={() => handleSaveStep(step.k)}>Save Step</button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                      {/* Inline Step Form right under the selected row */}
+                      {isEdit && (
+                        <tr className="dash-edit-tr">
+                          <td colSpan={5}>
+                            <div className="dash-step-edit-form">
+                              <div className="dash-form-grid">
+                                <label>
+                                  Date:
+                                  <input 
+                                    type="date" 
+                                    value={formDate} 
+                                    onChange={(e) => setFormDate(e.target.value)} 
+                                  />
+                                </label>
+                                <label>
+                                  Next Follow Up Date:
+                                  <input 
+                                    type="date" 
+                                    value={formNextFollowupDate} 
+                                    onChange={(e) => setFormNextFollowupDate(e.target.value)} 
+                                    min={new Date().toISOString().split('T')[0]}
+                                  />
+                                </label>
+                                <label>
+                                  Status:
+                                  <select 
+                                    value={formStatus} 
+                                    onChange={(e) => setFormStatus(e.target.value)}
+                                  >
+                                    <option value="Pending">Pending</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Done">Done</option>
+                                    <option value="Not Applicable">Not Applicable</option>
+                                  </select>
+                                </label>
+                                <label className="full-w">
+                                  Remarks / Notes:
+                                  <input 
+                                    type="text" 
+                                    placeholder="Add notes for this step..."
+                                    value={formRemarks} 
+                                    onChange={(e) => setFormRemarks(e.target.value)} 
+                                    maxLength={300}
+                                  />
+                                </label>
+                                {step.doc && (
+                                  <label className="full-w">
+                                    Signed Document Reference:
+                                    <input 
+                                      type="text" 
+                                      placeholder="Enter document filename or link..."
+                                      value={formDoc} 
+                                      onChange={(e) => setFormDoc(e.target.value)} 
+                                      maxLength={255}
+                                    />
+                                  </label>
+                                )}
+                              </div>
+                              <div className="dash-form-actions">
+                                <button type="button" className="act-btn-cancel" onClick={() => setEditingStep(null)}>Cancel</button>
+                                <button type="button" className="act-btn-submit" onClick={() => handleSaveStep(step.k)}>Save Step</button>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
 
+        {/* Footer */}
         <div className="modal-footer">
-          <span className="modal-foot-info">Click any step to update its progress or upload signed documents</span>
-          <button type="button" className="btn-secondary" onClick={onClose}>Close</button>
+          <span className="modal-foot-info">
+            Step {currentStepItem.n !== '—' ? currentStepItem.n : '1'} of {SALES_STEPS.length} · {completedStepsCount} completed · {docCount} signed document(s) on file
+          </span>
+          <button type="button" className="act-btn-close" onClick={onClose}>Close</button>
         </div>
       </div>
     </div>

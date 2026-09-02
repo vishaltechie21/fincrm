@@ -10,7 +10,8 @@ const FormField = ({
   type = 'text',
   error,
   style,
-  maxLength
+  maxLength,
+  min
 }) => {
   return (
     <div className={`form-field ${error ? 'has-error' : ''} ${disabled ? 'is-disabled' : ''}`} style={style}>
@@ -29,8 +30,8 @@ const FormField = ({
           disabled={disabled}
           className={`${readOnly ? 'readonly' : ''} ${disabled ? 'disabled-input' : ''}`}
           maxLength={maxLength}
+          min={min}
         />
-
       </div>
     </div>
   );

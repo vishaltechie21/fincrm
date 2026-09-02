@@ -230,6 +230,7 @@ const CompanyForm = ({
             onChange={handleChange}
             error={errors.follow}
             disabled={isIdle}
+            min={new Date().toISOString().split('T')[0]}
           />
         </div>
         <div className="col-3">
