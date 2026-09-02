@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import TruncatedText from '../TruncatedText/TruncatedText';
 import './Modals.css';
 
 export default function ActivityModal({ isOpen, onClose, company, onAddRemark, onUpdateRemark, onDeleteRemark }) {
@@ -64,29 +65,30 @@ export default function ActivityModal({ isOpen, onClose, company, onAddRemark, o
 
         {/* Modal Body */}
         <div className="act-modal-body">
-          {/* History Table */}
+          {/* Scrollable History Table */}
           <div className="act-table-wrap">
             <table className="act-table">
               <thead>
                 <tr>
-                  <th style={{ width: '100px' }}>DATE</th>
+                  <th style={{ width: '90px' }}>DATE</th>
                   <th>REMARKS</th>
-                  <th style={{ width: '130px' }}>BY USER</th>
-                  <th style={{ width: '135px', textAlign: 'right' }}>ACTIONS</th>
+                  <th style={{ width: '110px' }}>BY USER</th>
+                  <th style={{ width: '120px', textAlign: 'right' }}>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
                 {remarksList.length > 0 ? (
                   remarksList.map((item, idx) => {
                     const displayDate = formatDateDisplay(item.date || item.tracom_date);
+                    const remarkText = item.remarks || item.text || '';
                     return (
                       <tr key={idx} className={editingIndex === idx ? 'active-edit-row' : ''}>
                         <td className="act-date-cell">{displayDate}</td>
                         <td className="act-rem-cell">
-                          {item.remarks || item.text}
+                          <TruncatedText text={remarkText} limit={40} />
                         </td>
                         <td className="act-user-cell">
-                          {item.user_name || item.user || 'Suman'}
+                          <TruncatedText text={item.user_name || item.user || 'Suman'} limit={18} />
                         </td>
                         <td style={{ textAlign: 'right' }}>
                           <div className="act-actions-group">
@@ -114,7 +116,7 @@ export default function ActivityModal({ isOpen, onClose, company, onAddRemark, o
                     <td colSpan={4} className="act-no-data">
                       {company.mascom_remarks ? (
                         <div className="initial-remark">
-                          <strong>Initial Remark:</strong> {company.mascom_remarks}
+                          <strong>Initial Remark:</strong> <TruncatedText text={company.mascom_remarks} limit={60} />
                         </div>
                       ) : 'No recorded activity remarks for this company yet.'}
                     </td>
@@ -124,19 +126,19 @@ export default function ActivityModal({ isOpen, onClose, company, onAddRemark, o
             </table>
           </div>
 
-          {/* Bottom Add/Edit Form */}
+          {/* Bottom Single-Line Add/Edit Form */}
           <form className="act-bottom-form" onSubmit={handleSubmit}>
             <div className="act-form-layout">
-              <textarea
-                rows={2}
+              <input
+                type="text"
                 placeholder={editingIndex !== null ? "Update remark..." : "Write a remark as Suman"}
                 value={newRemark}
                 onChange={(e) => setNewRemark(e.target.value)}
-                className="act-textarea"
+                className="act-input"
                 maxLength={500}
               />
               {editingIndex !== null ? (
-                <div className="act-edit-btn-column">
+                <div className="act-edit-btn-row">
                   <button type="submit" className="act-btn-submit">
                     Update
                   </button>
@@ -145,7 +147,7 @@ export default function ActivityModal({ isOpen, onClose, company, onAddRemark, o
                   </button>
                 </div>
               ) : (
-                <button type="submit" className="act-btn-submit act-btn-submit-tall">
+                <button type="submit" className="act-btn-submit">
                   Add Remark
                 </button>
               )}

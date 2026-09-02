@@ -1,12 +1,14 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useRef } from 'react';
 import Swal from 'sweetalert2';
-import { LayoutDashboard, Bell, Building2, User, Inbox, Monitor, Calendar, Search, RotateCw, Volume2, CheckCheck, Trash2, Sun, Moon, Info } from 'lucide-react';
+import { LayoutDashboard, Bell, Building2, User, Inbox, Monitor, Calendar, Search, RotateCw, Volume2, CheckCheck, Trash2, Sun, Moon, Info, Sliders, Layers } from 'lucide-react';
 import CompanyMaster from './pages/CompanyMaster/CompanyMaster';
 import ContactMaster from './pages/ContactMaster/ContactMaster';
 import CompanySearch from './pages/CompanySearch/CompanySearch';
 import ContactSearch from './pages/ContactSearch/ContactSearch';
 import SubMasterConfig from './pages/SubMasterConfig/SubMasterConfig';
+import DashboardStepMaster from './pages/DashboardStepMaster/DashboardStepMaster';
+import ChecklistMaster from './pages/ChecklistMaster/ChecklistMaster';
 import './App.css';
 
 const menuGroups = [
@@ -33,11 +35,13 @@ const menuGroups = [
       { id: 'demo', icon: <Monitor size={14} />, label: 'Demo Management' },
       { id: 'followup', icon: <Calendar size={14} />, label: 'Follow-up' }
     ]
-  }
-  , {
+  },
+  {
     title: 'CONFIGURATION',
     items: [
       { id: 'masters', icon: <User size={14} />, label: 'Sub Master Configuration' },
+      { id: 'dashboard-master', icon: <Sliders size={14} />, label: 'Dashboard Steps Master' },
+      { id: 'checklist-master', icon: <Layers size={14} />, label: 'Checklist Master' },
       { id: 'activity', icon: <Monitor size={14} />, label: 'Activity Log' }
     ]
   }
@@ -569,6 +573,10 @@ function App() {
               <ContactSearch />
             ) : activeMenu === 'masters' ? (
               <SubMasterConfig />
+            ) : activeMenu === 'dashboard-master' ? (
+              <DashboardStepMaster />
+            ) : activeMenu === 'checklist-master' ? (
+              <ChecklistMaster />
             ) : (
               <div className="dummy-page">
                 <div className="dummy-card">

@@ -257,32 +257,31 @@
 .act-form-layout {
   display: flex;
   gap: 8px;
-  align-items: stretch;
+  align-items: center;
 }
 
-.act-textarea {
+.act-input {
   flex: 1;
-  border: 1px solid var(--border, #94a3b8);
+  border: 1px solid var(--border, #cbd5e1);
   border-radius: 4px;
-  padding: 6px 10px;
-  font-size: 12px;
-  resize: vertical;
-  min-height: 44px;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  height: 32px;
   font-family: inherit;
   color: var(--text-h, #0f172a);
   background: var(--panel, #ffffff);
 }
 
-.act-textarea:focus {
+.act-input:focus {
   outline: 2px solid var(--btn-success, #10b981);
   outline-offset: -1px;
   border-color: var(--btn-success, #10b981);
 }
 
-.act-edit-btn-column {
+.act-edit-btn-row {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 5px;
 }
 
 .act-btn-submit {

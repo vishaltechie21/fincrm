@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { X, CheckCircle2, Trash2, FileCheck } from 'lucide-react';
 import { CHECKLIST_ITEMS, CHECKLIST_STAGES } from '../../utils/checklistData';
+import { masterService } from '../../services/masterService';
 import TruncatedText from '../TruncatedText/TruncatedText';
 import './Modals.css';
 
 export default function ChecklistModal({ isOpen, onClose, company, onSaveChecklist }) {
+  const [stagesList, setStagesList] = useState(CHECKLIST_STAGES);
+  const [itemsList, setItemsList] = useState(CHECKLIST_ITEMS);
   const [openStage, setOpenStage] = useState(CHECKLIST_STAGES[0]);
   const [recordedItems, setRecordedItems] = useState({});
   const [addingIndex, setAddingIndex] = useState(null);
@@ -13,6 +16,23 @@ export default function ChecklistModal({ isOpen, onClose, company, onSaveCheckli
   const [newNextFollowup, setNewNextFollowup] = useState('');
   const [newRemark, setNewRemark] = useState('');
   const [newEvidence, setNewEvidence] = useState('');
+
+  useEffect(() => {
+    masterService.getChecklist().then((res) => {
+      if (res && Array.isArray(res.stages) && res.stages.length > 0) {
+        setStagesList(res.stages.map(s => s.stage_name));
+      }
+      if (res && Array.isArray(res.items) && res.items.length > 0) {
+        setItemsList(res.items.map(i => ({
+          st: i.stage_name,
+          a: i.action_name,
+          r: i.responsibility,
+          m: !!i.is_mandatory,
+          e: i.evidence_label
+        })));
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (company) {
@@ -38,14 +58,14 @@ export default function ChecklistModal({ isOpen, onClose, company, onSaveCheckli
   };
 
   const stageProgress = (st) => {
-    const stageItems = CHECKLIST_ITEMS.map((item, idx) => ({ ...item, idx })).filter(item => item.st === st);
+    const stageItems = itemsList.map((item, idx) => ({ ...item, idx })).filter(item => item.st === st);
     const completed = stageItems.filter(item => isDone(item.idx)).length;
     const mandatoryOpen = stageItems.filter(item => item.m && !isDone(item.idx)).length;
     return { total: stageItems.length, completed, mandatoryOpen };
   };
 
-  const totalCompleted = CHECKLIST_ITEMS.filter((_, idx) => isDone(idx)).length;
-  const totalMandatoryOpen = CHECKLIST_ITEMS.filter((item, idx) => item.m && !isDone(idx)).length;
+  const totalCompleted = itemsList.filter((_, idx) => isDone(idx)).length;
+  const totalMandatoryOpen = itemsList.filter((item, idx) => item.m && !isDone(idx)).length;
 
   const handleToggleStage = (st) => {
     setOpenStage(openStage === st ? null : st);
@@ -120,17 +140,17 @@ export default function ChecklistModal({ isOpen, onClose, company, onSaveCheckli
           {/* Summary Strip */}
           <div className="chk-summary-strip">
             <span className="chk-sum-label">RECORDED</span>
-            <span className="chk-sum-val"><strong>{totalCompleted} of {CHECKLIST_ITEMS.length}</strong></span>
+            <span className="chk-sum-val"><strong>{totalCompleted} of {itemsList.length}</strong></span>
             <span className="chk-sum-sep">|</span>
             <span className="chk-sum-warn">{totalMandatoryOpen} mandatory item(s) still open</span>
           </div>
 
           {/* Stages Accordion List */}
           <div className="chk-stages">
-            {CHECKLIST_STAGES.map((st) => {
+            {stagesList.map((st) => {
               const { total, completed, mandatoryOpen } = stageProgress(st);
               const isExpanded = openStage === st;
-              const stageItems = CHECKLIST_ITEMS.map((item, idx) => ({ ...item, idx })).filter(item => item.st === st);
+              const stageItems = itemsList.map((item, idx) => ({ ...item, idx })).filter(item => item.st === st);
 
               return (
                 <div key={st} className="chk-stage-group">

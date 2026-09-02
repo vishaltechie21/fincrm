@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { SALES_STEPS } from '../../utils/dashboardData';
+import { masterService } from '../../services/masterService';
 import './Modals.css';
 
 export default function DashboardModal({ isOpen, onClose, company, onSaveDashboard }) {
+  const [stepsList, setStepsList] = useState(SALES_STEPS);
   const [stepsData, setStepsData] = useState({});
   const [editingStep, setEditingStep] = useState(null);
   const [formDate, setFormDate] = useState('');
@@ -11,6 +13,22 @@ export default function DashboardModal({ isOpen, onClose, company, onSaveDashboa
   const [formStatus, setFormStatus] = useState('Pending');
   const [formRemarks, setFormRemarks] = useState('');
   const [formDoc, setFormDoc] = useState('');
+
+  useEffect(() => {
+    masterService.getDashboardSteps().then((dbSteps) => {
+      if (Array.isArray(dbSteps) && dbSteps.length > 0) {
+        const mapped = dbSteps.map(s => ({
+          n: s.step_number,
+          k: s.step_key,
+          lab: s.step_name,
+          resp: s.responsibility,
+          note: s.note,
+          doc: !!s.requires_doc
+        }));
+        setStepsList(mapped);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (company) {
@@ -64,9 +82,9 @@ export default function DashboardModal({ isOpen, onClose, company, onSaveDashboa
     setEditingStep(null);
   };
 
-  const completedStepsCount = SALES_STEPS.filter(s => getStepVal(s.k).status === 'Done').length;
-  const currentStepItem = SALES_STEPS.find(s => getStepVal(s.k).status !== 'Done') || SALES_STEPS[0];
-  const docCount = SALES_STEPS.filter(s => getStepVal(s.k).doc).length;
+  const completedStepsCount = stepsList.filter(s => getStepVal(s.k).status === 'Done').length;
+  const currentStepItem = stepsList.find(s => getStepVal(s.k).status !== 'Done') || stepsList[0];
+  const docCount = stepsList.filter(s => getStepVal(s.k).doc).length;
 
   const formatDateDisplay = (rawDate) => {
     if (!rawDate) return '---';
@@ -106,7 +124,7 @@ export default function DashboardModal({ isOpen, onClose, company, onSaveDashboa
             <table className="dash-table">
               <thead>
                 <tr>
-                  <th style={{ width: '32px', textAlign: 'center' }}>#</th>
+                  <th style={{ width: '36px', textAlign: 'center' }}>#</th>
                   <th>STEP NAME</th>
                   <th style={{ width: '100px' }}>DATE</th>
                   <th style={{ width: '140px' }}>RESPONSIBILITY</th>
@@ -114,7 +132,7 @@ export default function DashboardModal({ isOpen, onClose, company, onSaveDashboa
                 </tr>
               </thead>
               <tbody>
-                {SALES_STEPS.map((step, idx) => {
+                {stepsList.map((step, idx) => {
                   const val = getStepVal(step.k);
                   const isCurrent = currentStepItem.k === step.k;
                   const isDone = val.status === 'Done';
@@ -226,7 +244,7 @@ export default function DashboardModal({ isOpen, onClose, company, onSaveDashboa
         {/* Footer */}
         <div className="modal-footer">
           <span className="modal-foot-info">
-            Step {currentStepItem.n !== '—' ? currentStepItem.n : '1'} of {SALES_STEPS.length} · {completedStepsCount} completed · {docCount} signed document(s) on file
+            Step {currentStepItem.n !== '—' ? currentStepItem.n : '1'} of {stepsList.length} · {completedStepsCount} completed · {docCount} signed document(s) on file
           </span>
           <button type="button" className="act-btn-close" onClick={onClose}>Close</button>
         </div>

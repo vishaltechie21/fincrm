@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Settings, Plus, Trash2, Search, Sliders, Database, HelpCircle } from 'lucide-react';
+import { Settings, Plus, Trash2, Search, Sliders, HelpCircle, Layers, Database } from 'lucide-react';
 import * as subMasterService from '../../services/subMasterService';
 import DataTable from '../../components/DataTable/DataTable';
 import Notification from '../../components/Notification/Notification';
+import DashboardStepMaster from '../DashboardStepMaster/DashboardStepMaster';
+import ChecklistMaster from '../ChecklistMaster/ChecklistMaster';
 import Swal from 'sweetalert2';
 
 const CATEGORIES = [
@@ -11,7 +13,9 @@ const CATEGORIES = [
   { key: 'stage', label: 'Sales Stage', desc: 'Used in Search & Demo Status' },
   { key: 'erp_using', label: 'ERP System', desc: 'Used in Company Master Form' },
   { key: 'state', label: 'State List', desc: 'Used in Addresses & Filters' },
-  { key: 'designation', label: 'Designation', desc: 'Used in Contact Master Form' }
+  { key: 'designation', label: 'Designation', desc: 'Used in Contact Master Form' },
+  { key: 'dashboard_steps', label: 'Dashboard Steps Master', desc: 'Sales Closing Cycle Steps' },
+  { key: 'checklist_master', label: 'Checklist Master', desc: 'Stages, Actions & Mandatory Rules' }
 ];
 
 const SubMasterConfig = () => {
@@ -233,65 +237,74 @@ const SubMasterConfig = () => {
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Active category options workspace */}
-        <div className="submaster-workspace flex-1 flex flex-col gap-4 overflow-hidden">
-          
-          {/* Quick Option Add Form Panel */}
-          <div className="submaster-card bg-white border border-slate-200 rounded-lg shadow-sm p-4 shrink-0">
-            <div className="submaster-card-header border-b border-slate-100 pb-2 mb-3">
-              <h3 className="submaster-card-title text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5" style={{ margin: 0 }}>
-                <Database size={13} className="text-slate-400 flex shrink-0" />
-                Add Value: {CATEGORIES.find(c => c.key === selectedCategory)?.label}
-              </h3>
-            </div>
+        {/* Right Panel: Content Area */}
+        <div className="submaster-right-panel flex-1 flex flex-col gap-4 overflow-hidden">
+          {selectedCategory === 'dashboard_steps' ? (
+            <DashboardStepMaster />
+          ) : selectedCategory === 'checklist_master' ? (
+            <ChecklistMaster />
+          ) : (
+            <>
+              {/* Add New Value Form */}
+              <div className="submaster-card bg-white border border-slate-200 rounded-lg shadow-sm p-4 shrink-0">
+                <div className="submaster-card-header flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
+                  <h3 className="submaster-card-title text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2" style={{ margin: 0 }}>
+                    <Plus size={14} className="text-gold" />
+                    Add Value: {CATEGORIES.find(c => c.key === selectedCategory)?.label}
+                  </h3>
+                  <span className="submaster-card-badge text-3xs font-extrabold text-slate-400 uppercase tracking-wider">
+                    Category: {selectedCategory}
+                  </span>
+                </div>
 
-            <form onSubmit={handleAddOption} className="flex flex-col md:flex-row items-end gap-3" style={{ margin: 0 }}>
-              <div className="submaster-form-group flex-1 w-full text-left">
-                <label className="block text-3xs font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Lookup Name Value
-                </label>
-                <input
-                  type="text"
-                  value={newValue}
-                  onChange={(e) => setNewValue(e.target.value)}
-                  placeholder={`e.g. Enter value for ${CATEGORIES.find(c => c.key === selectedCategory)?.label}`}
-                  className="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-md outline-none focus:border-gold"
-                  maxLength={100}
-                />
+                <form onSubmit={handleAddOption} className="flex flex-col md:flex-row items-end gap-3" style={{ margin: 0 }}>
+                  <div className="submaster-form-group flex-1 w-full text-left">
+                    <label className="block text-3xs font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">
+                      Lookup Name Value
+                    </label>
+                    <input
+                      type="text"
+                      value={newValue}
+                      onChange={(e) => setNewValue(e.target.value)}
+                      placeholder={`e.g. Enter value for ${CATEGORIES.find(c => c.key === selectedCategory)?.label}`}
+                      className="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-md outline-none focus:border-gold"
+                      maxLength={100}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="btn btn-success w-full md:w-auto px-5 py-2 text-xs font-semibold flex items-center justify-center gap-1.5"
+                    style={{ height: '32px' }}
+                  >
+                    <Plus size={14} /> Add Option
+                  </button>
+                </form>
               </div>
-              <button
-                type="submit"
-                className="btn btn-success w-full md:w-auto px-5 py-2 text-xs font-semibold flex items-center justify-center gap-1.5"
-                style={{ height: '32px' }}
-              >
-                <Plus size={14} /> Add Option
-              </button>
-            </form>
-          </div>
 
-          {/* Current Options List (Reusable DataTable) */}
-          <div className="submaster-card flex-1 bg-white border border-slate-200 rounded-lg shadow-sm p-4 overflow-hidden flex flex-col">
-            <div className="submaster-card-header flex items-center justify-between border-b border-slate-100 pb-2 mb-3 shrink-0">
-              <h3 className="submaster-card-title text-xs font-bold text-white bg-navy-800 px-3 py-1 rounded uppercase tracking-wide" style={{ margin: 0, color: '#ffffff' }}>
-                Current List Values
-              </h3>
-              <span className="submaster-card-badge text-3xs font-extrabold text-slate-400 uppercase tracking-wider">
-                Total: {filteredOptions.length} items
-              </span>
-            </div>
+              {/* Current Options List */}
+              <div className="submaster-card flex-1 bg-white border border-slate-200 rounded-lg shadow-sm p-4 overflow-hidden flex flex-col">
+                <div className="submaster-card-header flex items-center justify-between border-b border-slate-100 pb-2 mb-3 shrink-0">
+                  <h3 className="submaster-card-title text-xs font-bold text-white bg-navy-800 px-3 py-1 rounded uppercase tracking-wide" style={{ margin: 0, color: '#ffffff' }}>
+                    Current List Values
+                  </h3>
+                  <span className="submaster-card-badge text-3xs font-extrabold text-slate-400 uppercase tracking-wider">
+                    Total: {filteredOptions.length} items
+                  </span>
+                </div>
 
-            <div className="flex-1 overflow-hidden flex flex-col">
-              <DataTable
-                columns={columns}
-                data={filteredOptions}
-                loading={isLoading}
-                storageKey={`sub_masters_${selectedCategory}`}
-                idField="id"
-                emptyMessage={`No values configured yet for ${CATEGORIES.find(c => c.key === selectedCategory)?.label}.`}
-              />
-            </div>
-          </div>
-
+                <div className="flex-1 overflow-hidden flex flex-col">
+                  <DataTable
+                    columns={columns}
+                    data={filteredOptions}
+                    loading={isLoading}
+                    storageKey={`sub_masters_${selectedCategory}`}
+                    idField="id"
+                    emptyMessage={`No values configured yet for ${CATEGORIES.find(c => c.key === selectedCategory)?.label}.`}
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
       </div>

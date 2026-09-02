@@ -4,6 +4,7 @@ const companyRoutes = require('./routes/companyRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const subMasterRoutes = require('./routes/subMasterRoutes');
+const masterRoutes = require('./routes/masterRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -17,6 +18,7 @@ app.use('/api/companies', companyRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/sub-masters', subMasterRoutes);
+app.use('/api/masters', masterRoutes);
 
 // Catch-all undefined routes
 app.use((req, res, next) => {
