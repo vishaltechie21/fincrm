@@ -4,9 +4,10 @@ import { masterService } from '../../services/masterService';
 import { SALES_STEPS } from '../../utils/dashboardData';
 import TruncatedText from '../../components/TruncatedText/TruncatedText';
 import Notification from '../../components/Notification/Notification';
+import FormField from '../../components/FormField';
 import Swal from 'sweetalert2';
 
-export default function DashboardStepMaster() {
+export default function DashboardStepMaster({ isStandalone = false }) {
   const [steps, setSteps] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: 'success' });
@@ -129,7 +130,7 @@ export default function DashboardStepMaster() {
   };
 
   return (
-    <div className="page-container page-submaster">
+    <div className={isStandalone ? "page-container page-submaster" : "submaster-embedded-wrapper"}>
       {notification.message && (
         <Notification
           message={notification.message}
@@ -139,12 +140,14 @@ export default function DashboardStepMaster() {
       )}
 
       {/* Top Header */}
-      <header className="page-header search-header-panel">
-        <div className="header-title-group">
-          <h2><Sliders className="page-header-icon" /> Dashboard Steps Master</h2>
-          <p className="page-subtitle">Configure sales closing cycle steps, responsibility, notes, and required documents.</p>
-        </div>
-      </header>
+      {isStandalone && (
+        <header className="page-header search-header-panel">
+          <div className="header-title-group">
+            <h2><Sliders className="page-header-icon" /> Dashboard Steps Master</h2>
+            <p className="page-subtitle">Configure sales closing cycle steps, responsibility, notes, and required documents.</p>
+          </div>
+        </header>
+      )}
 
       {/* Main Content Layout */}
       <div className="submaster-layout">
@@ -152,85 +155,77 @@ export default function DashboardStepMaster() {
         <div className="submaster-left-panel" style={{ width: '340px' }}>
           <div className="submaster-card">
             <h3 className="card-title">{editingId ? 'Edit Dashboard Step' : 'Add New Dashboard Step'}</h3>
-            <form onSubmit={handleSave} className="master-form">
-              <div className="form-group">
-                <label>Step Number (#)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. 1, 2, 4b"
-                  value={stepNumber}
-                  onChange={(e) => setStepNumber(e.target.value)}
-                  maxLength={10}
-                  required
-                />
+            <form onSubmit={handleSave} className="master-form space-y-2">
+              <FormField
+                label="Step Number (#)"
+                name="stepNumber"
+                value={stepNumber}
+                onChange={(e) => setStepNumber(e.target.value)}
+                placeholder="e.g. 1, 2, 4b"
+                required={true}
+                maxLength={10}
+              />
+
+              <FormField
+                label="Step Key (Unique)"
+                name="stepKey"
+                value={stepKey}
+                onChange={(e) => setStepKey(e.target.value)}
+                placeholder="e.g. s1, s2, sg"
+                required={true}
+                maxLength={20}
+              />
+
+              <FormField
+                label="Step Name"
+                name="stepName"
+                value={stepName}
+                onChange={(e) => setStepName(e.target.value)}
+                placeholder="Enter step title..."
+                required={true}
+                maxLength={255}
+              />
+
+              <FormField
+                label="Responsibility"
+                name="responsibility"
+                value={responsibility}
+                onChange={(e) => setResponsibility(e.target.value)}
+                placeholder="e.g. Sales Person, Demonstration Team"
+                required={true}
+                maxLength={100}
+              />
+
+              <FormField
+                label="Note / Tag"
+                name="note"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="e.g. 24–48 hrs, if required"
+                maxLength={255}
+              />
+
+              <div className="form-field">
+                <label>Requires Doc</label>
+                <div className="field-control-container flex items-center">
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', margin: 0, fontWeight: 'normal' }}>
+                    <input
+                      type="checkbox"
+                      checked={requiresDoc}
+                      onChange={(e) => setRequiresDoc(e.target.checked)}
+                    />
+                    Requires Signed Document
+                  </label>
+                </div>
               </div>
 
-              <div className="form-group">
-                <label>Step Key (Unique)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. s1, s2, sg"
-                  value={stepKey}
-                  onChange={(e) => setStepKey(e.target.value)}
-                  maxLength={20}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Step Name</label>
-                <input
-                  type="text"
-                  placeholder="Enter step title..."
-                  value={stepName}
-                  onChange={(e) => setStepName(e.target.value)}
-                  maxLength={255}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Responsibility</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Sales Person, Demonstration Team"
-                  value={responsibility}
-                  onChange={(e) => setResponsibility(e.target.value)}
-                  maxLength={100}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Note / Tag (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. 24–48 hrs, if required"
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  maxLength={255}
-                />
-              </div>
-
-              <div className="form-group checkbox-group">
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={requiresDoc}
-                    onChange={(e) => setRequiresDoc(e.target.checked)}
-                  />
-                  Requires Signed Document
-                </label>
-              </div>
-
-              <div className="form-group">
-                <label>Sort Order</label>
-                <input
-                  type="number"
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value)}
-                />
-              </div>
+              <FormField
+                label="Sort Order"
+                name="sortOrder"
+                type="number"
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+              />
 
               <div className="form-actions" style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                 {editingId && (

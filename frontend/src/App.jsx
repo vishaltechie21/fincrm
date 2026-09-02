@@ -40,8 +40,6 @@ const menuGroups = [
     title: 'CONFIGURATION',
     items: [
       { id: 'masters', icon: <User size={14} />, label: 'Sub Master Configuration' },
-      { id: 'dashboard-master', icon: <Sliders size={14} />, label: 'Dashboard Steps Master' },
-      { id: 'checklist-master', icon: <Layers size={14} />, label: 'Checklist Master' },
       { id: 'activity', icon: <Monitor size={14} />, label: 'Activity Log' }
     ]
   }
@@ -571,12 +569,8 @@ function App() {
               <CompanySearch />
             ) : activeMenu === 'contact-search' ? (
               <ContactSearch />
-            ) : activeMenu === 'masters' ? (
+            ) : activeMenu === 'masters' || activeMenu === 'dashboard-master' || activeMenu === 'checklist-master' ? (
               <SubMasterConfig />
-            ) : activeMenu === 'dashboard-master' ? (
-              <DashboardStepMaster />
-            ) : activeMenu === 'checklist-master' ? (
-              <ChecklistMaster />
             ) : (
               <div className="dummy-page">
                 <div className="dummy-card">

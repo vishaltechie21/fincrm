@@ -4,9 +4,11 @@ import { masterService } from '../../services/masterService';
 import { CHECKLIST_STAGES, CHECKLIST_ITEMS } from '../../utils/checklistData';
 import TruncatedText from '../../components/TruncatedText/TruncatedText';
 import Notification from '../../components/Notification/Notification';
+import FormField from '../../components/FormField';
+import SelectField from '../../components/SelectField';
 import Swal from 'sweetalert2';
 
-export default function ChecklistMaster() {
+export default function ChecklistMaster({ isStandalone = false }) {
   const [stages, setStages] = useState([]);
   const [items, setItems] = useState([]);
   const [selectedStage, setSelectedStage] = useState('');
@@ -136,7 +138,7 @@ export default function ChecklistMaster() {
   const currentStageItems = items.filter(i => i.stage_name === selectedStage);
 
   return (
-    <div className="page-container page-submaster">
+    <div className={isStandalone ? "page-container page-submaster" : "submaster-embedded-wrapper"}>
       {notification.message && (
         <Notification
           message={notification.message}
@@ -146,12 +148,14 @@ export default function ChecklistMaster() {
       )}
 
       {/* Top Header */}
-      <header className="page-header search-header-panel">
-        <div className="header-title-group">
-          <h2><Layers className="page-header-icon" /> Customer Lifecycle Checklist Master</h2>
-          <p className="page-subtitle">Configure stages, action items, responsibilities, mandatory requirements, and evidence tags.</p>
-        </div>
-      </header>
+      {isStandalone && (
+        <header className="page-header search-header-panel">
+          <div className="header-title-group">
+            <h2><Layers className="page-header-icon" /> Customer Lifecycle Checklist Master</h2>
+            <p className="page-subtitle">Configure stages, action items, responsibilities, mandatory requirements, and evidence tags.</p>
+          </div>
+        </header>
+      )}
 
       {/* Main Content Layout */}
       <div className="submaster-layout">
@@ -159,76 +163,66 @@ export default function ChecklistMaster() {
         <div className="submaster-left-panel" style={{ width: '340px' }}>
           <div className="submaster-card">
             <h3 className="card-title">{editingItemId ? 'Edit Action Item' : 'Add New Action Item'}</h3>
-            <form onSubmit={handleSaveItem} className="master-form">
-              <div className="form-group">
-                <label>Select Stage</label>
-                <select
-                  value={selectedStage}
-                  onChange={(e) => setSelectedStage(e.target.value)}
-                  required
-                >
-                  {stages.map(st => (
-                    <option key={st.stage_id || st.stage_name} value={st.stage_name}>
-                      {st.stage_name}
-                    </option>
-                  ))}
-                </select>
+            <form onSubmit={handleSaveItem} className="master-form space-y-2">
+              <SelectField
+                label="Stage"
+                name="selectedStage"
+                value={selectedStage}
+                onChange={(e) => setSelectedStage(e.target.value)}
+                options={stages.map(st => ({ value: st.stage_name, label: st.stage_name }))}
+                required={true}
+              />
+
+              <FormField
+                label="Action Item"
+                name="actionName"
+                value={actionName}
+                onChange={(e) => setActionName(e.target.value)}
+                placeholder="e.g. Cold Calling, Plant Visit..."
+                required={true}
+                maxLength={255}
+              />
+
+              <FormField
+                label="Responsibility"
+                name="responsibility"
+                value={responsibility}
+                onChange={(e) => setResponsibility(e.target.value)}
+                placeholder="e.g. Sales Person, QA Team"
+                required={true}
+                maxLength={100}
+              />
+
+              <FormField
+                label="Evidence Ref"
+                name="evidenceLabel"
+                value={evidenceLabel}
+                onChange={(e) => setEvidenceLabel(e.target.value)}
+                placeholder="e.g. Call Log, Quotation Copy"
+                maxLength={255}
+              />
+
+              <div className="form-field">
+                <label>Mandatory</label>
+                <div className="field-control-container flex items-center">
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', margin: 0, fontWeight: 'normal' }}>
+                    <input
+                      type="checkbox"
+                      checked={isMandatory}
+                      onChange={(e) => setIsMandatory(e.target.checked)}
+                    />
+                    Is Mandatory Item
+                  </label>
+                </div>
               </div>
 
-              <div className="form-group">
-                <label>Action Item Title</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Cold Calling, Plant Visit..."
-                  value={actionName}
-                  onChange={(e) => setActionName(e.target.value)}
-                  maxLength={255}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Responsibility</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Sales Person, QA Team"
-                  value={responsibility}
-                  onChange={(e) => setResponsibility(e.target.value)}
-                  maxLength={100}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Evidence Reference (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Call Log, Quotation Copy"
-                  value={evidenceLabel}
-                  onChange={(e) => setEvidenceLabel(e.target.value)}
-                  maxLength={255}
-                />
-              </div>
-
-              <div className="form-group checkbox-group">
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={isMandatory}
-                    onChange={(e) => setIsMandatory(e.target.checked)}
-                  />
-                  Is Mandatory Item
-                </label>
-              </div>
-
-              <div className="form-group">
-                <label>Sort Order</label>
-                <input
-                  type="number"
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value)}
-                />
-              </div>
+              <FormField
+                label="Sort Order"
+                name="sortOrder"
+                type="number"
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+              />
 
               <div className="form-actions" style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                 {editingItemId && (
