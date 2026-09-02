@@ -68,7 +68,7 @@ export const SEARCH_COLUMNS = [
   { k: 'lastrem',     lab: 'Last Remark',           table: 'TRACOM', cls: 'muted', get: r => r.lastAct ? r.lastAct.remarks : '—' },
   { k: 'nacts',       lab: 'Activities',            table: 'TRACOM', cls: 'mono r', get: r => r.acts.length },
   { k: 'ndemos',      lab: 'Demos',                 table: 'TRACOM', cls: 'mono r', get: r => r.acts.filter(a => a.mode === 'Demo').length },
-  { k: 'quoted',      lab: 'Quoted Value',          table: 'TRACOM', cls: 'mono r', get: r => r.lastQuote ? r.lastQuote.price_quoted : '—' },
+  { k: 'quoted',      lab: 'Quoted Value',          table: 'TRACOM', cls: 'mono r', get: r => r.co.quoted || r.co.quoted_value || (r.lastQuote ? r.lastQuote.price_quoted : '—') },
   { k: 'amc',         lab: 'AMC',                   table: 'TRACOM', cls: 'mono r', get: r => r.lastQuote ? r.lastQuote.amc_quoted : '—' }
 ];
 

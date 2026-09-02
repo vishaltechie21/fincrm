@@ -26,6 +26,48 @@ SEARCH_COLUMNS.forEach((c) => {
 
 const STAGE_CLASS = { "Lead": "lead", "Demo Done": "demo", "Quoted": "quoted", "Negotiation": "nego", "Won": "won", "Lost": "lost" };
 
+const formatMoney = (val) => {
+  if (val == null || val === '') return null;
+  const str = String(val).trim();
+  const num = Number(str.replace(/[^0-9.-]+/g, ""));
+  if (!isNaN(num) && num > 0) {
+    return `₹ ${num.toLocaleString('en-IN')}`;
+  }
+  return str;
+};
+
+const getQuotedValue = (r) => {
+  if (!r) return '—';
+  const coObj = r.co || r.company || {};
+  
+  // 1. Direct company quoted field from DB (`quoted` / `quoted_value` / `price_quoted` / `amount` / `deal_value`)
+  const directQuoted = coObj.quoted ?? coObj.quoted_value ?? coObj.price_quoted ?? coObj.amount ?? coObj.deal_value;
+  if (directQuoted != null && String(directQuoted).trim() !== '') {
+    return formatMoney(directQuoted);
+  }
+
+  // 2. Activity logs lastQuote
+  if (r.lastQuote && (r.lastQuote.price_quoted != null || r.lastQuote.amount != null || r.lastQuote.quoted != null)) {
+    const val = r.lastQuote.price_quoted ?? r.lastQuote.amount ?? r.lastQuote.quoted;
+    return formatMoney(val);
+  }
+
+  // 3. Scan all activity logs
+  const quoteAct = (r.acts || []).find((a) => a && (a.price_quoted != null || a.amount != null || a.quoted != null));
+  if (quoteAct) {
+    const val = quoteAct.price_quoted ?? quoteAct.amount ?? quoteAct.quoted;
+    return formatMoney(val);
+  }
+
+  // 4. Contact level quoted field if available
+  if (r.ct) {
+    const ctVal = r.ct.quoted ?? r.ct.quoted_value ?? r.ct.deal_value ?? r.ct.price_quoted ?? r.ct.amount;
+    if (ctVal != null && String(ctVal).trim() !== '') return formatMoney(ctVal);
+  }
+
+  return '—';
+};
+
 const CompanySearch = () => {
   const [companies, setCompanies] = useState([]);
   const [contacts, setContacts] = useState([]);
@@ -923,35 +965,135 @@ const CompanySearch = () => {
                                     <span className="t">Company Details</span>
                                     <span className="src">MASCOM · {r.co.mascom_id}</span>
                                   </div>
-                                  <div className="facts">
+                                  <div className="facts" style={{ gap: '6px 14px' }}>
                                     <div className="fact">
-                                      <span className="k">State</span>
-                                      <span className="v">{r.co.state}</span>
+                                      <span className="k">Company Name</span>
+                                      <span className="v" style={{ fontSize: '10px' }}>{r.co.company_name}</span>
                                     </div>
                                     <div className="fact">
-                                      <span className="k">Data Source</span>
-                                      <span className="v">{r.co.data_source}</span>
+                                      <span className="k">Industry</span>
+                                      <span className="v" style={{ fontSize: '10px' }}>{r.co.industry_type || '—'}</span>
+                                    </div>
+                                    <div className="fact">
+                                      <span className="k">City & State</span>
+                                      <span className="v" style={{ fontSize: '10px' }}>{r.co.city ? `${r.co.city}, ${r.co.state || ''}` : r.co.state || '—'}</span>
                                     </div>
                                     <div className="fact">
                                       <span className="k">Present ERP</span>
-                                      <span className="v">{r.co.erp_using || '—'}</span>
+                                      <span className="v" style={{ fontSize: '10px' }}>{r.co.erp_using || '—'}</span>
                                     </div>
                                     <div className="fact">
                                       <span className="k">Quoted Value</span>
-                                      <span className="v money">{r.lastQuote ? money(r.lastQuote.price_quoted) : '—'}</span>
+                                      <span className="v money" style={{ fontSize: '10.5px', color: '#0f766e', fontWeight: '700' }}>{getQuotedValue(r)}</span>
+                                    </div>
+                                    {r.co.budget && (
+                                      <div className="fact">
+                                        <span className="k">Budget</span>
+                                        <span className="v money" style={{ fontSize: '10px', color: '#2563eb' }}>{formatMoney(r.co.budget)}</span>
+                                      </div>
+                                    )}
+                                    {r.co.turnover && (
+                                      <div className="fact">
+                                        <span className="k">Turnover</span>
+                                        <span className="v" style={{ fontSize: '10px' }}>{r.co.turnover}</span>
+                                      </div>
+                                    )}
+                                    <div className="fact">
+                                      <span className="k">Data Source</span>
+                                      <span className="v" style={{ fontSize: '10px' }}>{r.co.data_source || '—'}</span>
                                     </div>
                                     <div className="fact">
                                       <span className="k">Owner</span>
-                                      <span className="v">{r.co.user_name}</span>
+                                      <span className="v" style={{ fontSize: '10px' }}>{r.co.user_name || '—'}</span>
                                     </div>
-                                    <div className="fact">
-                                      <span className="k">E-mail</span>
-                                      <span className="v">{r.key.email || '—'}</span>
-                                    </div>
+                                    {r.co.users && (
+                                      <div className="fact">
+                                        <span className="k">Users</span>
+                                        <span className="v" style={{ fontSize: '10px' }}>{r.co.users}</span>
+                                      </div>
+                                    )}
+                                    {r.co.units && (
+                                      <div className="fact">
+                                        <span className="k">Units</span>
+                                        <span className="v" style={{ fontSize: '10px' }}>{r.co.units}</span>
+                                      </div>
+                                    )}
+                                    {r.co.ho && (
+                                      <div className="fact">
+                                        <span className="k">HO Location</span>
+                                        <span className="v" style={{ fontSize: '10px' }}>{r.co.ho}</span>
+                                      </div>
+                                    )}
+                                    {r.co.plant && (
+                                      <div className="fact">
+                                        <span className="k">Plant Location</span>
+                                        <span className="v" style={{ fontSize: '10px' }}>{r.co.plant}</span>
+                                      </div>
+                                    )}
+                                    {r.co.client && (
+                                      <div className="fact">
+                                        <span className="k">Existing Client</span>
+                                        <span className="v" style={{ fontSize: '10px' }}>{r.co.client}</span>
+                                      </div>
+                                    )}
+                                    {r.co.follow && (
+                                      <div className="fact">
+                                        <span className="k">Follow-up Date</span>
+                                        <span className="v" style={{ fontSize: '10px' }}>{r.co.follow}</span>
+                                      </div>
+                                    )}
+                                    {(r.co.web || r.co.website) && (
+                                      <div className="fact">
+                                        <span className="k">Website</span>
+                                        <span className="v" style={{ fontSize: '10px' }}>{r.co.web || r.co.website}</span>
+                                      </div>
+                                    )}
+                                    {r.co.want && (
+                                      <div className="fact" style={{ minWidth: '130px' }}>
+                                        <span className="k">Requirement</span>
+                                        <span className="v" style={{ fontSize: '10px' }}>{r.co.want}</span>
+                                      </div>
+                                    )}
+                                    {r.co.seen && (
+                                      <div className="fact" style={{ minWidth: '130px' }}>
+                                        <span className="k">Competitors Seen</span>
+                                        <span className="v" style={{ fontSize: '10px' }}>{r.co.seen}</span>
+                                      </div>
+                                    )}
+                                    {r.key?.email && (
+                                      <div className="fact">
+                                        <span className="k">Key Contact E-mail</span>
+                                        <span className="v" style={{ fontSize: '10px' }}>{r.key.email}</span>
+                                      </div>
+                                    )}
+                                    {r.co.phone && (
+                                      <div className="fact">
+                                        <span className="k">Phone</span>
+                                        <span className="v" style={{ fontSize: '10px' }}>{r.co.phone}</span>
+                                      </div>
+                                    )}
+                                    {r.co.email && r.co.email !== r.key?.email && (
+                                      <div className="fact">
+                                        <span className="k">Company E-mail</span>
+                                        <span className="v" style={{ fontSize: '10px' }}>{r.co.email}</span>
+                                      </div>
+                                    )}
+                                    {r.co.address && (
+                                      <div className="fact" style={{ minWidth: '160px' }}>
+                                        <span className="k">Address</span>
+                                        <span className="v" style={{ fontSize: '10px' }}>{r.co.address}</span>
+                                      </div>
+                                    )}
+                                    {r.co.gst_no && (
+                                      <div className="fact">
+                                        <span className="k">GST No</span>
+                                        <span className="v" style={{ fontSize: '10px' }}>{r.co.gst_no}</span>
+                                      </div>
+                                    )}
                                   </div>
                                   {r.co.mascom_remarks && (
-                                    <div className="muted" style={{ marginTop: '7px', fontSize: '11px' }}>
-                                      {r.co.mascom_remarks}
+                                    <div className="muted" style={{ marginTop: '7px', fontSize: '10.5px', fontStyle: 'italic', background: 'var(--panel2)', padding: '4px 8px', borderRadius: '4px', borderLeft: '3px solid var(--accent)' }}>
+                                      <strong>Remarks:</strong> {r.co.mascom_remarks}
                                     </div>
                                   )}
                                 </div>
