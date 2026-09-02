@@ -714,17 +714,94 @@ mark.highlight-search {
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
-.cs-toolbar-row {
+.cs-header-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background-color: #1a3459;
+  color: #a0aec0;
+  letter-spacing: 0.5px;
+}
+.cs-toolbar-container {
   display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
+  flex-direction: column;
   background-color: var(--panel2);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
-  flex-wrap: nowrap;
   position: relative;
   z-index: 20;
+}
+.cs-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+}
+.cs-toolbar-row-2 {
+  padding-top: 2px;
+  padding-bottom: 5px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+.cs-btn-mint {
+  background-color: #e6f4ed !important;
+  color: #075e45 !important;
+  border: 1px solid #92d5b6 !important;
+  font-weight: 600 !important;
+  border-radius: 4px;
+  padding: 4px 11px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.cs-btn-mint:not(:disabled):hover {
+  background-color: #d2ebd9 !important;
+  border-color: #075e45 !important;
+  color: #054835 !important;
+  transform: translateY(-1px);
+}
+.cs-btn-dark-green {
+  background-color: #075e45 !important;
+  color: #ffffff !important;
+  border: 1px solid #054432 !important;
+  font-weight: 700 !important;
+  border-radius: 4px;
+  padding: 4px 14px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(7, 94, 69, 0.2);
+}
+.cs-btn-dark-green:not(:disabled):hover {
+  background-color: #054a37 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+.cs-search-box-direct {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.cs-search-input-direct {
+  padding: 4px 10px;
+  font-size: 11px;
+  width: 220px;
+  height: 26px;
+  border: 1.5px solid #64748b;
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: #0f172a;
+  outline: none;
+  box-sizing: border-border;
+  transition: all 0.15s ease;
+}
+.cs-search-input-direct:focus {
+  border-color: #075e45;
+  box-shadow: 0 0 0 2px rgba(7, 94, 69, 0.2);
 }
 .cs-search-box {
   position: relative;
@@ -756,6 +833,21 @@ mark.highlight-search {
 .cs-search-input.active-col-search {
   border: 1.5px solid #c9973c;
   background-color: var(--panel2);
+}
+
+/* Company Search Table Dark Green Header Styling */
+.company-search-table-container .data-table > thead > tr > th {
+  background-color: #075e45 !important;
+  color: #ffffff !important;
+  border-right: 1px solid #054633 !important;
+  border-bottom: 1.5px solid #043627 !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  text-transform: none !important;
+  letter-spacing: 0.2px !important;
+}
+.company-search-table-container .data-table > thead > tr > th .sort-trigger-icon {
+  color: #ffffff !important;
 }
 .specific-search-btn {
   width: 140px;
