@@ -187,8 +187,12 @@ const ContactSearch = () => {
 
   const handleSort = (field) => {
     if (sortField === field) {
-      setSortField('mascon_id');
-      setSortAsc(true);
+      if (sortAsc) {
+        setSortAsc(false);
+      } else {
+        setSortField('mascon_id');
+        setSortAsc(true);
+      }
     } else {
       setSortField(field);
       setSortAsc(true);
@@ -246,18 +250,19 @@ const ContactSearch = () => {
   };
 
   const renderSortableHeader = (field, label) => {
-    const isSearchActive = searchModeColumn === field;
     const isSorted = sortField === field;
+    const isSearchActive = searchModeColumn === field;
     return (
       <th 
         key={field}
-        className={`clickable-header ${isSearchActive ? 'active-search-header' : ''}`}
-        onClick={() => handleHeaderClick(field)}
-        title="Click to toggle Specific Column Search"
+        className={`clickable-header sortable-header ${isSorted ? 'active-sorted-header' : ''} ${isSearchActive ? 'active-search-header' : ''}`}
+        onClick={() => handleSort(field)}
+        title="Click to sort by this column"
         style={{ 
           width: columnWidths[field] ? `${columnWidths[field]}px` : undefined,
           position: 'relative',
-          userSelect: 'none'
+          userSelect: 'none',
+          cursor: 'pointer'
         }}
         draggable={true}
         onDragStart={(e) => handleDragStart(e, field)}
@@ -268,11 +273,9 @@ const ContactSearch = () => {
           <span>{label}</span>
           <span 
             className="sort-trigger-icon"
-            onClick={(e) => { e.stopPropagation(); handleSort(field); }}
-            style={{ cursor: 'pointer', padding: '0 2px', opacity: isSorted ? 1 : 0.4 }}
-            title="Click to sort by this column"
+            style={{ padding: '0 3px', opacity: isSorted ? 1 : 0.6 }}
           >
-            {isSorted ? '▲' : '⇅'}
+            {isSorted ? (sortAsc ? '▲' : '▼') : 'Δ'}
           </span>
         </div>
         <div 
@@ -536,56 +539,108 @@ const ContactSearch = () => {
       {/* Header */}
       <div className="cs-header">
         <div className="cs-header-left">
-          <span className="cs-title-icon"><User size={16} /></span>
-          <span className="cs-title-text">Contact Search</span>
-        </div>
-        <div className="cs-header-right">
-          <span className="view-pill-badge">VIEW</span>
+          <span className="cs-title-text">Searching Data</span>
+          <span className="cs-header-badge">MASCON</span>
         </div>
       </div>
 
-      {/* Reordered Toolbar: Filter Modal, Sticky Toggle, Settings Save/Clear, Search Mode, Search Input */}
-      <div className="cs-toolbar-row">
-        {/* Advanced Layout & Filter buttons */}
-        <button 
-          type="button" 
-          className="btn btn-secondary" 
-          onClick={() => setIsFilterModalOpen(true)}
-          title="Configure Visible Columns & Excel-like Value Filters"
-        >
-          Filters {activeFilterCount > 0 ? `(${activeFilterCount})` : ''}
-        </button>
+      {/* Toolbar Container */}
+      <div className="cs-toolbar-container">
+        {/* Row 1 Toolbar Buttons */}
+        <div className="cs-toolbar-row">
+          <button 
+            type="button" 
+            className={`btn ${isFixedHeader ? 'btn-success' : 'btn-secondary'}`}
+            onClick={() => setIsFixedHeader(prev => !prev)}
+            title="Toggle locking table headers at the top on scroll"
+          >
+            ✓ Fixed Header
+          </button>
 
-        <button 
-          type="button" 
-          className={`btn ${isFixedHeader ? 'btn-success' : 'btn-secondary'}`}
-          onClick={() => setIsFixedHeader(prev => !prev)}
-          title="Toggle locking table headers at the top on scroll (Freeze Header)"
-        >
-          Freeze Header
-        </button>
+          <button 
+            type="button" 
+            className="btn btn-secondary" 
+            onClick={() => setIsFilterModalOpen(true)}
+            title="Configure Visible Columns & Value Filters"
+          >
+            Filter Condition {activeFilterCount > 0 ? `(${activeFilterCount})` : ''}
+          </button>
 
-        <button 
-          type="button" 
-          className="btn btn-secondary" 
-          onClick={handleSaveSettings}
-          title="Save layout and filter settings to backend"
-        >
-          Save Settings
-        </button>
+          <button 
+            className="btn btn-secondary" 
+            type="button" 
+            onClick={() => {
+              const allIds = filteredRows.map((r) => r.ct.mascon_id);
+              setExpandedRowIds(new Set(allIds));
+            }}
+            title="Expand all table rows"
+          >
+            Expand All
+          </button>
 
-        <button 
-          type="button" 
-          className="btn btn-secondary" 
-          onClick={handleClearSettings}
-          disabled={filteredRows.length === 0 || !hasSavedSettings}
-          title="Clear saved layout settings from backend"
-        >
-          Clear Settings
-        </button>
+          <button 
+            className="btn btn-secondary" 
+            type="button" 
+            onClick={() => {
+              setExpandedRowIds(new Set());
+            }}
+            title="Collapse all table rows"
+          >
+            Collapse All
+          </button>
 
-        {/* Search Mode Toggles */}
-        <div style={{ display: 'flex', gap: '2px', borderLeft: '1px solid var(--border)', paddingLeft: '6px', marginLeft: '2px' }}>
+          <button 
+            type="button" 
+            className="btn btn-secondary" 
+            onClick={handleSaveSettings}
+            title="Save layout and filter settings"
+          >
+            Save Setting
+          </button>
+
+          <button 
+            type="button" 
+            className="btn btn-secondary" 
+            onClick={handleClearSettings}
+            disabled={filteredRows.length === 0 || !hasSavedSettings}
+            title="Reset saved layout settings"
+          >
+            Reset Setting
+          </button>
+
+          <button 
+            type="button" 
+            className="btn btn-secondary" 
+            onClick={() => {
+              Swal.fire({
+                icon: 'info',
+                title: 'Permission Settings',
+                text: 'User permissions for Contact Search are active.',
+                confirmButtonColor: 'var(--accent)',
+                background: 'var(--panel)',
+                color: 'var(--text-h)'
+              });
+            }}
+            title="View permission settings"
+          >
+            Permission
+          </button>
+
+          <div className="cs-toolbar-actions" style={{ marginLeft: 'auto' }}>
+            <button type="button" className="total-records-btn" onClick={handleClearFilters} title="Reset filters">
+              <RefreshCw size={11} style={{ marginRight: '4px' }} />
+              Records: {filteredRows.length}
+            </button>
+            <button type="button" className="export-excel-btn" onClick={handleExportExcel} title="Export to Excel">
+              <FileSpreadsheet size={14} style={{ marginRight: '6px' }} />
+              Export Excel
+              {filteredRows.length > 0 && <span className="export-count-badge">{filteredRows.length}</span>}
+            </button>
+          </div>
+        </div>
+
+        {/* Row 2 Search Controls */}
+        <div className="cs-toolbar-row cs-toolbar-row-2">
           <button 
             type="button" 
             className={`btn ${!searchModeColumn ? 'btn-success' : 'btn-secondary'}`}
@@ -596,13 +651,14 @@ const ContactSearch = () => {
                 if (input) input.focus();
               }, 50);
             }}
-            title="Search across all columns with highlighting"
+            title="Search across all columns"
           >
             Generic Search
           </button>
+
           <button 
             type="button" 
-            className={`btn specific-search-btn ${searchModeColumn ? 'btn-success' : 'btn-secondary'}`}
+            className={`btn ${searchModeColumn ? 'btn-success' : 'btn-secondary'}`}
             onClick={() => {
               if (searchModeColumn) {
                 setSearchModeColumn(null);
@@ -618,64 +674,28 @@ const ContactSearch = () => {
           >
             {searchModeColumn ? COLUMN_LABEL_MAP[searchModeColumn] : "Specific Field Search"}
           </button>
-        </div>
 
-        {/* Single General Search input */}
-        <div className="cs-search-box">
-          <Search size={13} className="cs-search-icon" />
-          <input
-            id="search-input"
-            type="text"
-            className={`cs-search-input ${searchModeColumn ? 'active-col-search' : ''}`}
-            placeholder={searchModeColumn ? `Search ${COLUMN_LABEL_MAP[searchModeColumn]}...` : "General Search..."}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          {searchModeColumn && (
-            <button 
-              type="button" 
-              className="search-mode-clear-btn" 
-              onClick={() => { setSearchModeColumn(null); setSearchQuery(''); }}
-              title="Switch back to General Search"
-            >
-              &times;
-            </button>
-          )}
-        </div>
-
-        {/* Reusable Styled Green and Red buttons - Expand All and Collapse All */}
-        <button 
-          className="btn btn-success" 
-          type="button" 
-          onClick={() => {
-            const allIds = filteredRows.map((r) => r.ct.mascon_id);
-            setExpandedRowIds(new Set(allIds));
-          }}
-          title="Expand all table rows"
-        >
-          Expand all
-        </button>
-        <button 
-          className="btn btn-danger" 
-          type="button" 
-          onClick={() => {
-            setExpandedRowIds(new Set());
-          }}
-          title="Collapse all table rows"
-        >
-          Collapse all
-        </button>
-
-        <div className="cs-toolbar-actions" style={{ marginLeft: 'auto' }}>
-          <button type="button" className="total-records-btn" onClick={handleClearFilters} title="Reset filters">
-            <RefreshCw size={11} style={{ marginRight: '4px' }} />
-            Records: {filteredRows.length}
-          </button>
-          <button type="button" className="export-excel-btn" onClick={handleExportExcel} title="Export to Excel">
-            <FileSpreadsheet size={14} style={{ marginRight: '6px' }} />
-            Export Excel
-            {filteredRows.length > 0 && <span className="export-count-badge">{filteredRows.length}</span>}
-          </button>
+          <div className="cs-search-box">
+            <Search size={13} className="cs-search-icon" />
+            <input
+              id="search-input"
+              type="text"
+              className={`cs-search-input ${searchModeColumn ? 'active-col-search' : ''}`}
+              placeholder="Text to search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchModeColumn && (
+              <button 
+                type="button" 
+                className="search-mode-clear-btn" 
+                onClick={() => { setSearchModeColumn(null); setSearchQuery(''); }}
+                title="Switch back to General Search"
+              >
+                &times;
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -731,14 +751,14 @@ const ContactSearch = () => {
                               setSortAsc(true);
                             }
                           }}
-                          style={{ cursor: 'pointer', opacity: sortField === 'selection' ? 1 : 0.4, fontSize: '10px' }}
+                          style={{ cursor: 'pointer', opacity: sortField === 'selection' ? 1 : 0.8, fontSize: '10px' }}
                           title="Sort selected first/last"
                         >
-                          {sortField === 'selection' ? '▲' : '⇅'}
+                          {sortField === 'selection' && !sortAsc ? '▼' : 'Δ'}
                         </span>
                       </div>
                     </th>
-                    <th style={{ width: '45px', textAlign: 'center', fontSize: '9.5px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-h)', letterSpacing: '0.6px' }}>Detail</th>
+                    <th style={{ width: '54px', textAlign: 'center' }}>Detail</th>
                     {visibleColumns.map((colKey) => renderSortableHeader(colKey, COLUMN_LABEL_MAP[colKey]))}
                   </tr>
                 </thead>

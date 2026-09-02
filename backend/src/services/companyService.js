@@ -214,11 +214,30 @@ async function updateCompany(id, data) {
 }
 
 /**
- * Service to delete a company by ID.
+ * Service to delete a company by ID along with all associated contacts and activity logs.
  */
 async function deleteCompany(id) {
-  const [result] = await pool.query('DELETE FROM MASCOM WHERE mascom_id = ?', [id]);
-  return result.affectedRows > 0;
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // 1. Delete all related transactions/activities/remarks in TRACOM
+    await connection.query('DELETE FROM TRACOM WHERE mascom_id = ?', [id]);
+
+    // 2. Delete all related contacts in MASCON
+    await connection.query('DELETE FROM MASCON WHERE mascom_id = ?', [id]);
+
+    // 3. Delete company record in MASCOM
+    const [result] = await connection.query('DELETE FROM MASCOM WHERE mascom_id = ?', [id]);
+
+    await connection.commit();
+    return result.affectedRows > 0;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 module.exports = {

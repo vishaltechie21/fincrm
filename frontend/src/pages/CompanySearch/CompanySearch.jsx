@@ -209,8 +209,12 @@ const CompanySearch = () => {
 
   const handleSort = (field) => {
     if (sortField === field) {
-      setSortField('mascom_id');
-      setSortAsc(true);
+      if (sortAsc) {
+        setSortAsc(false);
+      } else {
+        setSortField('mascom_id');
+        setSortAsc(true);
+      }
     } else {
       setSortField(field);
       setSortAsc(true);
@@ -268,18 +272,19 @@ const CompanySearch = () => {
   };
 
   const renderSortableHeader = (field, label) => {
-    const isSearchActive = searchModeColumn === field;
     const isSorted = sortField === field;
+    const isSearchActive = searchModeColumn === field;
     return (
       <th 
         key={field}
-        className={`clickable-header ${isSearchActive ? 'active-search-header' : ''}`}
-        onClick={() => handleHeaderClick(field)}
-        title="Click to toggle Specific Column Search"
+        className={`clickable-header sortable-header ${isSorted ? 'active-sorted-header' : ''} ${isSearchActive ? 'active-search-header' : ''}`}
+        onClick={() => handleSort(field)}
+        title="Click to sort by this column"
         style={{ 
           width: columnWidths[field] ? `${columnWidths[field]}px` : undefined,
           position: 'relative',
-          userSelect: 'none'
+          userSelect: 'none',
+          cursor: 'pointer'
         }}
         draggable={true}
         onDragStart={(e) => handleDragStart(e, field)}
@@ -290,11 +295,9 @@ const CompanySearch = () => {
           <span>{label}</span>
           <span 
             className="sort-trigger-icon"
-            onClick={(e) => { e.stopPropagation(); handleSort(field); }}
-            style={{ cursor: 'pointer', padding: '0 2px', opacity: isSorted ? 1 : 0.8 }}
-            title="Click to sort by this column"
+            style={{ padding: '0 3px', opacity: isSorted ? 1 : 0.6 }}
           >
-            {isSorted && !sortAsc ? '▼' : 'Δ'}
+            {isSorted ? (sortAsc ? '▲' : '▼') : 'Δ'}
           </span>
         </div>
         <div 
@@ -595,7 +598,7 @@ const CompanySearch = () => {
         <div className="cs-toolbar-row">
           <button 
             type="button" 
-            className={`btn ${isFixedHeader ? 'cs-btn-dark-green' : 'cs-btn-mint'}`}
+            className={`btn ${isFixedHeader ? 'btn-success' : 'btn-secondary'}`}
             onClick={() => setIsFixedHeader(prev => !prev)}
             title="Toggle locking table headers at the top on scroll"
           >
@@ -604,7 +607,7 @@ const CompanySearch = () => {
 
           <button 
             type="button" 
-            className="btn cs-btn-mint" 
+            className="btn btn-secondary" 
             onClick={() => setIsFilterModalOpen(true)}
             title="Configure Visible Columns & Value Filters"
           >
@@ -612,7 +615,7 @@ const CompanySearch = () => {
           </button>
 
           <button 
-            className="btn cs-btn-mint" 
+            className="btn btn-secondary" 
             type="button" 
             onClick={() => {
               const allIds = filteredRows.map((r) => r.co.mascom_id);
@@ -624,7 +627,7 @@ const CompanySearch = () => {
           </button>
 
           <button 
-            className="btn cs-btn-mint" 
+            className="btn btn-secondary" 
             type="button" 
             onClick={() => {
               setExpandedRowIds(new Set());
@@ -636,7 +639,7 @@ const CompanySearch = () => {
 
           <button 
             type="button" 
-            className="btn cs-btn-mint" 
+            className="btn btn-secondary" 
             onClick={handleSaveSettings}
             title="Save layout and filter settings"
           >
@@ -645,7 +648,7 @@ const CompanySearch = () => {
 
           <button 
             type="button" 
-            className="btn cs-btn-mint" 
+            className="btn btn-secondary" 
             onClick={handleClearSettings}
             disabled={filteredRows.length === 0 || !hasSavedSettings}
             title="Reset saved layout settings"
@@ -655,13 +658,15 @@ const CompanySearch = () => {
 
           <button 
             type="button" 
-            className="btn cs-btn-mint" 
+            className="btn btn-secondary" 
             onClick={() => {
               Swal.fire({
                 icon: 'info',
                 title: 'Permission Settings',
                 text: 'User permissions for Company Search are active.',
-                confirmButtonColor: '#0a5c43'
+                confirmButtonColor: 'var(--accent)',
+                background: 'var(--panel)',
+                color: 'var(--text-h)'
               });
             }}
             title="View permission settings"
@@ -686,7 +691,7 @@ const CompanySearch = () => {
         <div className="cs-toolbar-row cs-toolbar-row-2">
           <button 
             type="button" 
-            className="btn cs-btn-mint"
+            className={`btn ${!searchModeColumn ? 'btn-success' : 'btn-secondary'}`}
             onClick={() => {
               setSearchModeColumn(null);
               setTimeout(() => {
@@ -701,7 +706,7 @@ const CompanySearch = () => {
 
           <button 
             type="button" 
-            className="btn cs-btn-dark-green"
+            className={`btn ${searchModeColumn ? 'btn-success' : 'btn-secondary'}`}
             onClick={() => {
               if (searchModeColumn) {
                 setSearchModeColumn(null);
@@ -715,14 +720,15 @@ const CompanySearch = () => {
             }}
             title="Search specific field (click table cells to choose)"
           >
-            {searchModeColumn ? COLUMN_LABEL_MAP[searchModeColumn] : "Company Name"}
+            {searchModeColumn ? COLUMN_LABEL_MAP[searchModeColumn] : "Specific Field Search"}
           </button>
 
-          <div className="cs-search-box-direct">
+          <div className="cs-search-box">
+            <Search size={13} className="cs-search-icon" />
             <input
               id="search-input"
               type="text"
-              className="cs-search-input-direct"
+              className={`cs-search-input ${searchModeColumn ? 'active-col-search' : ''}`}
               placeholder="Text to search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

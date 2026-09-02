@@ -11,7 +11,7 @@ import ImportModal from '../../components/ImportModal/ImportModal';
 import Swal from 'sweetalert2';
 import { validateCompany } from '../../utils/validation';
 import * as subMasterService from '../../services/subMasterService';
-import { MASCOM_SEED } from '../../utils/activityData';
+import { MASCOM_SEED, deleteCompanyCascade } from '../../utils/activityData';
 
 
 const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
@@ -297,12 +297,12 @@ const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
 
     Swal.fire({
       title: 'Are you sure?',
-      text: `Do you really want to delete company ${targetId}?`,
+      text: `Do you really want to delete company ${targetId}? All associated contact info, activity logs, and remarks will also be permanently deleted.`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#dc2626',
       cancelButtonColor: '#64748b',
-      confirmButtonText: 'Yes, Delete',
+      confirmButtonText: 'Yes, Delete All',
       cancelButtonText: 'Cancel'
     }).then(async (result) => {
       if (result.isConfirmed) {
@@ -312,7 +312,8 @@ const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
           console.warn(`Backend delete call for company ${targetId}:`, err);
         }
 
-        // Always remove from companies state so seed & DB records disappear immediately
+        // Cascade delete company, contacts, and activity logs from seed memory & state
+        deleteCompanyCascade(targetId);
         setCompanies((prev) => prev.filter((c) => c.mascom_id !== targetId));
 
         if (formData.mascom_id === targetId) {
@@ -322,7 +323,7 @@ const CompanyMaster = forwardRef(({ onEditStateChange }, ref) => {
 
         Swal.fire({
           title: 'Deleted!',
-          text: `Company ${targetId} deleted successfully.`,
+          text: `Company ${targetId} and all related contacts & activity logs were deleted successfully.`,
           icon: 'success',
           timer: 2000,
           showConfirmButton: false

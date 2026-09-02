@@ -84,3 +84,24 @@ export const TRACOM_SEED = [
   {tracom_id:"TR0040", mascom_id:"MC0008", mascon_id:"CN0014", tracom_date:"2026-05-05", mode:"Quotation", price_quoted:920000, amc_quoted:138000, user_name:"Rakesh", remarks:"Quotation QT/26/0117 sent - 60 users plus one-time data migration charge.", followup_date:"2026-05-15", followup_time:"16:00"},
   {tracom_id:"TR0041", mascom_id:"MC0008", mascon_id:"CN0015", tracom_date:"2026-05-19", mode:"Email", user_name:"Rakesh", remarks:"Sample migration of 2 masters shared for verification. Awaiting sign-off.", followup_date:"2026-06-08", followup_time:"11:00"}
 ];
+
+export const deleteCompanyCascade = (mascom_id) => {
+  if (!mascom_id) return;
+  // Remove company from MASCOM_SEED
+  const mcIdx = MASCOM_SEED.findIndex(c => c.mascom_id === mascom_id);
+  if (mcIdx !== -1) MASCOM_SEED.splice(mcIdx, 1);
+
+  // Remove all contacts linked to mascom_id from MASCON_SEED
+  for (let i = MASCON_SEED.length - 1; i >= 0; i--) {
+    if (MASCON_SEED[i].mascom_id === mascom_id) {
+      MASCON_SEED.splice(i, 1);
+    }
+  }
+
+  // Remove all activities/remarks linked to mascom_id from TRACOM_SEED
+  for (let i = TRACOM_SEED.length - 1; i >= 0; i--) {
+    if (TRACOM_SEED[i].mascom_id === mascom_id) {
+      TRACOM_SEED.splice(i, 1);
+    }
+  }
+};

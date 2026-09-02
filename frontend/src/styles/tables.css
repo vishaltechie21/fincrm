@@ -34,6 +34,47 @@
   text-align: left;
   z-index: 3;
   user-select: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.data-table > thead > tr > th.sortable-header,
+.data-table > thead > tr > th.clickable-header {
+  cursor: pointer;
+}
+
+.data-table > thead > tr > th.sortable-header:hover,
+.data-table > thead > tr > th.clickable-header:hover {
+  background-color: var(--border);
+  color: var(--text-h);
+}
+
+/* Sorted Column Header - Deep Royal Blue Accent */
+.data-table > thead > tr > th.active-sorted-header {
+  background-color: var(--accent) !important;
+  color: #ffffff !important;
+}
+
+.data-table > thead > tr > th.active-sorted-header .sort-trigger-icon {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Specific Search Active Column Header - Rich Gold Accent (#c9973c) */
+.data-table > thead > tr > th.active-search-header {
+  background-color: #c9973c !important;
+  color: #ffffff !important;
+  border-bottom: 2px solid #a87c26 !important;
+}
+
+.data-table > thead > tr > th.active-search-header .sort-trigger-icon {
+  color: #ffffff !important;
+}
+
+/* Both Sorted & Specific Search Active Header */
+.data-table > thead > tr > th.active-sorted-header.active-search-header {
+  background-color: #c9973c !important;
+  color: #ffffff !important;
+  box-shadow: inset 0 -3px 0 0 #2b76e8;
 }
 
 .data-table > thead > tr > th:last-child {
