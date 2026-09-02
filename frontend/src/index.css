@@ -841,14 +841,15 @@ mark.highlight-search {
   white-space: nowrap;
 }
 .company-table th,
-.contact-table th {
+.contact-table th,
+.data-table th {
   position: sticky;
   top: 0;
   background-color: var(--panel2);
   color: var(--text-h);
   font-weight: 700;
   padding: 6px 8px;
-  border-bottom: 2px solid var(--border);
+  border-bottom: 2px solid #c9973c !important;
   border-right: 1px solid var(--border);
   white-space: nowrap;
   user-select: none;
@@ -1192,10 +1193,7 @@ table.sub td:last-child, table.sub th:last-child {
   font-size: 11px;
   line-height: 1;
   cursor: pointer;
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              background-color 0.2s ease,
-              border-color 0.2s ease,
-              color 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 tr.master-row {
   transition: background-color 0.2s ease;
@@ -1207,7 +1205,25 @@ tr.master-row.open-row .twisty-icon {
   background-color: #c9973c !important;
   border-color: #a87c26 !important;
   color: #412402 !important;
-  transform: rotate(180deg);
+}
+
+/* SweetAlert Custom Modal Buttons */
+.swal-btn-confirm-custom {
+  background-color: #0e6245 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border-radius: 4px !important;
+  padding: 6px 18px !important;
+  border: none !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+}
+.swal-btn-cancel-custom {
+  background-color: #e2f2e9 !important;
+  color: #0e6245 !important;
+  font-weight: 700 !important;
+  border: 1px solid #0e6245 !important;
+  border-radius: 4px !important;
+  padding: 6px 18px !important;
 }
 tr.master-row.open-row td {
   background-color: #0f2544 !important;
@@ -1231,8 +1247,16 @@ tr.master-row.open-row td b,
 tr.master-row.open-row td strong {
   color: #ffffff !important;
 }
-tr.master-row.even-row td {
-  background-color: var(--panel2);
+tr.master-row.even-row:not(.open-row) td {
+  background-color: #f8fafc !important;
+}
+
+tr.master-row:not(.open-row):hover > td,
+.company-table tr:not(.open-row):not(.detail):hover > td,
+.contact-table tr:not(.open-row):not(.detail):hover > td,
+.data-table tr:not(.open-row):not(.detail):hover > td {
+  background-color: #fce7f3 !important;
+  color: #0f172a !important;
 }
 tr.detail > td {
   border-bottom: 3px solid #0f2544 !important;

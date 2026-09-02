@@ -402,6 +402,60 @@ const ContactSearch = () => {
     }, 50);
   };
 
+  const handleSelectAll = () => {
+    const isCurrentlyAllSelected = filteredRows.length > 0 && filteredRows.every(r => selectedRowIds.has(r.ct.mascon_id));
+    const currentUserName = 'Suman';
+
+    if (!isCurrentlyAllSelected) {
+      Swal.fire({
+        title: 'Select All Contacts',
+        html: `<div style="text-align: left; font-size: 13px; color: var(--text-h); line-height: 1.6;">
+          All <b>${filteredRows.length}</b> contacts in the grid will be marked by <b>${currentUserName}</b>.<br/>
+          Do you want to continue?
+        </div>`,
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No',
+        confirmButtonColor: '#0e6245',
+        cancelButtonColor: '#e2f2e9',
+        customClass: {
+          confirmButton: 'swal-btn-confirm-custom',
+          cancelButton: 'swal-btn-cancel-custom'
+        },
+        background: 'var(--panel)',
+        color: 'var(--text-h)'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setSelectedRowIds(new Set(filteredRows.map(r => r.ct.mascon_id)));
+        }
+      });
+    } else {
+      Swal.fire({
+        title: 'Clear All Contacts',
+        html: `<div style="text-align: left; font-size: 13px; color: var(--text-h); line-height: 1.6;">
+          The marks of <b>${currentUserName}</b> on all <b>${filteredRows.length}</b> contacts in the grid will be cleared.<br/>
+          Other users' marks are not affected.<br/>
+          Do you want to continue?
+        </div>`,
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No',
+        confirmButtonColor: '#0e6245',
+        cancelButtonColor: '#e2f2e9',
+        customClass: {
+          confirmButton: 'swal-btn-confirm-custom',
+          cancelButton: 'swal-btn-cancel-custom'
+        },
+        background: 'var(--panel)',
+        color: 'var(--text-h)'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setSelectedRowIds(new Set());
+        }
+      });
+    }
+  };
+
   // Sorting & Infinite Scroll Slice
   const sortedRows = [...filteredRows].sort((a, b) => {
     if (sortField === 'selection') {
@@ -722,39 +776,18 @@ const ContactSearch = () => {
                         <label className="checkbox-container select-all-header-cb" style={{ marginRight: 0 }}>
                           <input 
                             type="checkbox" 
-                            checked={paginatedRows.length > 0 && paginatedRows.every(r => selectedRowIds.has(r.ct.mascon_id))}
-                            onChange={(e) => {
-                              const checked = e.target.checked;
-                              setSelectedRowIds(prev => {
-                                const next = new Set(prev);
-                                paginatedRows.forEach(row => {
-                                  if (checked) {
-                                    next.add(row.ct.mascon_id);
-                                  } else {
-                                    next.delete(row.ct.mascon_id);
-                                  }
-                                });
-                                return next;
-                              });
-                            }}
+                            checked={filteredRows.length > 0 && filteredRows.every(r => selectedRowIds.has(r.ct.mascon_id))}
+                            onChange={handleSelectAll}
                           />
                           <span className="checkmark"></span>
                         </label>
                         <span 
                           className="sort-trigger-icon"
-                          onClick={() => {
-                            if (sortField === 'selection') {
-                              setSortField('mascon_id');
-                              setSortAsc(true);
-                            } else {
-                              setSortField('selection');
-                              setSortAsc(true);
-                            }
-                          }}
-                          style={{ cursor: 'pointer', opacity: sortField === 'selection' ? 1 : 0.8, fontSize: '10px' }}
-                          title="Sort selected first/last"
+                          onClick={() => handleSort('selection')}
+                          style={{ cursor: 'pointer', opacity: sortField === 'selection' ? 1 : 0.6, fontSize: '10px' }}
+                          title="Click to sort by selected rows"
                         >
-                          {sortField === 'selection' && !sortAsc ? '▼' : 'Δ'}
+                          {sortField === 'selection' ? (sortAsc ? '▲' : '▼') : 'Δ'}
                         </span>
                       </div>
                     </th>
