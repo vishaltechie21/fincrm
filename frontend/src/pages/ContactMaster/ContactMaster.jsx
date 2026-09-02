@@ -424,22 +424,32 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
         <div className="entry-layout-split">
           {/* Top Form Panel */}
           <div className="form-panel">
-            {formData.mascom_id && editState === 'adding' && (
-              <div className="new-contact-heading-banner" style={{
-                background: '#e1f5ee',
-                border: '1px solid #0f6e56',
-                color: '#0f6e56',
-                padding: '10px 14px',
-                borderRadius: '4px',
-                marginBottom: '12px',
-                fontSize: '13px',
-                fontWeight: '700',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
+            {formData.mascom_id && (
+              <div 
+                className="company-editing-banner" 
+                style={{
+                  background: editState === 'adding' ? '#e1f5ee' : '#fff7e8',
+                  border: `1px solid ${editState === 'adding' ? '#0f6e56' : '#c9973c'}`,
+                  color: editState === 'adding' ? '#0f6e56' : '#8a6512',
+                  padding: '10px 14px',
+                  borderRadius: '6px',
+                  marginBottom: '12px',
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.04)'
+                }}
+              >
                 <Building2 size={16} />
-                <span>New contact under company: <strong>{targetCompanyName}</strong> ({formData.mascom_id})</span>
+                <span>
+                  {editState === 'adding' ? (
+                    <>Adding new contact under company: <strong>{targetCompanyName}</strong> ({formData.mascom_id})</>
+                  ) : (
+                    <>Editing contact for company: <strong>{targetCompanyName}</strong> ({formData.mascom_id}){formData.contact_name ? <> · Contact: <strong>{formData.contact_name}</strong> ({formData.mascon_id})</> : null}</>
+                  )}
+                </span>
               </div>
             )}
             <ContactForm

@@ -1055,7 +1055,7 @@ const CompanySearch = () => {
         isOpen={!!activeActivityCompany} 
         onClose={() => setActiveActivityCompany(null)} 
         company={activeActivityCompany}
-        onAddRemark={(companyId, remarkText, mode) => {
+        onAddRemark={async (companyId, remarkText, mode) => {
           const todayStr = new Date().toISOString().slice(0, 10);
           const newAct = {
             tracom_id: `TR-${Date.now()}`,
@@ -1066,24 +1066,101 @@ const CompanySearch = () => {
             remarks: remarkText,
             user_name: 'admin_fincrm'
           };
-          setActiveActivityCompany(prev => {
-            if (!prev) return null;
-            const currentList = prev.remarksList || prev.acts || [];
-            return {
-              ...prev,
-              remarksList: [newAct, ...currentList]
-            };
-          });
-          setCompanies(prev => prev.map(c => {
-            if (c.mascom_id === companyId) {
-              const acts = c.acts || [];
+
+          const targetCompany = companies.find(c => c.mascom_id === companyId);
+          const currentActs = targetCompany?.acts || activeActivityCompany?.remarksList || activeActivityCompany?.acts || [];
+          const updatedActs = [newAct, ...currentActs];
+
+          try {
+            await companyService.updateCompany(companyId, { acts: updatedActs, activity_data: updatedActs });
+            
+            setActiveActivityCompany(prev => {
+              if (!prev) return null;
               return {
-                ...c,
-                acts: [newAct, ...acts]
+                ...prev,
+                acts: updatedActs,
+                remarksList: updatedActs
               };
-            }
-            return c;
-          }));
+            });
+
+            setCompanies(prev => prev.map(c => {
+              if (c.mascom_id === companyId) {
+                return {
+                  ...c,
+                  acts: updatedActs
+                };
+              }
+              return c;
+            }));
+          } catch (err) {
+            console.error('Failed to save activity remark to database:', err);
+          }
+        }}
+        onUpdateRemark={async (companyId, updateIdx, remarkText, mode) => {
+          const targetCompany = companies.find(c => c.mascom_id === companyId);
+          const currentActs = [...(targetCompany?.acts || activeActivityCompany?.remarksList || activeActivityCompany?.acts || [])];
+          if (currentActs[updateIdx]) {
+            currentActs[updateIdx] = {
+              ...currentActs[updateIdx],
+              mode: mode || 'Call',
+              remarks: remarkText
+            };
+          }
+
+          try {
+            await companyService.updateCompany(companyId, { acts: currentActs, activity_data: currentActs });
+
+            setActiveActivityCompany(prev => {
+              if (!prev) return null;
+              return {
+                ...prev,
+                acts: currentActs,
+                remarksList: currentActs
+              };
+            });
+
+            setCompanies(prev => prev.map(c => {
+              if (c.mascom_id === companyId) {
+                return {
+                  ...c,
+                  acts: currentActs
+                };
+              }
+              return c;
+            }));
+          } catch (err) {
+            console.error('Failed to update activity remark in database:', err);
+          }
+        }}
+        onDeleteRemark={async (companyId, deleteIdx) => {
+          const targetCompany = companies.find(c => c.mascom_id === companyId);
+          const currentActs = [...(targetCompany?.acts || activeActivityCompany?.remarksList || activeActivityCompany?.acts || [])];
+          currentActs.splice(deleteIdx, 1);
+
+          try {
+            await companyService.updateCompany(companyId, { acts: currentActs, activity_data: currentActs });
+
+            setActiveActivityCompany(prev => {
+              if (!prev) return null;
+              return {
+                ...prev,
+                acts: currentActs,
+                remarksList: currentActs
+              };
+            });
+
+            setCompanies(prev => prev.map(c => {
+              if (c.mascom_id === companyId) {
+                return {
+                  ...c,
+                  acts: currentActs
+                };
+              }
+              return c;
+            }));
+          } catch (err) {
+            console.error('Failed to delete activity remark from database:', err);
+          }
         }}
       />
       <DashboardModal 

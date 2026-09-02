@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, UserCheck, Key, Edit, Trash2, Plus } from 'lucide-react';
-import './ContactInfoModal.css';
+import TruncatedText from '../TruncatedText/TruncatedText';
+import './Modals.css';
 
 export default function ContactInfoModal({
   isOpen,
@@ -60,8 +61,8 @@ export default function ContactInfoModal({
                             </span>
                           )}
                         </td>
-                        <td className="cname-cell">{cont.contact_name}</td>
-                        <td className="desig-cell">{cont.designation || '—'}</td>
+                        <td className="cname-cell"><TruncatedText text={cont.contact_name} limit={25} /></td>
+                        <td className="desig-cell"><TruncatedText text={cont.designation || '—'} limit={25} /></td>
                         <td className="mono mobile-cell">{cont.mobile || '—'}</td>
                         <td>
                           <span className="active-pill-yes">Yes</span>

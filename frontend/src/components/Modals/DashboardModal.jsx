@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { X, CheckCircle, Clock, FileText, AlertCircle } from 'lucide-react';
+import { X, CheckCircle, Clock, Calendar, FileText, User } from 'lucide-react';
 import { SALES_STEPS } from '../../utils/dashboardData';
-import './DashboardModal.css';
+import './Modals.css';
 
 export default function DashboardModal({ isOpen, onClose, company, onSaveDashboard }) {
   const [stepsData, setStepsData] = useState({});
@@ -82,13 +82,13 @@ export default function DashboardModal({ isOpen, onClose, company, onSaveDashboa
         <div className="modal-body">
           {/* Progress Banner */}
           <div className="pipeline-banner">
-            <div className="pipeline-banner-item">
-              <span className="p-lbl">Completed Steps</span>
-              <span className="p-val green">{doneCount} / 15</span>
+            <div className="pb-box">
+              <span className="pb-lbl">Completed Steps</span>
+              <span className="pb-val">{doneCount} / 15</span>
             </div>
-            <div className="pipeline-banner-item">
-              <span className="p-lbl">Next Action</span>
-              <span className="p-val gold">
+            <div className="pb-box" style={{ marginLeft: 'auto' }}>
+              <span className="pb-lbl">Next Action</span>
+              <span className="pb-val highlight">
                 {SALES_STEPS.find(s => getStepVal(s.k).status !== 'Done')?.lab || 'Cycle Finished'}
               </span>
             </div>
@@ -174,6 +174,7 @@ export default function DashboardModal({ isOpen, onClose, company, onSaveDashboa
                             placeholder="Add notes for this step..."
                             value={formRemarks} 
                             onChange={(e) => setFormRemarks(e.target.value)} 
+                            maxLength={300}
                           />
                         </label>
                         {step.doc && (
@@ -184,6 +185,7 @@ export default function DashboardModal({ isOpen, onClose, company, onSaveDashboa
                               placeholder="Enter document filename or link..."
                               value={formDoc} 
                               onChange={(e) => setFormDoc(e.target.value)} 
+                              maxLength={255}
                             />
                           </label>
                         )}

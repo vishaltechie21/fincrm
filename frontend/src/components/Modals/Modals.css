@@ -1,0 +1,924 @@
+/* ── Unified Global Modals Theme System ───────────────────────────────────── */
+
+/* Unified Overlay & Window Container */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2500;
+  background: rgba(15, 37, 68, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: modalOverlayFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.modal-content {
+  background: var(--panel, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border, #cbd5e1);
+  animation: modalContentPopIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes modalOverlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalContentPopIn {
+  from { opacity: 0; transform: scale(0.95) translateY(14px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Unified Compact Header with Theme Colors */
+.modal-header,
+.act-modal-header {
+  padding: 5px 12px;
+  background: var(--header-bg, #0f2544);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--yellow, #d97706);
+}
+
+.modal-header-title,
+.act-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.modal-header-title h3,
+.act-header-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.modal-header-sub,
+.act-header-company {
+  font-size: 12px;
+  color: #93c5fd;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.modal-close-btn,
+.act-close-btn {
+  background: none;
+  border: none;
+  color: #cbd5e1;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.modal-close-btn:hover,
+.act-close-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+/* Gold Accent Line fallback */
+.modal-header-gold-line,
+.act-header-gold-line {
+  height: 3px;
+  background: var(--yellow, #d97706);
+  width: 100%;
+}
+
+/* Unified Body Container */
+.modal-body,
+.act-modal-body {
+  padding: 10px 12px;
+  background: var(--panel, #ffffff);
+  overflow-y: auto;
+}
+
+/* Unified Footer System */
+.modal-footer,
+.act-modal-footer {
+  padding: 8px 14px;
+  background: var(--panel, #ffffff);
+  border-top: 1px solid var(--border, #e2e8f0);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-foot-info,
+.act-foot-info {
+  font-size: 11px;
+  color: var(--muted, #64748b);
+  font-weight: 500;
+}
+
+.modal-footer button.btn-secondary,
+.modal-footer .btn-close-standard,
+.act-btn-close {
+  background: var(--panel, #ffffff);
+  border: 1px solid var(--btn-success, #10b981);
+  color: var(--btn-success, #10b981);
+  border-radius: 4px;
+  padding: 3px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.modal-footer button.btn-secondary:hover,
+.modal-footer .btn-close-standard:hover,
+.act-btn-close:hover {
+  background: var(--accent-bg, #f0fdf4);
+}
+
+
+/* ── 1. Activity Modal Styles ────────────────────────────────────────────── */
+.activity-modal {
+  max-width: 620px;
+}
+
+.act-table-wrap {
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 4px;
+  overflow: hidden;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.act-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.act-table th {
+  background: var(--panel2, #eaf1f8);
+  color: var(--text-h, #1e293b);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 6px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border, #cbd5e1);
+  border-right: 1px solid var(--border, #cbd5e1);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.act-table th:last-child {
+  border-right: none;
+}
+
+.act-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--panel2, #e2e8f0);
+  border-right: 1px solid var(--panel2, #e2e8f0);
+  color: var(--text, #1e293b);
+  vertical-align: top;
+}
+
+.act-table td:last-child {
+  border-right: none;
+}
+
+.act-table tr.active-edit-row {
+  background: var(--accent-bg, #fff7e8);
+}
+
+.act-date-cell {
+  font-family: var(--font-mono, monospace);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+.act-rem-cell {
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.act-user-cell {
+  color: var(--muted, #475569);
+  font-size: 11.5px;
+}
+
+.act-actions-group {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.act-btn-outline {
+  background: var(--panel, #ffffff);
+  border: 1px solid var(--btn-success, #10b981);
+  color: var(--btn-success, #10b981);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.act-btn-outline:hover {
+  background: var(--accent-bg, #e6f4ea);
+}
+
+.act-bottom-form {
+  margin-top: 10px;
+}
+
+.act-form-layout {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.act-textarea {
+  flex: 1;
+  border: 1px solid var(--border, #94a3b8);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 12px;
+  resize: vertical;
+  min-height: 44px;
+  font-family: inherit;
+  color: var(--text-h, #0f172a);
+  background: var(--panel, #ffffff);
+}
+
+.act-textarea:focus {
+  outline: 2px solid var(--btn-success, #10b981);
+  outline-offset: -1px;
+  border-color: var(--btn-success, #10b981);
+}
+
+.act-edit-btn-column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.act-btn-submit {
+  background: var(--btn-success, #10b981);
+  color: #ffffff;
+  border: none;
+  padding: 0 16px;
+  border-radius: 4px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+  min-height: 44px;
+}
+
+.act-btn-submit:hover {
+  background: var(--btn-success-hover, #059669);
+}
+
+.act-btn-cancel {
+  background: var(--border, #cbd5e1);
+  color: var(--text, #334155);
+  border: none;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+
+/* ── 2. Checklist Modal Styles ───────────────────────────────────────────── */
+.checklist-modal {
+  max-width: 680px;
+}
+
+.checklist-modal .chk-summary-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--accent-bg, #fffdf7);
+  border: 1px solid var(--yellow, #c9973c);
+  border-radius: 4px;
+  padding: 6px 12px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.checklist-modal .chk-sum-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted, #8a6512);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.checklist-modal .chk-sum-val {
+  color: var(--text-h, #0f172a);
+}
+
+.checklist-modal .chk-sum-sep {
+  color: #cbd5e1;
+}
+
+.checklist-modal .chk-sum-warn {
+  color: #b45309;
+  font-weight: 500;
+}
+
+.checklist-modal .chk-stages {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.checklist-modal .chk-stage-group {
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.checklist-modal .chk-stage-header {
+  background: var(--panel2, #f1f5f9);
+  color: var(--header-bg, #0f2544);
+  padding: 5px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 700;
+  font-size: 11.5px;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid var(--panel2, #e2e8f0);
+}
+
+.checklist-modal .chk-stage-header:hover {
+  background: #e2e8f0;
+}
+
+.checklist-modal .chk-stage-header.expanded {
+  background: var(--header-bg, #0f2544);
+  color: #ffffff;
+  border-bottom: none;
+}
+
+.checklist-modal .chk-stage-header.expanded .st-count {
+  color: #93c5fd;
+}
+
+.checklist-modal .chk-mand-open-badge {
+  font-size: 10px;
+  font-weight: 600;
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-left: 6px;
+}
+
+.checklist-modal .st-toggle-symbol {
+  font-size: 13px;
+  font-weight: 700;
+  width: 12px;
+  text-align: center;
+  margin-left: 6px;
+}
+
+.checklist-modal .st-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.checklist-modal .st-name {
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.checklist-modal .st-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.checklist-modal .st-count {
+  font-size: 10.5px;
+  font-weight: 600;
+  font-family: var(--font-mono, monospace);
+}
+
+@keyframes chkStageSlideDown {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.checklist-modal .chk-stage-content {
+  background: var(--panel, #ffffff);
+  border-top: 1px solid var(--border, #cbd5e1);
+  animation: chkStageSlideDown 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.checklist-modal .chk-item-row {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--panel2, #f1f5f9);
+}
+
+.checklist-modal .chk-item-row:last-child {
+  border-bottom: none;
+}
+
+.checklist-modal .chk-item-row.completed {
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.checklist-modal .chk-item-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.checklist-modal .item-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.checklist-modal .chk-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border, #cbd5e1);
+  flex-shrink: 0;
+}
+
+.checklist-modal .chk-status-dot.done {
+  background: var(--btn-success, #10b981);
+}
+
+.checklist-modal .item-action-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-h, #0f172a);
+}
+
+.checklist-modal .badge-mand {
+  font-size: 9.5px;
+  font-weight: 700;
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 1px 5px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.checklist-modal .badge-evidence {
+  font-size: 10px;
+  color: var(--muted, #64748b);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--panel2, #f1f5f9);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.checklist-modal .badge-evidence.has-ev {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.checklist-modal .item-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checklist-modal .item-resp {
+  font-size: 11px;
+  color: var(--muted, #64748b);
+}
+
+.checklist-modal .item-recorded-tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--btn-success, #10b981);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.checklist-modal .item-pending-tag {
+  font-size: 11px;
+  color: var(--muted, #94a3b8);
+}
+
+.checklist-modal .chk-logs-list {
+  margin-top: 8px;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.checklist-modal .chk-log-entry {
+  background: var(--panel2, #f8fafc);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checklist-modal .log-text {
+  flex: 1;
+  color: var(--text-h, #1e293b);
+  font-weight: 500;
+}
+
+.checklist-modal .log-ev {
+  color: var(--btn-success, #15803d);
+  font-weight: 600;
+}
+
+.checklist-modal .log-del-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 3px;
+}
+
+.checklist-modal .log-del-btn:hover {
+  background: #fee2e2;
+}
+
+@keyframes chkFormExpand {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.checklist-modal .chk-add-form {
+  margin-top: 8px;
+  background: var(--accent-bg, #fffdf7);
+  border: 1px solid var(--yellow, #c9973c);
+  border-radius: 6px;
+  padding: 10px 12px;
+  animation: chkFormExpand 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top center;
+}
+
+.checklist-modal .add-form-row-top {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.checklist-modal .add-form-row-top label,
+.checklist-modal .add-form-row-remarks label,
+.checklist-modal .add-form-row-evidence label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted, #8a6512);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.checklist-modal .add-form-row-top input,
+.checklist-modal .add-form-row-remarks textarea,
+.checklist-modal .add-form-row-evidence input {
+  padding: 4px 8px;
+  font-size: 11.5px;
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 4px;
+  background: var(--panel, #ffffff);
+  color: var(--text-h, #0f172a);
+}
+
+.checklist-modal .add-form-row-remarks {
+  margin-bottom: 8px;
+}
+
+.checklist-modal .add-form-row-evidence {
+  margin-bottom: 8px;
+}
+
+.checklist-modal .add-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+
+/* ── 3. Contact Info Modal Styles ────────────────────────────────────────── */
+.contact-info-modal {
+  max-width: 620px;
+}
+
+.contact-info-modal .contact-table-wrap {
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 6px;
+  overflow: hidden;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.contact-info-modal .contact-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.contact-info-modal .contact-table th {
+  background: var(--panel2, #eaf1f8);
+  color: var(--text-h, #1e293b);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 7px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border, #cbd5e1);
+}
+
+.contact-info-modal .contact-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--panel2, #e2e8f0);
+  color: var(--text, #1e293b);
+  vertical-align: middle;
+}
+
+.contact-info-modal .cname-cell {
+  font-weight: 600;
+}
+
+.contact-info-modal .desig-cell {
+  color: var(--muted, #475569);
+}
+
+.contact-info-modal .key-icon-badge {
+  color: var(--yellow, #d97706);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contact-info-modal .normal-user-icon {
+  color: var(--muted, #94a3b8);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contact-info-modal .active-pill-yes {
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.contact-info-modal .contact-row-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.contact-info-modal .contact-modal-add-row {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+
+/* ── 4. Dashboard Modal Styles ───────────────────────────────────────────── */
+.dashboard-modal {
+  max-width: 760px;
+}
+
+.dashboard-modal .pipeline-banner {
+  display: flex;
+  gap: 24px;
+  background: var(--accent-bg, #fffdf7);
+  border: 1px solid var(--yellow, #c9973c);
+  border-radius: 6px;
+  padding: 8px 14px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.dashboard-modal .pb-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboard-modal .pb-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted, #64748b);
+  text-transform: uppercase;
+}
+
+.dashboard-modal .pb-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-h, #1e293b);
+}
+
+.dashboard-modal .pb-val.highlight {
+  color: var(--header-bg, #0f2544);
+}
+
+.dashboard-modal .steps-table-wrap {
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 6px;
+  overflow: hidden;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.dashboard-modal .steps-head {
+  display: flex;
+  align-items: center;
+  background: var(--header-bg, #0f2544);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border, #cbd5e1);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.dashboard-modal .step-row-outer {
+  border-bottom: 1px solid var(--panel2, #e2e8f0);
+}
+
+.dashboard-modal .step-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  font-size: 12px;
+}
+
+.dashboard-modal .step-row:hover {
+  background: var(--panel2, #f8fafc);
+}
+
+.dashboard-modal .step-row.active {
+  background: var(--accent-bg, #fffdf7);
+}
+
+.dashboard-modal .step-col-num {
+  width: 32px;
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--muted, #64748b);
+}
+
+.dashboard-modal .step-col-name {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--text-h, #0f172a);
+}
+
+.dashboard-modal .step-col-date {
+  width: 110px;
+  flex-shrink: 0;
+  color: var(--muted, #475569);
+  font-family: var(--font-mono, monospace);
+  font-size: 11.5px;
+}
+
+.dashboard-modal .step-col-resp {
+  width: 140px;
+  flex-shrink: 0;
+  color: var(--muted, #475569);
+}
+
+.dashboard-modal .step-col-status {
+  width: 100px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.dashboard-modal .status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.dashboard-modal .status-pill.done {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.dashboard-modal .status-pill.in-progress {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.dashboard-modal .status-pill.pending {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+@keyframes dashFormExpand {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard-modal .dash-step-edit-form {
+  background: var(--accent-bg, #fffdf7);
+  border-top: 1px solid var(--yellow, #fde68a);
+  border-bottom: 1px solid var(--yellow, #fde68a);
+  padding: 12px;
+  animation: dashFormExpand 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.dashboard-modal .dash-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.dashboard-modal .dash-form-grid label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text, #475569);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dashboard-modal .dash-form-grid label.full-w {
+  grid-column: span 3;
+}
+
+.dashboard-modal .dash-form-grid input,
+.dashboard-modal .dash-form-grid select {
+  padding: 5px 8px;
+  font-size: 12px;
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 4px;
+  background: var(--panel, #ffffff);
+  color: var(--text-h, #0f172a);
+}
+
+.dashboard-modal .dash-form-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

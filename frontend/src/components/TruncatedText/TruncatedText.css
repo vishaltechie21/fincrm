@@ -1,0 +1,23 @@
+.truncated-text-wrapper {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.truncated-text-wrapper.has-tooltip {
+  cursor: help;
+  border-bottom: 1px dotted rgba(15, 37, 68, 0.25);
+  transition: border-color 0.15s ease;
+}
+
+.truncated-text-wrapper.has-tooltip:hover {
+  border-bottom-color: var(--accent, #10b981);
+}
+
+.truncated-text-empty {
+  color: var(--muted, #94a3b8);
+  font-style: italic;
+}

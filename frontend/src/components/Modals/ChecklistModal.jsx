@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { X, ChevronDown, ChevronRight, CheckCircle2, AlertCircle, Plus, Trash2, FileCheck } from 'lucide-react';
+import { X, CheckCircle2, Trash2, FileCheck } from 'lucide-react';
 import { CHECKLIST_ITEMS, CHECKLIST_STAGES } from '../../utils/checklistData';
-import './ChecklistModal.css';
+import TruncatedText from '../TruncatedText/TruncatedText';
+import './Modals.css';
 
 export default function ChecklistModal({ isOpen, onClose, company, onSaveChecklist }) {
   const [openStage, setOpenStage] = useState(CHECKLIST_STAGES[0]);
@@ -104,72 +105,68 @@ export default function ChecklistModal({ isOpen, onClose, company, onSaveCheckli
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content checklist-modal" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
         <div className="modal-header">
           <div className="modal-header-title">
-            <h3>Customer Lifecycle Checklist</h3>
-            <span className="modal-header-sub">{company.company_name} · ({totalCompleted}/{CHECKLIST_ITEMS.length}) Items Recorded</span>
+            <h3>Checklist</h3>
+            <span className="modal-header-sub">{company.company_name}</span>
           </div>
           <button type="button" className="modal-close-btn" onClick={onClose}>
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
         <div className="modal-body">
-          {/* Summary Banner */}
-          <div className="chk-banner">
-            <div className="chk-banner-box">
-              <span className="chk-b-lbl">Progress</span>
-              <span className="chk-b-val">{totalCompleted} of {CHECKLIST_ITEMS.length} Recorded</span>
-            </div>
-            {totalMandatoryOpen > 0 && (
-              <div className="chk-banner-box warn">
-                <AlertCircle size={15} />
-                <span>{totalMandatoryOpen} Mandatory Item(s) Still Open</span>
-              </div>
-            )}
+          {/* Summary Strip */}
+          <div className="chk-summary-strip">
+            <span className="chk-sum-label">RECORDED</span>
+            <span className="chk-sum-val"><strong>{totalCompleted} of {CHECKLIST_ITEMS.length}</strong></span>
+            <span className="chk-sum-sep">|</span>
+            <span className="chk-sum-warn">{totalMandatoryOpen} mandatory item(s) still open</span>
           </div>
 
-          {/* Stages List */}
+          {/* Stages Accordion List */}
           <div className="chk-stages">
             {CHECKLIST_STAGES.map((st) => {
-              const prog = stageProgress(st);
-              const isOpenStage = openStage === st;
+              const { total, completed, mandatoryOpen } = stageProgress(st);
+              const isExpanded = openStage === st;
+              const stageItems = CHECKLIST_ITEMS.map((item, idx) => ({ ...item, idx })).filter(item => item.st === st);
 
               return (
                 <div key={st} className="chk-stage-group">
                   <div 
-                    className={`chk-stage-header ${isOpenStage ? 'expanded' : ''}`}
+                    className={`chk-stage-header ${isExpanded ? 'expanded' : ''}`}
                     onClick={() => handleToggleStage(st)}
                   >
                     <div className="st-left">
-                      {isOpenStage ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                       <span className="st-name">{st}</span>
                     </div>
                     <div className="st-right">
-                      <span className="st-count">{prog.completed} / {prog.total}</span>
-                      {prog.mandatoryOpen > 0 && (
-                        <span className="st-mand-badge">{prog.mandatoryOpen} mandatory open</span>
+                      <span className="st-count">{completed} / {total}</span>
+                      {mandatoryOpen > 0 && (
+                        <span className="chk-mand-open-badge">{mandatoryOpen} mandatory open</span>
                       )}
+                      <span className="st-toggle-symbol">{isExpanded ? '–' : '+'}</span>
                     </div>
                   </div>
 
-                  {isOpenStage && (
+                  {isExpanded && (
                     <div className="chk-stage-content">
-                      {CHECKLIST_ITEMS.map((item, globalIdx) => {
-                        if (item.st !== st) return null;
+                      {stageItems.map((item) => {
+                        const globalIdx = item.idx;
                         const logs = recordedItems[globalIdx] || [];
-                        const itemDone = logs.length > 0;
+                        const itemDone = isDone(globalIdx);
                         const isAdding = addingIndex === globalIdx;
 
                         return (
                           <div key={globalIdx} className={`chk-item-row ${itemDone ? 'completed' : ''}`}>
                             <div className="chk-item-main">
                               <div className="item-title">
-                                <span className={`chk-status-dot ${itemDone ? 'done' : ''}`} />
+                                <span className={`chk-status-dot ${itemDone ? 'done' : ''}`}></span>
                                 <span className="item-action-text">{item.a}</span>
                                 {item.m && <span className="badge-mand">Mandatory</span>}
                                 {item.e && (
-                                  <span className={`badge-evidence ${itemDone ? 'has-ev' : ''}`}>
+                                  <span className={`badge-evidence ${logs.some(l => l.evidence) ? 'has-ev' : ''}`}>
                                     <FileCheck size={10} /> {item.e}
                                   </span>
                                 )}
@@ -186,7 +183,7 @@ export default function ChecklistModal({ isOpen, onClose, company, onSaveCheckli
                                 )}
                                 <button 
                                   type="button" 
-                                  className="btn btn-success btn-sm"
+                                  className="act-btn-outline"
                                   onClick={() => handleOpenAddForm(globalIdx)}
                                 >
                                   Add
@@ -200,9 +197,9 @@ export default function ChecklistModal({ isOpen, onClose, company, onSaveCheckli
                                 {logs.map((log, lIdx) => (
                                   <div key={lIdx} className="chk-log-entry">
                                     <span className="mono">{log.date}</span>
-                                    <span className="log-text">{log.remark}</span>
+                                    <span className="log-text"><TruncatedText text={log.remark} limit={50} /></span>
                                     {log.nextFollowup && <span className="log-ev">Next: {log.nextFollowup}</span>}
-                                    {log.evidence && <span className="log-ev">Ref: {log.evidence}</span>}
+                                    {log.evidence && <span className="log-ev">Ref: <TruncatedText text={log.evidence} limit={25} /></span>}
                                     <span className="muted">by {log.user || log.recordedBy}</span>
                                     <button 
                                       type="button" 
@@ -234,6 +231,7 @@ export default function ChecklistModal({ isOpen, onClose, company, onSaveCheckli
                                       type="text" 
                                       value={newRecordedBy}
                                       onChange={(e) => setNewRecordedBy(e.target.value)}
+                                      maxLength={100}
                                     />
                                   </label>
                                   <label>
@@ -255,6 +253,7 @@ export default function ChecklistModal({ isOpen, onClose, company, onSaveCheckli
                                       placeholder="Enter remark or observation..." 
                                       value={newRemark}
                                       onChange={(e) => setNewRemark(e.target.value)}
+                                      maxLength={500}
                                     />
                                   </label>
                                 </div>
@@ -268,14 +267,15 @@ export default function ChecklistModal({ isOpen, onClose, company, onSaveCheckli
                                         placeholder={`Evidence / ${item.e} reference...`} 
                                         value={newEvidence}
                                         onChange={(e) => setNewEvidence(e.target.value)}
+                                        maxLength={255}
                                       />
                                     </label>
                                   </div>
                                 )}
 
                                 <div className="add-form-btns">
-                                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => setAddingIndex(null)}>Cancel</button>
-                                  <button type="button" className="btn btn-success btn-sm" onClick={() => handleAddLog(globalIdx)}>Save</button>
+                                  <button type="button" className="act-btn-cancel" onClick={() => setAddingIndex(null)}>Cancel</button>
+                                  <button type="button" className="act-btn-submit" style={{ minHeight: '30px', padding: '0 12px' }} onClick={() => handleAddLog(globalIdx)}>Save</button>
                                 </div>
                               </div>
                             )}
@@ -290,9 +290,10 @@ export default function ChecklistModal({ isOpen, onClose, company, onSaveCheckli
           </div>
         </div>
 
+        {/* Footer */}
         <div className="modal-footer">
-          <span className="modal-foot-info">Click any stage to expand, then click Log to record activity entries</span>
-          <button type="button" className="btn-secondary" onClick={onClose}>Close</button>
+          <span className="modal-foot-info">Click a stage to open it, then click an activity to record it.</span>
+          <button type="button" className="act-btn-close" onClick={onClose}>Close</button>
         </div>
       </div>
     </div>
