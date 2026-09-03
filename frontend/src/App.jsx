@@ -585,30 +585,10 @@ function App() {
         )}
 
         <aside
-          className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isHoverExpandEnabled ? 'hover-expand-active' : ''} ${isSidebarHovered ? 'is-hovered' : ''} ${isMobileSidebarOpen ? 'mobile-open' : ''}`}
-          onMouseEnter={() => setIsSidebarHovered(true)}
-          onMouseLeave={() => setIsSidebarHovered(false)}
+          className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isMobileSidebarOpen ? 'mobile-open' : ''}`}
         >
           <div className="sidebar-header-toolbar">
             <span className="sidebar-header-title">OVERVIEW</span>
-            <div className="sidebar-header-actions">
-              <button
-                type="button"
-                className="sidebar-tool-btn"
-                onClick={() => setIsSidebarCollapsed(prev => !prev)}
-                title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar (Show icons only)"}
-              >
-                {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-              </button>
-              <button
-                type="button"
-                className={`sidebar-tool-btn ${isHoverExpandEnabled ? 'active' : ''}`}
-                onClick={() => setIsHoverExpandEnabled(prev => !prev)}
-                title={isHoverExpandEnabled ? "Hover expansion enabled (Click to disable)" : "Enable expand sidebar on hover when collapsed"}
-              >
-                {isHoverExpandEnabled ? <Pin size={13} /> : <PinOff size={13} />}
-              </button>
-            </div>
           </div>
 
           <nav className="nav-menu">
@@ -638,6 +618,17 @@ function App() {
               </div>
             ))}
           </nav>
+
+          <div className="sidebar-bottom-toolbar">
+            <button
+              type="button"
+              className="sidebar-bottom-tool-btn"
+              onClick={() => setIsSidebarCollapsed(prev => !prev)}
+              data-tooltip={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              {isSidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+            </button>
+          </div>
         </aside>
 
         <div className="content-container">
