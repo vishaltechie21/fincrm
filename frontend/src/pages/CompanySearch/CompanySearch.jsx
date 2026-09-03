@@ -1410,12 +1410,12 @@ const CompanySearch = () => {
         contacts={contacts}
         onAddContact={(comp) => {
           setActiveContactInfoCompany(null);
-          window.history.pushState({}, '', `/contact?companyId=${comp.mascom_id}&mode=add&returnTo=/company-search&expandId=${comp.mascom_id}`);
+          window.history.pushState({}, '', `/company?tab=contacts_info&editId=${comp.mascom_id}&returnTo=/company-search&expandId=${comp.mascom_id}`);
           window.dispatchEvent(new PopStateEvent('popstate'));
         }}
         onEditContact={(cont) => {
           setActiveContactInfoCompany(null);
-          window.history.pushState({}, '', `/contact?editId=${cont.mascon_id}&companyId=${cont.mascom_id}&returnTo=/company-search&expandId=${cont.mascom_id}`);
+          window.history.pushState({}, '', `/company?tab=contacts_info&editId=${cont.mascom_id}&returnTo=/company-search&expandId=${cont.mascom_id}`);
           window.dispatchEvent(new PopStateEvent('popstate'));
         }}
         onDeleteContact={async (cont) => {

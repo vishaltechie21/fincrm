@@ -11,7 +11,7 @@ import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import ImportModal from '../../components/ImportModal/ImportModal';
 import Swal from 'sweetalert2';
 import { validateContact } from '../../utils/validation';
-import { MASCON_SEED } from '../../utils/activityData';
+import { MASCON_SEED, MASCOM_SEED } from '../../utils/activityData';
 
 
 const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
@@ -19,7 +19,7 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
   const [companies, setCompanies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: 'success' });
-  const hasAutoLoadedRef = useRef(false);
+  const lastProcessedParamsRef = useRef('');
 
   // Infinite Scroll & Sorting state
   const [visibleCount, setVisibleCount] = useState(50);
@@ -103,24 +103,28 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
 
   // Auto-load contact in modifying or adding mode if params in URL
   useEffect(() => {
-    if (hasAutoLoadedRef.current) return;
-    const params = new URLSearchParams(window.location.search);
+    const currentSearch = window.location.search;
+    if (lastProcessedParamsRef.current === currentSearch && currentSearch !== '') return;
+
+    const params = new URLSearchParams(currentSearch);
     const editId = params.get('editId');
     const companyId = params.get('companyId');
     const mode = params.get('mode');
+
+    if (!editId && !companyId) return;
 
     if (editId) {
       if (contacts.length > 0) {
         const cont = contacts.find(c => c.mascon_id === editId);
         if (cont) {
-          hasAutoLoadedRef.current = true;
+          lastProcessedParamsRef.current = currentSearch;
           loadContact(cont);
           setEditState('modifying');
         }
       }
     } else if (companyId) {
       if (mode === 'add') {
-        hasAutoLoadedRef.current = true;
+        lastProcessedParamsRef.current = currentSearch;
         const timestampPrefix = String(Math.floor(Date.now() / 1000)).slice(-3);
         let nextSeq = 1;
         if (contacts.length > 0) {
@@ -138,7 +142,7 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
       } else if (contacts.length > 0) {
         const compCont = contacts.find(c => c.mascom_id === companyId);
         if (compCont) {
-          hasAutoLoadedRef.current = true;
+          lastProcessedParamsRef.current = currentSearch;
           loadContact(compCont);
           setEditState('modifying');
         }
@@ -415,7 +419,7 @@ const ContactMaster = forwardRef(({ onEditStateChange }, ref) => {
   });
 
   const visibleContacts = sortedContacts.slice(0, visibleCount);
-  const matchedComp = companies.find(c => c.mascom_id === formData.mascom_id);
+  const matchedComp = companies.find(c => c.mascom_id === formData.mascom_id) || MASCOM_SEED.find(c => c.mascom_id === formData.mascom_id);
   const targetCompanyName = matchedComp ? matchedComp.company_name : formData.mascom_id;
 
   return (
