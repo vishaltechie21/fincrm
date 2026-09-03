@@ -1,7 +1,34 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useRef } from 'react';
 import Swal from 'sweetalert2';
-import { LayoutDashboard, Bell, Building2, User, Inbox, Monitor, Calendar, Search, RotateCw, Volume2, CheckCheck, Trash2, Sun, Moon, Info, Sliders, Layers } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  Bell, 
+  Building2, 
+  User, 
+  Inbox, 
+  Monitor, 
+  Calendar, 
+  Search, 
+  RotateCw, 
+  Volume2, 
+  CheckCheck, 
+  Trash2, 
+  Sun, 
+  Moon, 
+  Info, 
+  Sliders, 
+  Layers,
+  Menu,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Pin,
+  PinOff,
+  Icon
+} from './components/Icon';
 import CompanyMaster from './pages/CompanyMaster/CompanyMaster';
 import ContactMaster from './pages/ContactMaster/ContactMaster';
 import CompanySearch from './pages/CompanySearch/CompanySearch';
@@ -56,6 +83,16 @@ function App() {
   const companyMasterRef = useRef();
   const contactMasterRef = useRef();
   const [isFormDirty, setIsFormDirty] = useState(false);
+
+  // Sidebar collapse, hover-expand & mobile state
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    return localStorage.getItem('sidebar-collapsed') === 'true';
+  });
+  const [isHoverExpandEnabled, setIsHoverExpandEnabled] = useState(() => {
+    return localStorage.getItem('sidebar-hover-expand') === 'true';
+  });
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
 
   const [pathname, setPathname] = useState(window.location.pathname);
   const [isBwTheme, setIsBwTheme] = useState(() => {
@@ -129,6 +166,14 @@ function App() {
     }
     localStorage.setItem('theme-bw', isBwTheme);
   }, [isBwTheme]);
+
+  useEffect(() => {
+    localStorage.setItem('sidebar-collapsed', isSidebarCollapsed);
+  }, [isSidebarCollapsed]);
+
+  useEffect(() => {
+    localStorage.setItem('sidebar-hover-expand', isHoverExpandEnabled);
+  }, [isHoverExpandEnabled]);
 
   const navigateTo = (path) => {
     window.history.pushState({}, '', path);
@@ -365,6 +410,14 @@ function App() {
       {/* Top Header spans 100% width */}
       <header className="top-nav">
         <div className="top-nav-left">
+          <button
+            type="button"
+            className="mobile-menu-btn"
+            onClick={() => setIsMobileSidebarOpen(prev => !prev)}
+            title="Toggle Menu"
+          >
+            {isMobileSidebarOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
           <div className="logo-text">
             <img src="/logo.png" alt="FinCRM Logo" />
           </div>
@@ -523,18 +576,58 @@ function App() {
 
       {/* Main Body holds Sidebar and Scrollable Content */}
       <div className="app-body">
-        <aside className="sidebar">
+        {/* Backdrop for Mobile Drawer */}
+        {isMobileSidebarOpen && (
+          <div
+            className="sidebar-backdrop"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
+        )}
+
+        <aside
+          className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isHoverExpandEnabled ? 'hover-expand-active' : ''} ${isSidebarHovered ? 'is-hovered' : ''} ${isMobileSidebarOpen ? 'mobile-open' : ''}`}
+          onMouseEnter={() => setIsSidebarHovered(true)}
+          onMouseLeave={() => setIsSidebarHovered(false)}
+        >
+          <div className="sidebar-header-toolbar">
+            <span className="sidebar-header-title">OVERVIEW</span>
+            <div className="sidebar-header-actions">
+              <button
+                type="button"
+                className="sidebar-tool-btn"
+                onClick={() => setIsSidebarCollapsed(prev => !prev)}
+                title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar (Show icons only)"}
+              >
+                {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+              </button>
+              <button
+                type="button"
+                className={`sidebar-tool-btn ${isHoverExpandEnabled ? 'active' : ''}`}
+                onClick={() => setIsHoverExpandEnabled(prev => !prev)}
+                title={isHoverExpandEnabled ? "Hover expansion enabled (Click to disable)" : "Enable expand sidebar on hover when collapsed"}
+              >
+                {isHoverExpandEnabled ? <Pin size={13} /> : <PinOff size={13} />}
+              </button>
+            </div>
+          </div>
+
           <nav className="nav-menu">
-            {menuGroups.map((group) => (
+            {menuGroups.map((group, groupIdx) => (
               <div key={group.title} className="menu-group">
-                <span className="group-title">{group.title}</span>
+                {groupIdx !== 0 && <span className="group-title">{group.title}</span>}
                 <ul className="group-items">
                   {group.items.map((item) => (
                     <li key={item.id}>
                       <button
                         type="button"
                         className={`nav-item ${activeMenu === item.id ? 'active' : ''}`}
-                        onClick={() => handleMenuClick(item.id)}
+                        onClick={() => {
+                          handleMenuClick(item.id);
+                          if (window.innerWidth <= 768) {
+                            setIsMobileSidebarOpen(false);
+                          }
+                        }}
+                        data-tooltip={item.label}
                       >
                         <span className="nav-icon">{item.icon}</span>
                         <span className="nav-label">{item.label}</span>

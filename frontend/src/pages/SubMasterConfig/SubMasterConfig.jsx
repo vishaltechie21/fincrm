@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Settings, Plus, Trash2, Search, Sliders, HelpCircle, Layers, Database, Building2, Inbox } from 'lucide-react';
+import { Settings, Plus, Trash2, Search, Sliders, HelpCircle, Layers, Database, Building2, Inbox } from '../../components/Icon';
 import * as subMasterService from '../../services/subMasterService';
 import DataTable from '../../components/DataTable/DataTable';
 import Notification from '../../components/Notification/Notification';

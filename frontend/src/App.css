@@ -25,6 +25,9 @@
   flex-direction: column;
   flex-shrink: 0;
   height: 100%;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 20;
 }
 
 .top-nav {
@@ -42,17 +45,43 @@
   position: relative;
 }
 
+.top-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.mobile-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
 /* Logo image text */
 .logo-text {
   display: flex;
   align-items: center;
+  height: 100%;
 }
 
 .logo-text img {
-  max-width: 130px;
-  max-height: 26px;
-  /* Increased a little bit */
+  max-width: 120px;
+  max-height: 22px;
   object-fit: contain;
+  display: block;
 }
 
 /* Center Noida Metadata info */
@@ -2055,4 +2084,208 @@
 
 .submaster-form-group input:focus {
   border-color: #c9973c;
+}
+
+/* Sidebar Toolbar & Collapse Styling */
+.sidebar-header-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  min-height: 36px;
+  box-sizing: border-box;
+}
+
+.sidebar-header-title {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 1px;
+  padding-left: 2px;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.sidebar-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sidebar-tool-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sidebar-tool-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.sidebar-tool-btn.active {
+  background: var(--accent, #3b82f6);
+  border-color: var(--accent, #3b82f6);
+  color: #ffffff;
+}
+
+/* Collapsed Mini Sidebar (Icon-Only Mode) */
+.sidebar.collapsed {
+  width: 56px;
+}
+
+.sidebar.collapsed .group-title,
+.sidebar.collapsed .sidebar-header-title {
+  display: none;
+}
+
+.sidebar.collapsed .nav-label {
+  display: none;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.sidebar.collapsed .sidebar-header-toolbar {
+  justify-content: center;
+}
+
+/* Hover expansion when collapsed */
+.sidebar.collapsed.hover-expand-active:hover,
+.sidebar.collapsed.hover-expand-active.is-hovered {
+  width: 220px;
+  box-shadow: 6px 0 24px rgba(0, 0, 0, 0.4);
+}
+
+.sidebar.collapsed.hover-expand-active:hover .group-title,
+.sidebar.collapsed.hover-expand-active.is-hovered .group-title,
+.sidebar.collapsed.hover-expand-active:hover .sidebar-header-title,
+.sidebar.collapsed.hover-expand-active.is-hovered .sidebar-header-title {
+  display: block;
+  opacity: 1;
+  height: auto;
+  margin-bottom: 2px;
+}
+
+.sidebar.collapsed.hover-expand-active:hover .nav-label,
+.sidebar.collapsed.hover-expand-active.is-hovered .nav-label {
+  display: inline;
+}
+
+.sidebar.collapsed.hover-expand-active:hover .nav-item,
+.sidebar.collapsed.hover-expand-active.is-hovered .nav-item {
+  justify-content: flex-start;
+  padding: 6px 10px;
+}
+
+.sidebar.collapsed.hover-expand-active:hover .sidebar-header-toolbar,
+.sidebar.collapsed.hover-expand-active.is-hovered .sidebar-header-toolbar {
+  justify-content: space-between;
+}
+
+/* Custom Instant Tooltip for Collapsed Sidebar Icons */
+.sidebar.collapsed:not(.is-hovered):not(:hover) .nav-item {
+  position: relative;
+}
+
+.sidebar.collapsed:not(.is-hovered):not(:hover) .nav-item::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%) scale(0.95);
+  background-color: #0f172a;
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  z-index: 99999;
+}
+
+.sidebar.collapsed:not(.is-hovered):not(:hover) .nav-item::before {
+  content: '';
+  position: absolute;
+  left: calc(100% + 2px);
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent #0f172a transparent transparent;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 99999;
+}
+
+.sidebar.collapsed:not(.is-hovered):not(:hover) .nav-item:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) scale(1);
+}
+
+.sidebar.collapsed:not(.is-hovered):not(:hover) .nav-item:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Mobile Overlay Drawer & Backdrop */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 99;
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: flex;
+  }
+  .desktop-only {
+    display: none !important;
+  }
+  .top-company-title {
+    font-size: 10px;
+  }
+  .top-company-meta {
+    display: none;
+  }
+  .top-search-input {
+    width: 110px;
+  }
+  .sidebar {
+    position: fixed;
+    top: 40px;
+    left: 0;
+    bottom: 0;
+    height: calc(100vh - 40px);
+    z-index: 100;
+    transform: translateX(-100%);
+    width: 240px !important;
+  }
+  .sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.5);
+  }
 }

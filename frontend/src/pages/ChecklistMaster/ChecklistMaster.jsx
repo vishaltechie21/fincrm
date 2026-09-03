@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Layers, Plus, Trash2, Edit2, Save, X } from 'lucide-react';
+import { Layers, Plus, Trash2, Edit2, Save, X } from '../../components/Icon';
 import { masterService } from '../../services/masterService';
 import { CHECKLIST_STAGES, CHECKLIST_ITEMS } from '../../utils/checklistData';
 import TruncatedText from '../../components/TruncatedText/TruncatedText';

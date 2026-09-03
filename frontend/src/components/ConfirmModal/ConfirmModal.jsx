@@ -1,4 +1,4 @@
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from '../Icon';
 import './ConfirmModal.css';
 
 const ConfirmModal = ({ isOpen, title = "Confirm Action", message, onConfirm, onCancel }) => {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X } from '../Icon';
 import TruncatedText from '../TruncatedText/TruncatedText';
 import './Modals.css';
 

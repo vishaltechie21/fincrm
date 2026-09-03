@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, UserCheck, Key, Edit, Trash2, Plus } from 'lucide-react';
+import { X, UserCheck, Key, Edit, Trash2, Plus } from '../Icon';
 import TruncatedText from '../TruncatedText/TruncatedText';
 import './Modals.css';
 

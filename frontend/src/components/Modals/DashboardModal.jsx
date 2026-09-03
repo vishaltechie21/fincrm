@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X } from '../Icon';
 import { SALES_STEPS } from '../../utils/dashboardData';
 import { masterService } from '../../services/masterService';
 import './Modals.css';

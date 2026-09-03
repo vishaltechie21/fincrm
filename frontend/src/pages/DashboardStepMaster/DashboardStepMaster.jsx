@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Sliders, Plus, Trash2, Edit2, Save, X } from 'lucide-react';
+import { Sliders, Plus, Trash2, Edit2, Save, X } from '../../components/Icon';
 import { masterService } from '../../services/masterService';
 import { SALES_STEPS } from '../../utils/dashboardData';
 import TruncatedText from '../../components/TruncatedText/TruncatedText';

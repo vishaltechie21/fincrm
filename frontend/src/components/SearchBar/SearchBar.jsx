@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search } from 'lucide-react';
+import { Search } from '../Icon';
 
 const SearchBar = ({ onSearch, value, placeholder = "Search..." }) => {
   const [searchTerm, setSearchTerm] = useState(value || '');

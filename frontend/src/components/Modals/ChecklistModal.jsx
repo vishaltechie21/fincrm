@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, CheckCircle2, Trash2, FileCheck } from 'lucide-react';
+import { X, CheckCircle2, Trash2, FileCheck } from '../Icon';
 import { CHECKLIST_ITEMS, CHECKLIST_STAGES } from '../../utils/checklistData';
 import { masterService } from '../../services/masterService';
 import TruncatedText from '../TruncatedText/TruncatedText';

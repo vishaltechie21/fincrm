@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
-import { User, Building2 } from 'lucide-react';
+import { User, Building2 } from '../../components/Icon';
 import ContactForm from '../../components/ContactForm/ContactForm';
 import ContactTable from '../../components/ContactTable/ContactTable';
 import Notification from '../../components/Notification/Notification';

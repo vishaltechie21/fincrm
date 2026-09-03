@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
-import { Download, Upload, AlertCircle, CheckCircle2, X } from 'lucide-react';
+import { Download, Upload, AlertCircle, CheckCircle2, X } from '../Icon';
 
 const ImportModal = ({
   isOpen,
